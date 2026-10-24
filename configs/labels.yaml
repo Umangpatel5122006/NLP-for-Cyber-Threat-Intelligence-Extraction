@@ -1,0 +1,24 @@
+ioc_labels:            # found by regex rules (P3)
+  - IP
+  - DOMAIN
+  - URL
+  - HASH
+  - CVE
+  - EMAIL
+
+entity_labels:         # learned by NER from SMAH-CTI (P5)
+  - THREAT_ACTOR
+  - MALWARE_TOOL
+  - ACTION
+  - INFRASTRUCTURE
+  
+
+later_labels:          # no training data yet, added with another dataset or dictionary
+  - SYSTEM
+  - VULNERABILITY
+
+dataset_mapping:       # SMAH-CTI name -> our name
+  ThreatActor: THREAT_ACTOR
+  MalwareTool: MALWARE_TOOL
+  Action: ACTION
+  Infrastructure_Indicator: INFRASTRUCTURE   # mix of indicators and systems, review later

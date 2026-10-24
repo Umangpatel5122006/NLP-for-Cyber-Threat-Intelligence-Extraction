@@ -1,0 +1,36 @@
+{
+  "dataset": "SMAH-CTI.json",
+  "split_unit": "report",
+  "status": "PASS",
+  "statistics": {
+    "train": {
+      "reports": 70,
+      "sentences": 8635,
+      "relevant": 3006,
+      "non_relevant": 5629
+    },
+    "dev": {
+      "reports": 10,
+      "sentences": 1238,
+      "relevant": 434,
+      "non_relevant": 804
+    },
+    "test": {
+      "reports": 20,
+      "sentences": 2431,
+      "relevant": 862,
+      "non_relevant": 1569
+    },
+    "total": {
+      "reports": 100,
+      "sentences": 12304,
+      "relevant": 4302,
+      "non_relevant": 8002
+    }
+  },
+  "partition_integrity": {
+    "report_overlap_count": 0,
+    "uid_overlap_count": 0,
+    "all_reports_covered": true
+  }
+}

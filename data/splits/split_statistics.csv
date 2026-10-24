@@ -1,0 +1,5 @@
+split,reports,sentences,relevant,non_relevant,relevant_percent
+Train,70,8635,3006,5629,34.81
+Dev,10,1238,434,804,35.06
+Test,20,2431,862,1569,35.46
+Total,100,12304,4302,8002,34.96
