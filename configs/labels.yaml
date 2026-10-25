@@ -22,3 +22,16 @@ dataset_mapping:       # SMAH-CTI name -> our name
   MalwareTool: MALWARE_TOOL
   Action: ACTION
   Infrastructure_Indicator: INFRASTRUCTURE   # mix of indicators and systems, review later
+
+
+layers:                # each layer becomes its own tagger (P5)
+  entities:
+    - THREAT_ACTOR
+    - MALWARE_TOOL
+    - INFRASTRUCTURE
+  action:
+    - ACTION
+  # future layers go here, for example:
+  # systems:
+  #   - SYSTEM
+  #   - VULNERABILITY
