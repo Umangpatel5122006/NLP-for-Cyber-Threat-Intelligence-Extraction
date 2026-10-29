@@ -10,7 +10,12 @@ import sklearn_crfsuite
 from spacy.tokens import Doc
 
 from cti.core.registry import register
-from cti.models.base import BaseTagger
+from cti.models.base import (
+    BaseTagger,
+    repair_bio_sequence,
+    validate_token_sequences,
+    validate_training_data,
+)
 
 
 # No external spaCy model download is required.
@@ -60,7 +65,7 @@ _REGISTRY_RE = re.compile(
 
 _WINDOWS_PATH_RE = re.compile(r"^(?:[A-Z]:\\|\\\\)", re.IGNORECASE)
 
-_EDGE_PUNCTUATION = ".,;:!?()[]{}<>\"'"
+_EDGE_PUNCTUATION = ".,;:!?()[]{}<>\"'`\u201c\u201d\u2014-"
 
 
 # ---------------------------------------------------------------------
@@ -71,7 +76,7 @@ TRIGGERS = {
     "malware", "ransomware", "trojan", "backdoor", "botnet",
     "loader", "implant", "tool", "exploit", "group", "actor",
     "actors", "adversary", "adversaries", "attacker", "attackers",
-    "apt", "campaign", "gang", "operators", "family",
+    "apt", "campaign", "gang", "operators", "family", "c2", "server",
 }
 
 FILE_EXT = {
@@ -82,7 +87,11 @@ FILE_EXT = {
 }
 
 
-_GAZETTEER_PATH = Path("data/external/gazetteer.json")
+# Resolve from the project root so model results do not depend on the caller's
+# current working directory.
+_GAZETTEER_PATH = (
+    Path(__file__).resolve().parents[3] / "data" / "external" / "gazetteer.json"
+)
 _MATCHER = None
 
 
@@ -93,8 +102,21 @@ def _get_matcher():
         _MATCHER = PhraseMatcher(_NLP.vocab, attr="LOWER")
         if _GAZETTEER_PATH.exists():
             with open(_GAZETTEER_PATH, encoding="utf-8") as f:
-                for label, names in json.load(f).items():
-                    _MATCHER.add(label, [_NLP.make_doc(n) for n in names])
+                gazetteer = json.load(f)
+            if not isinstance(gazetteer, dict):
+                raise ValueError(f"Gazetteer must be a mapping: {_GAZETTEER_PATH}")
+            for label, names in gazetteer.items():
+                if not isinstance(label, str) or not isinstance(names, list):
+                    raise ValueError(
+                        f"Invalid gazetteer entry for label {label!r}."
+                    )
+                if any(not isinstance(name, str) or not name for name in names):
+                    raise ValueError(
+                        f"Gazetteer names for {label!r} must be non-empty strings."
+                    )
+                patterns = [_NLP.make_doc(name) for name in names if name]
+                if patterns:
+                    _MATCHER.add(label, patterns)
     return _MATCHER
 
 
@@ -104,11 +126,14 @@ def _gazetteer_tags(doc):
     for match_id, start, end in _get_matcher()(doc):
         label = _NLP.vocab.strings[match_id]
         for t in range(start, end):
-            tags[t][label] = "B" if t == start else "I"
+            if label not in tags[t]:
+                tags[t][label] = "B" if t == start else "I"
     return tags
 
 def _looks_ipv6(value):
     """Return True if the token contains a valid IPv6 address."""
+    if ":" not in value or value.count(":") < 2:
+        return False
     try:
         return ipaddress.ip_address(value).version == 6
     except ValueError:
@@ -165,14 +190,14 @@ def _token_metadata(word):
         "lower": lower,
         "clean_lower": clean_lower,
         "normalized": _DIGITS_RE.sub("0", lower),
-        "prefix1": lower[:1],
-        "prefix2": lower[:2],
-        "prefix3": lower[:3],
-        "prefix4": lower[:4],
-        "suffix1": lower[-1:],
-        "suffix2": lower[-2:],
-        "suffix3": lower[-3:],
-        "suffix4": lower[-4:],
+        "prefix1": clean_lower[:1] if clean_lower else lower[:1],
+        "prefix2": clean_lower[:2] if clean_lower else lower[:2],
+        "prefix3": clean_lower[:3] if clean_lower else lower[:3],
+        "prefix4": clean_lower[:4] if clean_lower else lower[:4],
+        "suffix1": clean_lower[-1:] if clean_lower else lower[-1:],
+        "suffix2": clean_lower[-2:] if clean_lower else lower[-2:],
+        "suffix3": clean_lower[-3:] if clean_lower else lower[-3:],
+        "suffix4": clean_lower[-4:] if clean_lower else lower[-4:],
         "is_upper": word.isupper(),
         "is_title": word.istitle(),
         "is_alpha": word.isalpha(),
@@ -203,7 +228,7 @@ def _token_metadata(word):
         "looks_path": looks_path,
         "looks_ioc": looks_ioc,
         "file_ext": ext in FILE_EXT,
-        "trigger": lower in TRIGGERS,
+        "trigger": lower in TRIGGERS or clean_lower in TRIGGERS,
         "length": min(len(word), 15),
     }
 
@@ -231,7 +256,7 @@ def _sentence_features(words):
     if not words:
         return []
 
-    # spaCy is used only for token shapes, not linguistic parsing.
+    # spaCy is used for token shapes and phrase matching.
     doc = Doc(_NLP.vocab, words=words)
     shapes = [token.shape_ for token in doc]
     gaz = _gazetteer_tags(doc)
@@ -242,11 +267,12 @@ def _sentence_features(words):
     ]
 
     features = []
+    n = len(words)
 
     for i, word in enumerate(words):
         current = metadata[i]
 
-        # Keep the original feature names for compatibility.
+        # Keep original feature names for compatibility.
         f = {
             "bias": 1.0,
             "lower": current["lower"],
@@ -300,20 +326,26 @@ def _sentence_features(words):
         ):
             f[key] = current[key]
 
-        # Dictionary clues: is this token inside a known actor/malware name?
-        for label in ("THREAT_ACTOR", "MALWARE_TOOL"):
-            f[f"gaz:{label}"] = gaz[i].get(label, "O")
+        # Dictionary clues: only emit when token matches known threat actor, malware, or infrastructure.
+        for label in ("THREAT_ACTOR", "MALWARE_TOOL", "INFRASTRUCTURE"):
+            if label in gaz[i]:
+                f[f"gaz:{label}"] = gaz[i][label]
             for d in (-1, 1):
                 j = i + d
-                if 0 <= j < len(words):
-                    f[f"{d}:gaz:{label}"] = gaz[j].get(label, "O")
+                if 0 <= j < n and label in gaz[j]:
+                    f[f"{d}:gaz:{label}"] = gaz[j][label]
 
-        # Context window: two tokens before and after the current token.
+        # Sentence boundaries
+        if i == 0:
+            f["BOS"] = True
+        if i == n - 1:
+            f["EOS"] = True
+
+        # Context window: two tokens before and after current token.
         for d in (-2, -1, 1, 2):
             j = i + d
 
-            if 0 <= j < len(words):
-                neighbor = words[j]
+            if 0 <= j < n:
                 neighbor_meta = metadata[j]
 
                 # Original contextual feature names.
@@ -330,15 +362,19 @@ def _sentence_features(words):
                 f[f"{d}:file_ext"] = neighbor_meta["file_ext"]
                 f[f"{d}:looks_hash"] = neighbor_meta["looks_hash"]
                 f[f"{d}:looks_ioc"] = neighbor_meta["looks_ioc"]
-            else:
-                f["BOS" if d < 0 else "EOS"] = True
 
-        # Preserve the original previous-word/current-word feature.
+        # Word bigram features.
         if i > 0:
             f["bigram"] = (
                 metadata[i - 1]["lower"]
                 + "|"
                 + current["lower"]
+            )
+        if i < n - 1:
+            f["+1:bigram"] = (
+                current["lower"]
+                + "|"
+                + metadata[i + 1]["lower"]
             )
 
         features.append(f)
@@ -355,6 +391,10 @@ class CRFTagger(BaseTagger):
     name = "crf_tagger"
 
     def __init__(self, c1=1.0, c2=1.0, max_iterations=200):
+        if c1 < 0 or c2 < 0:
+            raise ValueError("c1 and c2 must be non-negative.")
+        if max_iterations < 1:
+            raise ValueError("max_iterations must be positive.")
         self.model = sklearn_crfsuite.CRF(
             algorithm="lbfgs",
             c1=c1,
@@ -362,6 +402,7 @@ class CRFTagger(BaseTagger):
             max_iterations=max_iterations,
             all_possible_transitions=True,
         )
+        self._is_fitted = False
 
     def fit(self, tokens, tags, dev_tokens=None, dev_tags=None):
         """
@@ -373,27 +414,24 @@ class CRFTagger(BaseTagger):
         dev_tokens and dev_tags are retained for API compatibility.
         They are not currently used for training or model selection.
         """
-        if len(tokens) != len(tags):
-            raise ValueError(
-                "tokens and tags must contain the same number "
-                "of sentences."
-            )
+        validate_training_data(tokens, tags)
+        if (dev_tokens is None) != (dev_tags is None):
+            raise ValueError("dev_tokens and dev_tags must be provided together.")
+        if dev_tokens is not None:
+            validate_training_data(dev_tokens, dev_tags)
 
-        for i, (sentence, sentence_tags) in enumerate(
-            zip(tokens, tags)
-        ):
-            if len(sentence) != len(sentence_tags):
-                raise ValueError(
-                    f"Sentence {i}: token count ({len(sentence)}) "
-                    f"does not match tag count ({len(sentence_tags)})."
-                )
-
-        X_train = [
-            _sentence_features(sentence)
-            for sentence in tokens
+        nonempty = [
+            (sentence, sentence_tags)
+            for sentence, sentence_tags in zip(tokens, tags)
+            if sentence
         ]
+        if not nonempty:
+            raise ValueError("Cannot fit the CRF on an empty training set.")
 
-        self.model.fit(X_train, tags)
+        X_train = [_sentence_features(sentence) for sentence, _ in nonempty]
+        y_train = [sentence_tags for _, sentence_tags in nonempty]
+        self.model.fit(X_train, y_train)
+        self._is_fitted = True
 
     def predict(self, tokens):
         """
@@ -402,13 +440,15 @@ class CRFTagger(BaseTagger):
         Returns:
             A list of tag sequences, preserving sentence boundaries.
         """
-        X_test = [
-            _sentence_features(sentence)
-            for sentence in tokens
-        ]
+        validate_token_sequences(tokens)
+        if not self._is_fitted:
+            raise RuntimeError("CRFTagger must be fitted before calling predict().")
 
-        return self.model.predict(X_test)
-
-
-
-
+        nonempty_indices = [i for i, sentence in enumerate(tokens) if sentence]
+        predictions = [[] for _ in tokens]
+        if nonempty_indices:
+            X_test = [_sentence_features(tokens[i]) for i in nonempty_indices]
+            decoded = self.model.predict(X_test)
+            for index, sequence in zip(nonempty_indices, decoded):
+                predictions[index] = repair_bio_sequence(sequence)
+        return predictions

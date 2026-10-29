@@ -11,10 +11,10 @@ LANG = "en"
 
 # registry name -> file that defines it. Add or remove models here.
 MODELS = {
-    # "crf_tagger": "cti.models.crf",
+     "crf_tagger": "cti.models.crf",
     # "spacy_ner": "cti.models.spacy_ner",
     # "bilstm_crf": "cti.models.bilstm_crf",
-    "bert_ner": "cti.models.bert_ner",
+    # "bert_ner": "cti.models.bert_ner",
 }
 
 train_x, train_y = load_bio(LAYER, "train", LANG)

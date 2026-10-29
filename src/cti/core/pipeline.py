@@ -15,7 +15,7 @@ from cti.core.registry import create
 
 def load_all_modules():
     """Import every file in these packages so modules sign up in the registry."""
-    for pkg_name in ["cti.preprocessing", "cti.extractors"]:
+    for pkg_name in ["cti.preprocessing", "cti.extractors", "cti.models"]:
         pkg = importlib.import_module(pkg_name)
         for m in pkgutil.iter_modules(pkg.__path__):
             importlib.import_module(f"{pkg_name}.{m.name}")

@@ -5,6 +5,10 @@ from cti.core.registry import register
 
 # a sentence end: . ! ? or the Hindi danda, then optional closing quote/bracket, then space
 _BOUNDARY = re.compile(r"[.!?\u0964]+[\"')\]]*\s+")
+_ABBREVIATION = re.compile(
+    r"(?:^|[\s(])(?:e\.g|i\.e|etc|vs|mr|mrs|dr)$",
+    re.IGNORECASE,
+)
 
 
 def _add(text, start, end, out):
@@ -25,11 +29,17 @@ class SentenceSplitter(BaseModule):
 
     def process(self, doc: Document) -> Document:
         text = doc.text
+        if not isinstance(text, str):
+            raise TypeError("Document.text must be a string.")
         sentences = []
         start = 0
         for m in _BOUNDARY.finditer(text):
             nxt = text[m.end():m.end() + 1]
-            if nxt and nxt.islower():       # "e.g. a" is not a sentence end
+            prefix = text[:m.start()].rstrip()
+            if (
+                (nxt and nxt.islower())
+                or _ABBREVIATION.search(prefix)
+            ):
                 continue
             _add(text, start, m.end(), sentences)
             start = m.end()

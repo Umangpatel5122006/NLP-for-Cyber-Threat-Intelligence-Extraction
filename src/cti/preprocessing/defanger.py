@@ -41,6 +41,8 @@ class Defanger(BaseModule):
         self.params = params
 
     def process(self, doc: Document) -> Document:
+        if not isinstance(doc.text, str):
+            raise TypeError("Document.text must be a string.")
         doc.metadata.setdefault("text_before_defang", doc.text)   # keep the original
         text = doc.text
         for pattern, replacement in _RULES:

@@ -31,6 +31,8 @@ class TextCleaner(BaseModule):
         self.params = params
 
     def process(self, doc: Document) -> Document:
+        if not isinstance(doc.text, str):
+            raise TypeError("Document.text must be a string.")
         text = unicodedata.normalize("NFC", doc.text)
         text = _INVISIBLE.sub("", text)
         text = _SPACES.sub(" ", text).strip()
