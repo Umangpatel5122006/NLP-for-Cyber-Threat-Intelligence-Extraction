@@ -10,6 +10,7 @@ from cti.models.bert_ner import _align_word_labels
 from cti.models.bilstm_crf import BiLSTMCRF
 from cti.models.crf import CRFTagger
 from cti.models.data import load_bio
+from cti.models.memm import MEMMTagger, TokenLogisticTagger
 from cti.models.spacy_ner import SpacyNER
 from cti.preprocessing.cleaner import TextCleaner
 from cti.preprocessing.defanger import Defanger
@@ -60,6 +61,24 @@ class ModelContractTests(unittest.TestCase):
         )
         predictions = model.predict([["apt29"], [], ["mimikatz"]])
         self.assertEqual([len(sequence) for sequence in predictions], [1, 0, 1])
+
+    def test_sklearn_sequence_taggers_follow_bio_interface(self):
+        tokens = [
+            ["apt29", "used", "mimikatz"],
+            ["lazarus", "used", "malware"],
+        ]
+        tags = [
+            ["B-THREAT_ACTOR", "O", "B-MALWARE_TOOL"],
+            ["B-THREAT_ACTOR", "O", "B-MALWARE_TOOL"],
+        ]
+        for model in (MEMMTagger(max_iter=100), TokenLogisticTagger(max_iter=100)):
+            with self.subTest(model=model.name):
+                model.fit(tokens, tags)
+                predictions = model.predict([tokens[0], [], tokens[1]])
+                self.assertEqual([len(sequence) for sequence in predictions], [3, 0, 3])
+                for sequence in predictions:
+                    if sequence:
+                        validate_training_data([tokens[0]], [sequence])
 
     def test_load_bio_validates_records(self):
         with tempfile.TemporaryDirectory() as directory:
