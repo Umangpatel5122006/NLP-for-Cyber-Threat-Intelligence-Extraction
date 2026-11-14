@@ -115,5 +115,51 @@ class EvalMetricsTests(unittest.TestCase):
         self.assertEqual(bundle["error_taxonomy"]["counts"]["missed"], 1)
 
 
+class CVAndBootstrapTests(unittest.TestCase):
+    def test_report_grouped_splits_respect_boundaries(self):
+        from cti.eval.cv import get_report_grouped_splits
+
+        # 6 documents across 12 sentences
+        doc_ids = ["docA", "docA", "docB", "docB", "docC", "docD", "docD", "docE", "docF", "docF", "docF", "docC"]
+        splits = get_report_grouped_splits(doc_ids, n_splits=3, shuffle=True, seed=42)
+
+        self.assertEqual(len(splits), 3)
+        for train_idx, val_idx in splits:
+            # Check non-empty
+            self.assertGreater(len(train_idx), 0)
+            self.assertGreater(len(val_idx), 0)
+            # Check partition
+            self.assertEqual(len(train_idx) + len(val_idx), len(doc_ids))
+            # Check zero group overlap
+            train_docs = {doc_ids[i] for i in train_idx}
+            val_docs = {doc_ids[i] for i in val_idx}
+            self.assertEqual(len(train_docs & val_docs), 0)
+
+    def test_cv_rejects_test_split_reports(self):
+        from cti.eval.cv import get_locked_test_ids, get_report_grouped_splits
+
+        test_ids = get_locked_test_ids()
+        if test_ids:
+            first_test_id = next(iter(test_ids))
+            with self.assertRaises(PermissionError):
+                get_report_grouped_splits([first_test_id, "docA", "docB"], n_splits=2)
+
+    def test_cluster_bootstrap_produces_valid_intervals(self):
+        from cti.eval.bootstrap import cluster_bootstrap_ci
+
+        gold = [["B-ACTOR", "O"], ["O", "B-TOOL"], ["B-ACTOR", "O"]]
+        pred = [["B-ACTOR", "O"], ["O", "O"], ["B-ACTOR", "O"]]
+        docs = ["rep1", "rep2", "rep3"]
+
+        def exact_f1(g, p):
+            return exact_span_metrics(g, p)["f1"]
+
+        pt, lo, hi = cluster_bootstrap_ci(gold, pred, docs, exact_f1, n_bootstraps=50, seed=1)
+        self.assertGreaterEqual(pt, 0.0)
+        self.assertLessEqual(pt, 1.0)
+        self.assertLessEqual(lo, hi)
+        self.assertTrue(lo <= pt <= hi or round(lo, 2) <= round(pt, 2) <= round(hi, 2))
+
+
 if __name__ == "__main__":
     unittest.main()
