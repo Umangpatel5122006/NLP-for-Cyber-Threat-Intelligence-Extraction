@@ -1,3 +1,4 @@
+import importlib.util
 import json
 import os
 import tempfile
@@ -9,8 +10,6 @@ from cti.core.bio import to_bio
 from cti.core.dataset import load_smah
 from cti.models.base import validate_training_data
 
-from cti.models.bert_ner import _align_word_labels
-from cti.models.bilstm_crf import BiLSTMCRF
 from cti.models.crf import CRFTagger
 from cti.models.data import load_bio
 from cti.models.memm import MEMMTagger, TokenLogisticTagger
@@ -22,6 +21,10 @@ from cti.preprocessing.sentence_splitter import SentenceSplitter
 from cti.preprocessing.tokenizer import tokenize
 
 
+def has_dependencies(*names):
+    return all(importlib.util.find_spec(name) is not None for name in names)
+
+
 class ModelContractTests(unittest.TestCase):
     def test_training_data_checks_alignment_and_bio_transitions(self):
         validate_training_data([["apt29", "used"]], [["B-ACTOR", "O"]])
@@ -30,7 +33,13 @@ class ModelContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "orphaned I-tag"):
             validate_training_data([["apt29"]], [["I-ACTOR"]])
 
+    @unittest.skipUnless(
+        has_dependencies("torch", "transformers"),
+        "Optional neural dependencies are not installed.",
+    )
     def test_bert_subword_labels_align_once_per_word(self):
+        from cti.models.bert_ner import _align_word_labels
+
         labels = _align_word_labels(
             [None, 0, 0, 1, None],
             ["B-ACTOR", "O"],
@@ -47,7 +56,13 @@ class ModelContractTests(unittest.TestCase):
         predictions = model.predict([["apt29"], [], ["mimikatz", "ran"]])
         self.assertEqual([len(sequence) for sequence in predictions], [1, 0, 2])
 
+    @unittest.skipUnless(
+        has_dependencies("torch", "torchcrf"),
+        "Optional neural dependencies are not installed.",
+    )
     def test_bilstm_crf_preserves_empty_sentence_positions(self):
+        from cti.models.bilstm_crf import BiLSTMCRF
+
         model = BiLSTMCRF(epochs=1, batch_size=2, min_freq=1)
         model.fit(
             [["apt29", "used"], ["mimikatz"]],
@@ -148,6 +163,35 @@ class SplitLockTests(unittest.TestCase):
         if "CTI_ALLOW_TEST" in os.environ:
             del os.environ["CTI_ALLOW_TEST"]
 
+        # Exercise both sides of the lock without opening held-out gold data.
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        root = Path(directory.name)
+        self.raw_dir = root / "raw"
+        self.splits_dir = root / "splits"
+        self.bio_dir = root / "processed"
+        for folder in (self.raw_dir, self.splits_dir, self.bio_dir):
+            folder.mkdir()
+        records = []
+        for split in ("train", "dev", "test"):
+            doc_id = f"synthetic-{split}"
+            records.append({"uid": doc_id, "doc_id": doc_id})
+            (self.splits_dir / f"{split}_report_ids.json").write_text(
+                json.dumps([doc_id]), encoding="utf-8"
+            )
+        (self.raw_dir / "SMAH-CTI.json").write_text(
+            json.dumps(records), encoding="utf-8"
+        )
+        (self.bio_dir / "bio_en_entities_test.json").write_text(
+            json.dumps([{"tokens": [["APT29", 0, 5, "B-THREAT_ACTOR"]]}]),
+            encoding="utf-8",
+        )
+
+    def load_synthetic_smah(self, **kwargs):
+        return load_smah(
+            raw_dir=self.raw_dir, splits_dir=self.splits_dir, **kwargs
+        )
+
     def tearDown(self):
         if self.orig_env is not None:
             os.environ["CTI_ALLOW_TEST"] = self.orig_env
@@ -156,27 +200,29 @@ class SplitLockTests(unittest.TestCase):
 
     def test_load_bio_refuses_test_without_env_var(self):
         with self.assertRaises(PermissionError):
-            load_bio("entities", "test")
+            load_bio("entities", "test", root=self.bio_dir)
 
     def test_load_bio_allows_test_with_env_var(self):
         os.environ["CTI_ALLOW_TEST"] = "1"
-        tokens, tags = load_bio("entities", "test")
-        self.assertGreater(len(tokens), 0)
+        tokens, tags = load_bio("entities", "test", root=self.bio_dir)
+        self.assertEqual(tokens, [["APT29"]])
+        self.assertEqual(tags, [["B-THREAT_ACTOR"]])
 
     def test_load_smah_refuses_test_split_without_env_var(self):
         with self.assertRaises(PermissionError):
-            load_smah(splits=["test"])
+            self.load_synthetic_smah(splits=["test"])
 
     def test_load_smah_default_omits_test_without_env_var(self):
-        parts = load_smah()
+        parts = self.load_synthetic_smah()
         self.assertIn("train", parts)
         self.assertIn("dev", parts)
         self.assertNotIn("test", parts)
 
     def test_load_smah_allows_test_with_env_var(self):
         os.environ["CTI_ALLOW_TEST"] = "1"
-        parts = load_smah()
+        parts = self.load_synthetic_smah()
         self.assertIn("test", parts)
+        self.assertEqual(parts["test"]["doc_id"].tolist(), ["synthetic-test"])
 
 
 if __name__ == "__main__":
