@@ -1,0 +1,17 @@
+model,layer,scope,partition,metric_mode,precision,recall,f1
+crf_tagger,entities,headline_all_dev,all,exact_span_default,0.2359,0.2824,0.2571
+crf_tagger,entities,headline_all_dev,all,relaxed_span,0.309,0.381,0.3412
+crf_tagger,entities,headline_all_dev,all,token_macro,0.4255,0.516,0.4575
+crf_tagger,entities,headline_all_dev,INFRASTRUCTURE,exact_span_per_label,0.2064,0.2537,0.2276
+crf_tagger,entities,headline_all_dev,MALWARE_TOOL,exact_span_per_label,0.2174,0.231,0.224
+crf_tagger,entities,headline_all_dev,THREAT_ACTOR,exact_span_per_label,0.3154,0.4227,0.3612
+crf_tagger,entities,diagnostic_relevant_dev,all,exact_span_default,0.4208,0.2824,0.338
+crf_tagger,entities,diagnostic_relevant_dev,all,relaxed_span,0.5512,0.381,0.4505
+crf_tagger,entities,diagnostic_relevant_dev,INFRASTRUCTURE,exact_span_per_label,0.4008,0.2537,0.3107
+crf_tagger,entities,diagnostic_relevant_dev,MALWARE_TOOL,exact_span_per_label,0.3431,0.231,0.2761
+crf_tagger,entities,diagnostic_relevant_dev,THREAT_ACTOR,exact_span_per_label,0.5655,0.4227,0.4838
+crf_tagger,entities,per_source,aptnotes,exact_span_default,0.2258,0.3182,0.2642
+crf_tagger,entities,per_source,crowdstrike,exact_span_default,0.1732,0.3354,0.2284
+crf_tagger,entities,per_source,mandiant,exact_span_default,0.186,0.5233,0.2744
+crf_tagger,entities,per_source,mitre,exact_span_default,0.3536,0.2558,0.2968
+crf_tagger,entities,per_source,sentinel,exact_span_default,0.1474,0.1207,0.1327

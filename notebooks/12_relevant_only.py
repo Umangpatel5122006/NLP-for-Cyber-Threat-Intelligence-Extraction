@@ -4,6 +4,8 @@ Run from the repository root:
     .\venv\Scripts\python.exe notebooks\12_relevant_only.py
 
 Only the development split is evaluated; the test split is never loaded.
+Integrated with src/cti/eval/ for multi-perspective metrics, error taxonomy,
+and per-source breakdown.
 """
 
 import argparse
@@ -12,16 +14,21 @@ import json
 import time
 from pathlib import Path
 
+from seqeval.metrics import classification_report
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
 from sklearn.pipeline import make_pipeline
 from sklearn.svm import LinearSVC
-from seqeval.metrics import classification_report, f1_score, precision_score, recall_score
 
 from cti.core.dataset import load_smah
 from cti.core.registry import create
-
+from cti.eval.metrics import evaluate_predictions, exact_span_metrics
+from cti.eval.report import (
+    export_report_csv,
+    export_report_markdown,
+    generate_evaluation_summary,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 PROCESSED = ROOT / "data" / "processed"
@@ -35,14 +42,14 @@ MODEL_MODULES = {
 
 
 def _load_split(layer, split, raw_splits):
-    """Load aligned BIO data, sentence text, and relevance labels."""
+    """Load aligned BIO data, sentence text, relevance labels, doc_ids, and sources."""
     bio_path = PROCESSED / f"bio_en_{layer}_{split}.json"
     with bio_path.open(encoding="utf-8") as file:
         records = json.load(file)
 
     raw_rows = raw_splits[split]
     raw_by_uid = {row["uid"]: row for _, row in raw_rows.iterrows()}
-    tokens, tags, texts, relevance = [], [], [], []
+    tokens, tags, texts, relevance, doc_ids, sources = [], [], [], [], [], []
     seen_uids = set()
     for record_index, record in enumerate(records):
         uid = record.get("uid")
@@ -69,13 +76,15 @@ def _load_split(layer, split, raw_splits):
         tags.append(sentence_tags)
         texts.append(row["sentence_text"])
         relevance.append(str(row["relevant"]).casefold() == "yes")
+        doc_ids.append(row["doc_id"])
+        sources.append(row.get("source", "unknown"))
 
     if seen_uids != set(raw_by_uid):
         missing = set(raw_by_uid) - seen_uids
         raise ValueError(
             f"{bio_path}: processed data is missing {len(missing)} raw sentence IDs."
         )
-    return tokens, tags, texts, relevance
+    return tokens, tags, texts, relevance, doc_ids, sources
 
 
 def _subset(tokens, tags, selector):
@@ -83,20 +92,6 @@ def _subset(tokens, tags, selector):
         [sentence for sentence, keep in zip(tokens, selector) if keep],
         [sequence for sequence, keep in zip(tags, selector) if keep],
     )
-
-
-def _score(name, gold, predictions, show_report=False):
-    if len(gold) != len(predictions):
-        raise RuntimeError(f"{name}: prediction count does not match gold data.")
-    if any(len(pred) != len(target) for pred, target in zip(predictions, gold)):
-        raise RuntimeError(f"{name}: predicted sequence length does not match gold.")
-    precision = precision_score(gold, predictions, zero_division=0)
-    recall = recall_score(gold, predictions, zero_division=0)
-    f1 = f1_score(gold, predictions, zero_division=0)
-    print(f"{name}: P={precision:.3f} R={recall:.3f} F1={f1:.3f}")
-    if show_report:
-        print(classification_report(gold, predictions, digits=3, zero_division=0))
-    return precision, recall, f1
 
 
 def _make_model(name, max_iterations, epochs):
@@ -151,6 +146,11 @@ def main():
     parser.add_argument("--max-iterations", type=int, default=200)
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--skip-relevance", action="store_true")
+    parser.add_argument(
+        "--export-prefix",
+        default="",
+        help="Optional prefix for exporting report markdown and CSV to results/ (e.g. crf_baseline_m2).",
+    )
     args = parser.parse_args()
     if args.max_iterations < 1 or args.epochs < 1:
         parser.error("--max-iterations and --epochs must be positive.")
@@ -168,10 +168,12 @@ def main():
         raw_dir=str(ROOT / "data" / "raw"),
         splits_dir=str(ROOT / "data" / "splits"),
     )
-    train_x, train_y, train_text, train_relevant = _load_split(
+    train_x, train_y, train_text, train_relevant, train_docs, train_sources = _load_split(
         args.layer, "train", raw_splits
     )
-    dev_x, dev_y, dev_text, dev_relevant = _load_split(args.layer, "dev", raw_splits)
+    dev_x, dev_y, dev_text, dev_relevant, dev_docs, dev_sources = _load_split(
+        args.layer, "dev", raw_splits
+    )
     train_rel_x, train_rel_y = _subset(train_x, train_y, train_relevant)
     dev_rel_x, dev_rel_y = _subset(dev_x, dev_y, dev_relevant)
 
@@ -180,11 +182,14 @@ def main():
         f"dev relevant={len(dev_rel_x)}/{len(dev_x)}; test=not loaded"
     )
     print(
-        "NER models train on relevant train sentences; direct scores include "
-        "all dev and relevant-only dev."
+        "NER models train on relevant train sentences;\n"
+        "  - Headline metric: all dev sentences end-to-end\n"
+        "  - Diagnostic metric: relevant-only dev sentences"
     )
+
     model_predictions = {}
     summary = []
+
     for name in model_names:
         print(f"\n=== NER: {name} ===")
         model = _make_model(name, args.max_iterations, args.epochs)
@@ -192,23 +197,53 @@ def main():
         model.fit(train_rel_x, train_rel_y)
         predictions = model.predict(dev_x)
         elapsed = time.perf_counter() - started
-        all_score = _score(f"{name} / all dev ({len(dev_y)})", dev_y, predictions)
-        relevant_predictions = [
-            prediction for prediction, keep in zip(predictions, dev_relevant) if keep
-        ]
-        relevant_score = _score(
-            f"{name} / relevant dev ({len(dev_rel_y)})",
-            dev_rel_y,
-            relevant_predictions,
-            show_report=True,
+
+        # Comprehensive evaluation using cti.eval
+        report_summary = generate_evaluation_summary(
+            model_name=name,
+            layer=args.layer,
+            gold=dev_y,
+            predictions=predictions,
+            doc_ids=dev_docs,
+            sources=dev_sources,
+            relevant_mask=dev_relevant,
         )
+
+        h_exact = report_summary["headline_all_sentences"]["exact_default"]
+        d_exact = report_summary["diagnostic_relevant_only"]["evaluation"]["exact_default"]
+        h_rel = report_summary["headline_all_sentences"]["relaxed"]
+        h_tok = report_summary["headline_all_sentences"]["token_level"]
+        err = report_summary["headline_all_sentences"]["error_taxonomy"]["counts"]
+
+        print(
+            f"{name} / [Headline] all dev ({len(dev_y)}): "
+            f"Exact P={h_exact['precision']:.3f} R={h_exact['recall']:.3f} F1={h_exact['f1']:.3f} | "
+            f"Relaxed F1={h_rel['f1']:.3f} | Token Macro F1={h_tok['macro_f1']:.3f}"
+        )
+        print(
+            f"{name} / [Diagnostic] relevant dev ({len(dev_rel_y)}): "
+            f"Exact P={d_exact['precision']:.3f} R={d_exact['recall']:.3f} F1={d_exact['f1']:.3f}"
+        )
+        print(
+            f"  Error counts (all dev): exact_match={err['exact_match']}, boundary_error={err['boundary_error']}, "
+            f"wrong_type={err['wrong_type']}, missed={err['missed']}, spurious={err['spurious']}"
+        )
+        print(classification_report(dev_rel_y, [p for p, k in zip(predictions, dev_relevant) if k], digits=3, zero_division=0))
+
         model_predictions[name] = predictions
-        summary.append((name, all_score[2], relevant_score[2], elapsed))
+        summary.append((name, h_exact["f1"], d_exact["f1"], h_rel["f1"], h_tok["macro_f1"], elapsed))
+
+        if args.export_prefix:
+            md_path = ROOT / "results" / f"{args.export_prefix}_{name}_{args.layer}.md"
+            csv_path = ROOT / "results" / f"{args.export_prefix}_{name}_{args.layer}.csv"
+            export_report_markdown(report_summary, md_path)
+            export_report_csv(report_summary, csv_path)
+            print(f"Exported evaluation report to: {md_path} and {csv_path}")
 
     print("\n=== NER summary (dev only) ===")
-    print(f"{'model':18} {'all-dev F1':>12} {'relevant F1':>13} {'fit+predict s':>15}")
-    for name, all_f1, relevant_f1, elapsed in summary:
-        print(f"{name:18} {all_f1:12.3f} {relevant_f1:13.3f} {elapsed:15.1f}")
+    print(f"{'model':18} {'Headline F1':>12} {'Diagn. F1':>11} {'Relaxed F1':>12} {'Token F1':>10} {'fit+predict s':>14}")
+    for name, h_f1, d_f1, r_f1, t_f1, elapsed in summary:
+        print(f"{name:18} {h_f1:12.3f} {d_f1:11.3f} {r_f1:12.3f} {t_f1:10.3f} {elapsed:14.1f}")
 
     if args.skip_relevance:
         return
@@ -234,7 +269,9 @@ def main():
             sequence if keep else ["O"] * len(sequence)
             for sequence, keep in zip(ner_for_pipeline, predicted_relevance)
         ]
-        _score(name, dev_y, filtered, show_report=True)
+        exact = exact_span_metrics(dev_y, filtered)
+        print(f"{name}: P={exact['precision']:.3f} R={exact['recall']:.3f} F1={exact['f1']:.3f}")
+        print(classification_report(dev_y, filtered, digits=3, zero_division=0))
 
 
 if __name__ == "__main__":

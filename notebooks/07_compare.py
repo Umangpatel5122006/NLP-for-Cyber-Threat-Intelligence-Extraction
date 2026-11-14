@@ -1,39 +1,86 @@
+"""Compare sequence taggers on the development split using the evaluation harness."""
+
+import argparse
 import importlib
 import time
-
-from seqeval.metrics import classification_report, f1_score, precision_score, recall_score
+from pathlib import Path
 
 from cti.core.registry import create
+from cti.eval.metrics import evaluate_predictions
 from cti.models.data import load_bio
 
-LAYER = "entities"      # or "action"
-LANG = "en"
-
-# registry name -> file that defines it. Add or remove models here.
+ROOT = Path(__file__).resolve().parents[1]
 MODELS = {
-     "crf_tagger": "cti.models.crf",
-    # "spacy_ner": "cti.models.spacy_ner",
-    # "bilstm_crf": "cti.models.bilstm_crf",
-    # "bert_ner": "cti.models.bert_ner",
+    "crf_tagger": "cti.models.crf",
+    "memm_tagger": "cti.models.memm",
+    "token_logreg": "cti.models.memm",
+    "spacy_ner": "cti.models.spacy_ner",
+    "bilstm_crf": "cti.models.bilstm_crf",
 }
 
-train_x, train_y = load_bio(LAYER, "train", LANG)
-dev_x, dev_y = load_bio(LAYER, "dev", LANG)
 
-rows = []
-for name, module in MODELS.items():
-    importlib.import_module(module)
-    model = create(name)
-    print(f"\n=== {name} on layer '{LAYER}' ===")
-    t0 = time.time()
-    model.fit(train_x, train_y, dev_x, dev_y)
-    train_time = time.time() - t0
-    pred = model.predict(dev_x)
-    print(classification_report(dev_y, pred, digits=3))
-    rows.append((name, precision_score(dev_y, pred), recall_score(dev_y, pred),
-                 f1_score(dev_y, pred), train_time))
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--layer", default="entities", choices=("entities", "action"))
+    parser.add_argument("--lang", default="en")
+    parser.add_argument(
+        "--models",
+        default="crf_tagger",
+        help="Comma-separated model names (crf_tagger, memm_tagger, token_logreg, spacy_ner, bilstm_crf).",
+    )
+    args = parser.parse_args()
 
-print("\nSUMMARY (dev set, exact entity match)")
-print(f"{'model':14}{'precision':>10}{'recall':>9}{'F1':>8}{'train s':>9}")
-for name, p, r, f, t in rows:
-    print(f"{name:14}{p:>10.3f}{r:>9.3f}{f:>8.3f}{t:>9.0f}")
+    selected_models = [m.strip() for m in args.models.split(",") if m.strip()]
+    for m in selected_models:
+        if m not in MODELS:
+            parser.error(f"Unknown model: {m}. Choose from: {list(MODELS.keys())}")
+
+    print(f"Loading BIO datasets for layer='{args.layer}', lang='{args.lang}'...")
+    train_x, train_y = load_bio(args.layer, "train", args.lang)
+    dev_x, dev_y = load_bio(args.layer, "dev", args.lang)
+
+    results = []
+    for name in selected_models:
+        importlib.import_module(MODELS[name])
+        model = create(name)
+        print(f"\n=== Training {name} on layer '{args.layer}' (all train sentences: {len(train_x)}) ===")
+        t0 = time.time()
+        model.fit(train_x, train_y, dev_x, dev_y)
+        train_time = time.time() - t0
+
+        pred = model.predict(dev_x)
+        eval_bundle = evaluate_predictions(dev_y, pred)
+
+        exact = eval_bundle["exact_default"]
+        relaxed = eval_bundle["relaxed"]
+        token = eval_bundle["token_level"]
+        err = eval_bundle["error_taxonomy"]["counts"]
+
+        results.append({
+            "name": name,
+            "exact_p": exact["precision"],
+            "exact_r": exact["recall"],
+            "exact_f1": exact["f1"],
+            "relaxed_f1": relaxed["f1"],
+            "token_macro_f1": token["macro_f1"],
+            "train_time": train_time,
+            "exact_matches": err["exact_match"],
+            "boundary_errors": err["boundary_error"],
+            "wrong_types": err["wrong_type"],
+            "missed": err["missed"],
+            "spurious": err["spurious"],
+        })
+
+    print(f"\n{'='*70}")
+    print(f"SUMMARY (dev set, layer='{args.layer}')")
+    print(f"{'='*70}")
+    print(f"{'model':14}{'Exact P':>9}{'Exact R':>9}{'Exact F1':>10}{'Relax F1':>10}{'Tok F1':>9}{'Train s':>9}")
+    for r in results:
+        print(
+            f"{r['name']:14}{r['exact_p']:>9.3f}{r['exact_r']:>9.3f}{r['exact_f1']:>10.3f}"
+            f"{r['relaxed_f1']:>10.3f}{r['token_macro_f1']:>9.3f}{r['train_time']:>9.1f}"
+        )
+
+
+if __name__ == "__main__":
+    main()
