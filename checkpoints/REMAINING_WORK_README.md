@@ -1,6 +1,6 @@
 # NLP for Cyber Threat Intelligence Extraction - Status Map and Remaining Work
 
-Last synced: 2026-10-29
+Last synced: 2026-11-14
 
 **Project goal (unchanged):** an NLP system that automatically extracts **cyber threats, attack techniques, vulnerabilities, affected systems and indicators of compromise (IOCs)** from security reports and threat-intelligence feeds.
 

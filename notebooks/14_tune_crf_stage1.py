@@ -123,6 +123,7 @@ def train_and_eval_crf(
         "threat_actor_f1": pl.get("THREAT_ACTOR", {}).get("f1", 0.0),
         "malware_tool_f1": pl.get("MALWARE_TOOL", {}).get("f1", 0.0),
         "infra_f1": pl.get("INFRASTRUCTURE", {}).get("f1", 0.0),
+        "action_f1": pl.get("ACTION", {}).get("f1", 0.0),
     }
 
 
@@ -170,7 +171,7 @@ def main():
         "draw", "algorithm", "c1", "c2", "min_freq", "all_possible_transitions",
         "max_iterations", "actual_iterations", "converged", "fit_time_s",
         "all_dev_exact_f1", "all_dev_relaxed_f1", "all_dev_token_macro_f1",
-        "rel_dev_exact_f1", "threat_actor_f1", "malware_tool_f1", "infra_f1"
+        "rel_dev_exact_f1", "threat_actor_f1", "malware_tool_f1", "infra_f1", "action_f1"
     ]
 
     with open(out_csv, "w", newline="", encoding="utf-8") as f:
