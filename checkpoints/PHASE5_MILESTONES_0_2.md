@@ -1,7 +1,7 @@
-# Checkpoint: Phase 5 (Milestones M0, M1, M2 Complete)
+# Checkpoint: Phase 5 (Milestones M0, M1, M2, M3 Complete)
 
 **Date**: 2026-11-14  
-**Status**: Milestones M0, M1, and M2 completed and verified.
+**Status**: Milestones M0, M1, M2, and M3 completed and verified.
 
 ---
 
@@ -49,9 +49,25 @@
 
 ---
 
-## 3. Next Step: Milestone 3 (CRF Tuning)
-1. Feature extraction caching via `joblib`.
-2. Stage 1: Coarse random search on regularization (`c1`, `c2`), `feature.minfreq`, and training algorithms (`lbfgs`, `l2sgd`, `ap`, `pa`, `arow`).
-3. Stage 2: Top configs evaluated with 5-fold report-grouped CV.
-4. Stage 3: Feature-group ablation.
-5. Stage 4: New feature exploration (document consistency, two-pass predictions, word clusters).
+## 3. Milestone 3: CRF Tuning Completed
+
+### Summary of Stages
+1. **Feature Extraction Caching**: Created `src/cti/models/feature_cache.py` using `joblib` disk compression, pre-extracting all 9,873 sentences in 14s and loading in <0.2s.
+2. **Stage 1 (Coarse Random Search)**: 30 draws across `lbfgs`, `l2sgd`, `ap`, `pa`, `arow` (`results/crf_tuning/stage1_coarse_search_entities.csv`). Found that stronger L1 penalty ($c_1 \ge 1.8$) and frequency pruning (`min_freq` $\ge 3$) eliminated noisy features and produced highest validation scores.
+3. **Stage 2 (5-Fold Report-Grouped CV)**: Evaluated top 5 candidates across 80 reports (`results/crf_tuning/stage2_cv_top5_entities.csv`). Champion configuration:
+   - `algorithm='lbfgs'`, $c_1=1.843$, $c_2=0.137$, $\text{min\_freq}=3$, $\text{transitions}=\text{True}$, $\text{max\_iterations}=100$.
+   - **CV Exact F1: 0.219 ± 0.036**, Relaxed F1: **0.310 ± 0.034**, Token Macro: **0.449 ± 0.025**.
+4. **Stage 3 (Feature Ablation)**: 5-fold CV across 9 conditions (`results/crf_tuning/stage3_ablation_entities.csv`):
+   - Curated Gazetteer: $\Delta = -0.0135 \rightarrow$ **Essential (KEEP)**
+   - Orthography (shapes, casing, digits): $\Delta = -0.0114 \rightarrow$ **Essential (KEEP)**
+   - Subword Affixes (prefixes/suffixes 1-4): $\Delta = -0.0102 \rightarrow$ **Essential (KEEP)**
+   - Window size: $\pm 2$ is optimal ($\Delta = -0.0070$ for $w=1$; $\Delta = -0.0045$ for $w=3$).
+5. **Stage 4 (New Features)**: Evaluated document consistency and 50 unsupervised KMeans word clusters (`results/crf_tuning/stage4_new_features_entities.csv`). Unconstrained document-level frequency features over-weighted common non-entity terms and were rejected ($\Delta = -0.0064$).
+
+---
+
+## 4. Next Milestone: M4 (MEMM & Token LogReg Tuning)
+1. Vectorizer parameter tuning (`sublinear_tf`, `ngram_range`, `min_df`).
+2. LogReg regularization ($C$, class weights, solver).
+3. Viterbi decoding implementation for MEMM to replace slow greedy token-by-token decoding.
+4. Gold history training mismatch remediation.

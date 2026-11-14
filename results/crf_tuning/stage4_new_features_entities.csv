@@ -1,0 +1,5 @@
+condition,cv_exact_f1_mean,cv_exact_f1_std,delta_exact_f1,cv_relaxed_f1_mean,cv_relaxed_f1_std,cv_token_f1_mean,cv_token_f1_std,cv_diag_rel_f1_mean,cv_diag_rel_f1_std,decision,elapsed_s
+baseline,0.2192,0.0303,0.0,0.311,0.0276,0.4461,0.0212,0.3009,0.0397,BASELINE,240.9
++doc_consistency,0.2127,0.0317,-0.0064,0.3055,0.0296,0.4414,0.0186,0.2895,0.0445,REJECT (Hurts performance),277.5
++word_clusters,0.2162,0.0322,-0.0029,0.3062,0.0309,0.4445,0.0193,0.2967,0.0447,NEUTRAL (Within noise),235.6
++doc_and_clusters,0.2163,0.0281,-0.0029,0.3046,0.0239,0.4451,0.0192,0.2965,0.0398,NEUTRAL (Within noise),284.9

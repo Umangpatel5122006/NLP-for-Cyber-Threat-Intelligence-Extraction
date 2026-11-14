@@ -139,15 +139,29 @@ The project has completed the hygiene, leakage audit, and evaluation harness mil
    - Documented protocol in `docs/paper_protocol.md` and authored `docs/learning/M2_evaluation_harness.md`.
    - Produced baseline evaluation reports: `results/crf_baseline_m2_crf_tagger_entities.csv` and `.md`.
 
-## 10. Milestone 3: CRF Tuning (In Progress)
+## 10. Milestone 3: CRF Tuning (Completed for Entities Layer)
 
-With the evaluation harness and leakage-free dataset locked, Milestone 3 executes a 4-stage systematic tuning workflow:
+With the evaluation harness and leakage-free dataset locked, Milestone 3 executed a 4-stage systematic tuning workflow:
 1. **Feature extraction caching**: Built `src/cti/models/feature_cache.py` using `joblib` disk caching, slashing feature computation time from minutes to milliseconds.
 2. **Feature ablation and model extension**: Extended `_sentence_features` and `CRFTagger` in `src/cti/models/crf.py` to support granular ablation switches (`window`, `use_ortho`, `use_affixes`, `use_ioc_patterns`, `use_gazetteer`, `use_bigrams`, `use_triggers`, `doc_context`, `word_clusters`) and exposed `algorithm`, `c1`, `c2`, `min_freq`, and `all_possible_transitions`.
-3. **Stage 1 (Coarse Random Search)**: Implemented `notebooks/14_tune_crf_stage1.py` with 30 random draws across 5 optimization algorithms, regularization penalties, and frequency thresholds, with convergence logging.
-4. **Stage 2 (5-Fold Report-Grouped CV)**: Implemented `notebooks/15_tune_crf_stage2_cv.py` across 80 train+dev reports to evaluate top candidate configurations without inter-report leakage.
-5. **Stage 3 (Feature-Group Ablation)**: Implemented `notebooks/16_crf_ablation.py` across 9 distinct feature conditions to measure the marginal utility of each feature family.
-6. **Stage 4 (New Feature Exploration)**: Implemented `notebooks/17_crf_new_features.py` testing document-level entity consistency and 50 unsupervised KMeans word clusters.
-7. **Educational Documentation**: Authored `docs/learning/M3_crf_tuning.md` covering linear-chain CRF theory, sequence modeling vs token classification, the 4-stage tuning rationale, and model swapping via configuration.
+3. **Stage 1 (Coarse Random Search - `results/crf_tuning/stage1_coarse_search_entities.csv`)**: Evaluated 30 parameter draws across 5 optimization algorithms. Key finding: stronger L1 regularization ($c_1 \approx 1.8 - 3.0$) and frequency filtering (`min_freq` $\ge 3$) are essential to prevent severe overfitting on 93k sparse features.
+4. **Stage 2 (5-Fold Report-Grouped CV - `results/crf_tuning/stage2_cv_top5_entities.csv`)**: Evaluated the top 5 candidates across 5 document-grouped folds (80 reports: 70 train + 10 dev). Champion selected:
+   - **Algorithm**: `lbfgs`
+   - **$c_1$**: `1.843`, **$c_2$**: `0.137`
+   - **`min_freq`**: `3`
+   - **`all_possible_transitions`**: `True`
+   - **5-Fold CV Exact F1**: **0.219 ± 0.036** (Relaxed F1: **0.310 ± 0.034**, Token Macro: **0.449 ± 0.025**).
+5. **Stage 3 (Feature Ablation - `results/crf_tuning/stage3_ablation_entities.csv`)**: 5-fold CV across 9 feature conditions proved:
+   - `no_gazetteer`: $\Delta = -0.0135 \rightarrow$ **KEEP (Essential)** ($+1.35\%$ F1 gain).
+   - `no_orthography`: $\Delta = -0.0114 \rightarrow$ **KEEP (Essential)** ($+1.14\%$ F1 gain).
+   - `no_affixes`: $\Delta = -0.0102 \rightarrow$ **KEEP (Essential)** ($+1.02\%$ F1 gain).
+   - `window_1`: $\Delta = -0.0070 \rightarrow$ **KEEP ($w=\pm 2$ is required)**.
+   - `window_3`: $\Delta = -0.0045 \rightarrow$ **REJECT** (slows training by 50% without benefit).
+   - `no_ioc_patterns`: $\Delta = +0.0029 \rightarrow$ **NEUTRAL** (safely managed by dedicated IOC extractor).
+6. **Stage 4 (New Features - `results/crf_tuning/stage4_new_features_entities.csv`)**:
+   - `+doc_consistency`: $\Delta = -0.0064 \rightarrow$ **REJECT** (over-weights common repetitive non-entity words like 'attack', 'system').
+   - `+word_clusters`: $\Delta = -0.0029 \rightarrow$ **NEUTRAL** (unsupervised 50 KMeans clusters).
+7. **Educational Documentation**: Authored `docs/learning/M3_crf_tuning.md` covering linear-chain CRF theory, sequence modeling vs token classification, the 4-stage tuning rationale, empirical results, and model swapping via configuration.
+
 
 

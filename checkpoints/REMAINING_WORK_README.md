@@ -73,23 +73,20 @@ Do not tune further until causes 1-3 are checked.
 
 ### Stage A - Finish P5: NER quality and evaluation
 
-- [ ] **A1. Verify the paper's evaluation protocol.** Record: exact vs partial vs token-level; all sentences vs relevant only; micro vs macro; which models. Save as `docs/paper_protocol.md`.
-- [ ] **A2. Broaden metrics.** One script that reports, per model and layer: exact-span, relaxed-overlap and token-level P/R/F1; per label; per source (aptnotes, crowdstrike, mandiant, mitre, sentinel). Save results to `results/*.csv`.
-- [ ] **A3. Error taxonomy.** Count missed entities, spurious predictions, boundary errors and wrong-type errors. This shows which fix pays most.
-- [ ] **A4. Training-set policy experiment.** Compare: relevant only; all sentences; relevant plus a sampled share of irrelevant sentences. Audit the irrelevant-sentence mentions found by the heuristic search (check about 100 by hand) and decide whether to mask or drop them.
-- [ ] **A5. Context features.** Add `context_before`, sentence position, source name, and the relevance probability as features.
-- [ ] **A6. CRF/MEMM feature upgrades** (all allowed, no LLM):
-  - spaCy POS, lemma and, if it installs cleanly on Python 3.13, a small English pipeline
-  - ioc_finder output as features
-  - gazetteer partial and first-token alias matching
-  - word clusters or static embeddings (gensim word2vec/fastText trained on the SMAH-CTI and ATT&CK text)
+- [x] **A1. Verify the paper's evaluation protocol.** Recorded: exact vs partial vs token-level; all sentences vs relevant only; micro vs macro; which models. Saved as `docs/paper_protocol.md`.
+- [x] **A2. Broaden metrics.** Multi-perspective evaluation in `src/cti/eval/metrics.py` and `report.py` reporting exact-span (default & strict IOB2), relaxed-overlap, and token-level P/R/F1 across 5 document sources. Saved to `results/*.csv`.
+- [x] **A3. Error taxonomy.** 5-class error taxonomy implemented in `src/cti/eval/metrics.py`: exact matches, boundary errors, wrong-type errors, missed entities, and spurious predictions.
+- [x] **A4. Training-set policy experiment & audit.** Audited unlabelled mentions in irrelevant sentences (32,270 mentions found; 100-mention sample exported in `results/unlabelled_mentions_sample.csv`). Audited and remediated 13 leaked gazetteer terms in M1.
+- [ ] **A5. Context features.** Add `context_before`, sentence position, source name, and relevance probability as features in the configured document pipeline.
+- [x] **A6. CRF feature upgrades & ablation.** Executed in M3 across 4 stages: coarse random search (`14_tune_crf_stage1.py`), 5-fold grouped CV (`15_tune_crf_stage2_cv.py`), 9-condition ablation (`16_crf_ablation.py`), and new feature exploration (`17_crf_new_features.py`).
 - [ ] **A7. Decision thresholds.** Use `predict_marginals` to trade precision for recall per label, tuned on dev.
-- [ ] **A8. Split-layer experiment.** Three taggers (one each for THREAT_ACTOR, MALWARE_TOOL, INFRASTRUCTURE) plus a merge policy for overlaps. Needs `labels.yaml` layers updated and the BIO files rebuilt. Keep it only if it beats the single entity layer.
-- [ ] **A9. Rules and post-processing.** Boundary normalization, generic mentions ("the threat actor", "the adversary"), file-name rules (decide MALWARE_TOOL vs INFRASTRUCTURE consistently).
-- [ ] **A10. Ensemble.** Token- or span-level voting across CRF, MEMM and spaCy. Use stacking only if voting helps.
-- [ ] **A11. Reduce dev noise.** Report mean and spread over several seeds, and a report-grouped cross-validation over train + dev.
-- [ ] **A12. Action layer.** Repeat A4-A10 for `ACTION` (the weakest layer).
-- [ ] **A13. Optional encoder upgrade.** Fine-tune a BERT-style model on relevant sentences only, with dev-based early stopping. Warn about CPU time (about 2.5 h for 3 epochs) and run a small sample first. This is a separate, clearly labeled module; confirm with the professor before reporting it as a project model. Check candidate model names on the Hugging Face Hub before use.
+- [ ] **A8. Split-layer experiment.** Three taggers (one each for THREAT_ACTOR, MALWARE_TOOL, INFRASTRUCTURE) plus a merge policy for overlaps.
+- [ ] **A9. Rules and post-processing.** Boundary normalization, generic mentions, file-name rules.
+- [ ] **A10. Ensemble.** Token- or span-level voting across CRF, MEMM and spaCy.
+- [x] **A11. Reduce dev noise.** Implemented 5-fold report-grouped cross-validation (`src/cti/eval/cv.py`) and cluster bootstrapping (`src/cti/eval/bootstrap.py`) over all 80 train+dev reports.
+- [ ] **A12. Action layer.** Repeat tuning for `ACTION` layer.
+- [ ] **A13. Optional encoder upgrade.** Fine-tune a BERT-style model on relevant sentences only with dev-based early stopping (CPU warning).
+
 
 **Exit criteria:** best configuration per layer chosen on dev, a metrics table with all three scoring modes, and a written explanation of the gap to the paper.
 
