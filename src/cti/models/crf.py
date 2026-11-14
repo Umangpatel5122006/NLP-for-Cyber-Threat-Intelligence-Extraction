@@ -237,7 +237,18 @@ def _token_metadata(word):
 # Feature engineering
 # ---------------------------------------------------------------------
 
-def _sentence_features(words):
+def _sentence_features(
+    words,
+    window=2,
+    use_ortho=True,
+    use_affixes=True,
+    use_ioc_patterns=True,
+    use_gazetteer=True,
+    use_bigrams=True,
+    use_triggers=True,
+    doc_context=None,
+    word_clusters=None,
+):
     """
     Convert a tokenized sentence into CRF feature dictionaries.
 
@@ -258,8 +269,8 @@ def _sentence_features(words):
 
     # spaCy is used for token shapes and phrase matching.
     doc = Doc(_NLP.vocab, words=words)
-    shapes = [token.shape_ for token in doc]
-    gaz = _gazetteer_tags(doc)
+    shapes = [token.shape_ for token in doc] if use_ortho else [""] * len(words)
+    gaz = _gazetteer_tags(doc) if use_gazetteer else [dict() for _ in words]
 
     metadata = [
         _token_metadata(word)
@@ -272,68 +283,66 @@ def _sentence_features(words):
     for i, word in enumerate(words):
         current = metadata[i]
 
-        # Keep original feature names for compatibility.
         f = {
             "bias": 1.0,
             "lower": current["lower"],
-            "shape": shapes[i],
-            "suffix3": current["suffix3"],
-            "suffix2": current["suffix2"],
-            "prefix3": current["prefix3"],
-            "is_upper": current["is_upper"],
-            "is_title": current["is_title"],
-            "has_digit": current["has_digit"],
-            "has_hyphen": current["has_hyphen"],
-            "has_dot": current["has_dot"],
-            "looks_hash": current["looks_hash"],
-            "file_ext": current["file_ext"],
-            "trigger": current["trigger"],
             "length": current["length"],
+            "normalized": current["normalized"],
         }
 
-        # Additional lexical and orthographic features.
-        for key in (
-            "normalized",
-            "prefix1",
-            "prefix2",
-            "prefix4",
-            "suffix1",
-            "suffix4",
-            "is_alpha",
-            "is_digit",
-            "is_alnum",
-            "has_slash",
-            "has_backslash",
-            "has_underscore",
-            "has_colon",
-            "has_at",
-            "has_internal_capital",
-            "has_non_ascii",
-        ):
-            f[key] = current[key]
+        if use_ortho:
+            f["shape"] = shapes[i]
+            f["is_upper"] = current["is_upper"]
+            f["is_title"] = current["is_title"]
+            f["has_digit"] = current["has_digit"]
+            f["has_hyphen"] = current["has_hyphen"]
+            f["has_dot"] = current["has_dot"]
+            f["is_alpha"] = current["is_alpha"]
+            f["is_digit"] = current["is_digit"]
+            f["is_alnum"] = current["is_alnum"]
+            f["has_slash"] = current["has_slash"]
+            f["has_backslash"] = current["has_backslash"]
+            f["has_underscore"] = current["has_underscore"]
+            f["has_colon"] = current["has_colon"]
+            f["has_at"] = current["has_at"]
+            f["has_internal_capital"] = current["has_internal_capital"]
+            f["has_non_ascii"] = current["has_non_ascii"]
 
-        # Additional cybersecurity-specific features.
-        for key in (
-            "looks_ipv4",
-            "looks_ipv6",
-            "looks_url",
-            "looks_email",
-            "looks_domain",
-            "looks_cve",
-            "looks_registry",
-            "looks_path",
-            "looks_ioc",
-        ):
-            f[key] = current[key]
+        if use_affixes:
+            f["prefix1"] = current["prefix1"]
+            f["prefix2"] = current["prefix2"]
+            f["prefix3"] = current["prefix3"]
+            f["prefix4"] = current["prefix4"]
+            f["suffix1"] = current["suffix1"]
+            f["suffix2"] = current["suffix2"]
+            f["suffix3"] = current["suffix3"]
+            f["suffix4"] = current["suffix4"]
 
-        # Dictionary clues: only emit when token matches known threat actor, malware, or infrastructure.
-        for label in ("THREAT_ACTOR", "MALWARE_TOOL", "INFRASTRUCTURE"):
-            if label in gaz[i]:
-                f[f"gaz:{label}"] = gaz[i][label]
-            for d in (-1, 1):
-                j = i + d
-                if 0 <= j < n and label in gaz[j]:
-                    f[f"{d}:gaz:{label}"] = gaz[j][label]
+        if use_triggers and current["trigger"]:
+            f["trigger"] = current["trigger"]
+
+        if use_ioc_patterns:
+            f["file_ext"] = current["file_ext"]
+            f["looks_hash"] = current["looks_hash"]
+            f["looks_ipv4"] = current["looks_ipv4"]
+            f["looks_ipv6"] = current["looks_ipv6"]
+            f["looks_url"] = current["looks_url"]
+            f["looks_email"] = current["looks_email"]
+            f["looks_domain"] = current["looks_domain"]
+            f["looks_cve"] = current["looks_cve"]
+            f["looks_registry"] = current["looks_registry"]
+            f["looks_path"] = current["looks_path"]
+            f["looks_ioc"] = current["looks_ioc"]
+
+        # Dictionary clues
+        if use_gazetteer:
+            for label in ("THREAT_ACTOR", "MALWARE_TOOL", "INFRASTRUCTURE"):
+                if label in gaz[i]:
+                    f[f"gaz:{label}"] = gaz[i][label]
+                for d in (-1, 1):
+                    j = i + d
+                    if 0 <= j < n and label in gaz[j]:
+                        f[f"{d}:gaz:{label}"] = gaz[j][label]
 
         # Sentence boundaries
         if i == 0:
@@ -341,41 +350,53 @@ def _sentence_features(words):
         if i == n - 1:
             f["EOS"] = True
 
-        # Context window: two tokens before and after current token.
-        for d in (-2, -1, 1, 2):
-            j = i + d
+        # Context window: tokens before and after current token
+        if window > 0:
+            window_offsets = [d for d in range(-window, window + 1) if d != 0]
+            for d in window_offsets:
+                j = i + d
+                if 0 <= j < n:
+                    neighbor_meta = metadata[j]
+                    f[f"{d}:lower"] = neighbor_meta["lower"]
+                    if use_ortho:
+                        f[f"{d}:shape"] = shapes[j]
+                        f[f"{d}:is_title"] = neighbor_meta["is_title"]
+                        f[f"{d}:is_upper"] = neighbor_meta["is_upper"]
+                        f[f"{d}:has_digit"] = neighbor_meta["has_digit"]
+                    if use_affixes:
+                        f[f"{d}:prefix3"] = neighbor_meta["prefix3"]
+                        f[f"{d}:suffix3"] = neighbor_meta["suffix3"]
+                    if use_triggers and neighbor_meta["trigger"]:
+                        f[f"{d}:trigger"] = neighbor_meta["trigger"]
+                    if use_ioc_patterns:
+                        f[f"{d}:file_ext"] = neighbor_meta["file_ext"]
+                        f[f"{d}:looks_hash"] = neighbor_meta["looks_hash"]
+                        f[f"{d}:looks_ioc"] = neighbor_meta["looks_ioc"]
 
-            if 0 <= j < n:
-                neighbor_meta = metadata[j]
+        # Word bigram features
+        if use_bigrams:
+            if i > 0:
+                f["bigram"] = (
+                    metadata[i - 1]["lower"]
+                    + "|"
+                    + current["lower"]
+                )
+            if i < n - 1:
+                f["+1:bigram"] = (
+                    current["lower"]
+                    + "|"
+                    + metadata[i + 1]["lower"]
+                )
 
-                # Original contextual feature names.
-                f[f"{d}:lower"] = neighbor_meta["lower"]
-                f[f"{d}:shape"] = shapes[j]
-                f[f"{d}:is_title"] = neighbor_meta["is_title"]
-                f[f"{d}:trigger"] = neighbor_meta["trigger"]
+        # Word clusters (Stage 4)
+        if word_clusters and current["lower"] in word_clusters:
+            f["cluster"] = str(word_clusters[current["lower"]])
 
-                # Stronger contextual signals.
-                f[f"{d}:prefix3"] = neighbor_meta["prefix3"]
-                f[f"{d}:suffix3"] = neighbor_meta["suffix3"]
-                f[f"{d}:is_upper"] = neighbor_meta["is_upper"]
-                f[f"{d}:has_digit"] = neighbor_meta["has_digit"]
-                f[f"{d}:file_ext"] = neighbor_meta["file_ext"]
-                f[f"{d}:looks_hash"] = neighbor_meta["looks_hash"]
-                f[f"{d}:looks_ioc"] = neighbor_meta["looks_ioc"]
-
-        # Word bigram features.
-        if i > 0:
-            f["bigram"] = (
-                metadata[i - 1]["lower"]
-                + "|"
-                + current["lower"]
-            )
-        if i < n - 1:
-            f["+1:bigram"] = (
-                current["lower"]
-                + "|"
-                + metadata[i + 1]["lower"]
-            )
+        # Document-level context (Stage 4)
+        if doc_context and current["lower"] in doc_context:
+            f["doc_freq"] = doc_context[current["lower"]].get("freq", 0)
+            if doc_context[current["lower"]].get("seen_earlier"):
+                f["doc_seen_earlier"] = True
 
         features.append(f)
 
@@ -390,29 +411,48 @@ def _sentence_features(words):
 class CRFTagger(BaseTagger):
     name = "crf_tagger"
 
-    def __init__(self, c1=1.0, c2=1.0, max_iterations=200):
+    def __init__(
+        self,
+        algorithm="lbfgs",
+        c1=1.0,
+        c2=1.0,
+        max_iterations=200,
+        min_freq=0,
+        all_possible_transitions=True,
+        feature_config=None,
+        **kwargs,
+    ):
         if c1 < 0 or c2 < 0:
             raise ValueError("c1 and c2 must be non-negative.")
         if max_iterations < 1:
             raise ValueError("max_iterations must be positive.")
-        self.model = sklearn_crfsuite.CRF(
-            algorithm="lbfgs",
-            c1=c1,
-            c2=c2,
-            max_iterations=max_iterations,
-            all_possible_transitions=True,
-        )
+
+        self.algorithm = algorithm
+        self.c1 = c1
+        self.c2 = c2
+        self.max_iterations = max_iterations
+        self.min_freq = min_freq
+        self.all_possible_transitions = all_possible_transitions
+        self.feature_config = feature_config or {}
+
+        crf_kwargs = {
+            "algorithm": algorithm,
+            "max_iterations": max_iterations,
+            "all_possible_transitions": all_possible_transitions,
+            "min_freq": min_freq,
+        }
+        if algorithm == "lbfgs":
+            crf_kwargs["c1"] = c1
+            crf_kwargs["c2"] = c2
+        elif algorithm == "l2sgd":
+            crf_kwargs["c2"] = c2
+
+        self.model = sklearn_crfsuite.CRF(**crf_kwargs)
         self._is_fitted = False
 
-    def fit(self, tokens, tags, dev_tokens=None, dev_tags=None):
+    def fit(self, tokens, tags, dev_tokens=None, dev_tags=None, precomputed_X=None):
         """
-        Train the CRF model.
-
-        tokens: list of tokenized sentences
-        tags:   list of corresponding tag sequences
-
-        dev_tokens and dev_tags are retained for API compatibility.
-        They are not currently used for training or model selection.
+        Train the CRF model. Accepts optional precomputed_X to leverage cached features.
         """
         validate_training_data(tokens, tags)
         if (dev_tokens is None) != (dev_tags is None):
@@ -420,34 +460,46 @@ class CRFTagger(BaseTagger):
         if dev_tokens is not None:
             validate_training_data(dev_tokens, dev_tags)
 
-        nonempty = [
-            (sentence, sentence_tags)
-            for sentence, sentence_tags in zip(tokens, tags)
-            if sentence
-        ]
-        if not nonempty:
-            raise ValueError("Cannot fit the CRF on an empty training set.")
+        if precomputed_X is not None:
+            X_train = precomputed_X
+            y_train = tags
+        else:
+            nonempty = [
+                (sentence, sentence_tags)
+                for sentence, sentence_tags in zip(tokens, tags)
+                if sentence
+            ]
+            if not nonempty:
+                raise ValueError("Cannot fit the CRF on an empty training set.")
 
-        X_train = [_sentence_features(sentence) for sentence, _ in nonempty]
-        y_train = [sentence_tags for _, sentence_tags in nonempty]
+            X_train = [
+                _sentence_features(sentence, **self.feature_config)
+                for sentence, _ in nonempty
+            ]
+            y_train = [sentence_tags for _, sentence_tags in nonempty]
+
         self.model.fit(X_train, y_train)
         self._is_fitted = True
 
-    def predict(self, tokens):
+    def predict(self, tokens, precomputed_X=None):
         """
         Predict tags for tokenized sentences.
-
-        Returns:
-            A list of tag sequences, preserving sentence boundaries.
         """
         validate_token_sequences(tokens)
         if not self._is_fitted:
             raise RuntimeError("CRFTagger must be fitted before calling predict().")
 
+        if precomputed_X is not None:
+            decoded = self.model.predict(precomputed_X)
+            return [repair_bio_sequence(seq) for seq in decoded]
+
         nonempty_indices = [i for i, sentence in enumerate(tokens) if sentence]
         predictions = [[] for _ in tokens]
         if nonempty_indices:
-            X_test = [_sentence_features(tokens[i]) for i in nonempty_indices]
+            X_test = [
+                _sentence_features(tokens[i], **self.feature_config)
+                for i in nonempty_indices
+            ]
             decoded = self.model.predict(X_test)
             for index, sequence in zip(nonempty_indices, decoded):
                 predictions[index] = repair_bio_sequence(sequence)

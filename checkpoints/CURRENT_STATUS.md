@@ -139,12 +139,15 @@ The project has completed the hygiene, leakage audit, and evaluation harness mil
    - Documented protocol in `docs/paper_protocol.md` and authored `docs/learning/M2_evaluation_harness.md`.
    - Produced baseline evaluation reports: `results/crf_baseline_m2_crf_tagger_entities.csv` and `.md`.
 
-## 10. Next Milestone: M3 (CRF Tuning)
+## 10. Milestone 3: CRF Tuning (In Progress)
 
-With the evaluation harness and leakage-free dataset locked, the immediate next focus is Milestone 3:
-1. Feature extraction caching via `joblib`.
-2. Stage 1: Coarse random search on regularization (`c1`, `c2`), `feature.minfreq`, and training algorithms (`lbfgs`, `l2sgd`, `ap`, `pa`, `arow`).
-3. Stage 2: Top configs evaluated with 5-fold report-grouped CV.
-4. Stage 3: Feature-group ablation (orthographic, affixes, IOC patterns, gazetteer, windows, bigrams, trigger words).
-5. Stage 4: New feature exploration (document consistency, two-pass predictions, word clusters).
+With the evaluation harness and leakage-free dataset locked, Milestone 3 executes a 4-stage systematic tuning workflow:
+1. **Feature extraction caching**: Built `src/cti/models/feature_cache.py` using `joblib` disk caching, slashing feature computation time from minutes to milliseconds.
+2. **Feature ablation and model extension**: Extended `_sentence_features` and `CRFTagger` in `src/cti/models/crf.py` to support granular ablation switches (`window`, `use_ortho`, `use_affixes`, `use_ioc_patterns`, `use_gazetteer`, `use_bigrams`, `use_triggers`, `doc_context`, `word_clusters`) and exposed `algorithm`, `c1`, `c2`, `min_freq`, and `all_possible_transitions`.
+3. **Stage 1 (Coarse Random Search)**: Implemented `notebooks/14_tune_crf_stage1.py` with 30 random draws across 5 optimization algorithms, regularization penalties, and frequency thresholds, with convergence logging.
+4. **Stage 2 (5-Fold Report-Grouped CV)**: Implemented `notebooks/15_tune_crf_stage2_cv.py` across 80 train+dev reports to evaluate top candidate configurations without inter-report leakage.
+5. **Stage 3 (Feature-Group Ablation)**: Implemented `notebooks/16_crf_ablation.py` across 9 distinct feature conditions to measure the marginal utility of each feature family.
+6. **Stage 4 (New Feature Exploration)**: Implemented `notebooks/17_crf_new_features.py` testing document-level entity consistency and 50 unsupervised KMeans word clusters.
+7. **Educational Documentation**: Authored `docs/learning/M3_crf_tuning.md` covering linear-chain CRF theory, sequence modeling vs token classification, the 4-stage tuning rationale, and model swapping via configuration.
+
 
