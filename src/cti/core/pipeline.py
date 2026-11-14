@@ -14,7 +14,10 @@ from cti.core.registry import create
 
 
 def load_all_modules():
-    """Import every file in these packages so modules sign up in the registry."""
+    """Explicitly import all modules, including optional neural experiments.
+
+    Configured document pipelines use lazy built-in registration instead.
+    """
     for pkg_name in ["cti.preprocessing", "cti.extractors", "cti.models"]:
         pkg = importlib.import_module(pkg_name)
         for m in pkgutil.iter_modules(pkg.__path__):
@@ -27,7 +30,6 @@ class Pipeline:
 
     @classmethod
     def from_config(cls, path: str):
-        load_all_modules()     # 1. roll call, everyone signs up
         with open(path, encoding="utf-8") as f:
             cfg = yaml.safe_load(f)    # 2. read the plan  , contain like this {'pipeline': list[{'module': 'dummy', 'params': {}}]}
         modules = [

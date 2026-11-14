@@ -4,6 +4,43 @@ An NLP-powered system that extracts cyber threats, attack techniques, vulnerabil
 
 ---
 
+## Setup and Baseline Checks
+
+The core dependency snapshot targets **Windows x64 with Python 3.11**. Run
+these commands from the repository root; activating the environment is optional:
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-lock.txt
+.\.venv\Scripts\python.exe -m pip install --no-build-isolation -e .
+.\.venv\Scripts\python.exe -m pip check
+
+# Configured preprocessing + IOC pipeline
+.\.venv\Scripts\python.exe -X utf8 -m unittest discover -s tests -p test_pipeline.py -v
+
+# Full suite, including classical NER and evaluation tests
+.\.venv\Scripts\python.exe -X utf8 -m unittest discover -s tests -v
+```
+
+`requirements.txt` contains the direct core dependencies;
+`requirements-lock.txt` records their resolved dependencies and build tools.
+`pyproject.toml` reads the requirements files for package installation.
+The configured document pipeline imports its selected built-in modules on demand.
+Additional custom modules can register themselves before the pipeline is built.
+
+Neural experiments are optional. Their two unit tests skip when the required
+libraries are absent. To install those experiments separately, use
+`.\.venv\Scripts\python.exe -m pip install -e ".[neural]"`.
+Split-lock tests use synthetic data instead of loading held-out test annotations.
+
+**Current validation:** dependency compatibility and both pipeline tests passed.
+The full suite could not complete because Windows Application Control blocked
+native extensions used by spaCy and pandas. This is recorded in
+`results/environment_validation.txt` and
+`checkpoints/ENVIRONMENT_SETUP.md`; no new NER benchmark scores are claimed.
+
+---
+
 ## Architecture & Pipeline
 
 The pipeline follows a modular, plug-in architecture configured via `configs/config.yaml`:
@@ -55,14 +92,14 @@ of generalization. The test split was not used.
 Run the full comparison from the repository root:
 
 ```powershell
-.\venv\Scripts\python.exe notebooks\12_relevant_only.py
+.\.venv\Scripts\python.exe notebooks\12_relevant_only.py
 ```
 
 Choose a layer or model subset without editing the script:
 
 ```powershell
-.\venv\Scripts\python.exe notebooks\12_relevant_only.py --layer action
-.\venv\Scripts\python.exe notebooks\12_relevant_only.py --models crf_tagger,memm_tagger
+.\.venv\Scripts\python.exe notebooks\12_relevant_only.py --layer action
+.\.venv\Scripts\python.exe notebooks\12_relevant_only.py --models crf_tagger,memm_tagger
 ```
 
 The BERT-style encoder remains an optional, separate upgrade; it is excluded
@@ -115,8 +152,8 @@ Whether F1 improves is an experiment, not a guarantee.
 To run any existing comparison:
 
 ```powershell
-.\venv\Scripts\python.exe notebooks\12_relevant_only.py --layer entities
-.\venv\Scripts\python.exe notebooks\12_relevant_only.py --layer action
+.\.venv\Scripts\python.exe notebooks\12_relevant_only.py --layer entities
+.\.venv\Scripts\python.exe notebooks\12_relevant_only.py --layer action
 ```
 
 ---
