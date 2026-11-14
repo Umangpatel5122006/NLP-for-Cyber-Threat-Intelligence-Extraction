@@ -1,9 +1,16 @@
 import json
+import os
 from pathlib import Path
 
 
 def load_bio(layer, split, lang="en", root="data/processed"):
+    if split == "test" and os.environ.get("CTI_ALLOW_TEST") != "1":
+        raise PermissionError(
+            "Access to the test split is locked. "
+            "Set environment variable CTI_ALLOW_TEST=1 to allow loading test data."
+        )
     with open(Path(root) / f"bio_{lang}_{layer}_{split}.json", encoding="utf-8") as f:
+
         records = json.load(f)
     if not isinstance(records, list):
         raise ValueError("BIO dataset must contain a list of sentence records.")

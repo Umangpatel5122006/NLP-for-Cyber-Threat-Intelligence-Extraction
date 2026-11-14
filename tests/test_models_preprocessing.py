@@ -1,11 +1,14 @@
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
 
 from cti.core.base import Document
 from cti.core.bio import to_bio
+from cti.core.dataset import load_smah
 from cti.models.base import validate_training_data
+
 from cti.models.bert_ner import _align_word_labels
 from cti.models.bilstm_crf import BiLSTMCRF
 from cti.models.crf import CRFTagger
@@ -137,6 +140,43 @@ class PreprocessingTests(unittest.TestCase):
             {"ThreatActor": "THREAT_ACTOR"},
         )
         self.assertEqual(bio[0][3], "B-THREAT_ACTOR")
+
+
+class SplitLockTests(unittest.TestCase):
+    def setUp(self):
+        self.orig_env = os.environ.get("CTI_ALLOW_TEST")
+        if "CTI_ALLOW_TEST" in os.environ:
+            del os.environ["CTI_ALLOW_TEST"]
+
+    def tearDown(self):
+        if self.orig_env is not None:
+            os.environ["CTI_ALLOW_TEST"] = self.orig_env
+        elif "CTI_ALLOW_TEST" in os.environ:
+            del os.environ["CTI_ALLOW_TEST"]
+
+    def test_load_bio_refuses_test_without_env_var(self):
+        with self.assertRaises(PermissionError):
+            load_bio("entities", "test")
+
+    def test_load_bio_allows_test_with_env_var(self):
+        os.environ["CTI_ALLOW_TEST"] = "1"
+        tokens, tags = load_bio("entities", "test")
+        self.assertGreater(len(tokens), 0)
+
+    def test_load_smah_refuses_test_split_without_env_var(self):
+        with self.assertRaises(PermissionError):
+            load_smah(splits=["test"])
+
+    def test_load_smah_default_omits_test_without_env_var(self):
+        parts = load_smah()
+        self.assertIn("train", parts)
+        self.assertIn("dev", parts)
+        self.assertNotIn("test", parts)
+
+    def test_load_smah_allows_test_with_env_var(self):
+        os.environ["CTI_ALLOW_TEST"] = "1"
+        parts = load_smah()
+        self.assertIn("test", parts)
 
 
 if __name__ == "__main__":
