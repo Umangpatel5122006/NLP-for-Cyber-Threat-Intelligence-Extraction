@@ -1,0 +1,5 @@
+condition,cv_exact_f1_mean,cv_exact_f1_std,delta_exact_f1,cv_relaxed_f1_mean,cv_relaxed_f1_std,cv_token_f1_mean,cv_token_f1_std,cv_diag_rel_f1_mean,cv_diag_rel_f1_std,decision,elapsed_s
+all_features,0.2192,0.0303,0.0,0.311,0.0276,0.4461,0.0212,0.3009,0.0397,BASELINE,321.6
+no_orthography,0.2077,0.0326,-0.0114,0.3018,0.0324,0.4436,0.0257,0.2804,0.045,"KEEP (Essential, dropping hurts)",212.1
+no_affixes,0.209,0.0372,-0.0102,0.2929,0.0378,0.4423,0.0313,0.277,0.0501,"KEEP (Essential, dropping hurts)",230.7
+no_ioc_patterns,0.2221,0.0273,0.0029,0.3171,0.0282,0.4487,0.0233,0.2969,0.0375,NEUTRAL (Within noise),252.4

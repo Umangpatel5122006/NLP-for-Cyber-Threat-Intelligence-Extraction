@@ -170,7 +170,7 @@ def main():
     baseline_exact_mean = None
 
     for cond_name, feat_overrides in ABLATION_CONDITIONS:
-        print(f"\nCondition: {cond_name} (overrides={feat_overrides})...")
+        print(f"\nCondition: {cond_name} (overrides={feat_overrides})...", flush=True)
         t0 = time.perf_counter()
 
         cache_file = CACHE_DIR / f"feats_ablation_{cond_name}_{args.layer}.joblib"
@@ -195,11 +195,15 @@ def main():
             y_val = [all_y[i] for i in val_idx]
             val_rel = [all_rel[i] for i in val_idx]
 
+            t_fold = time.perf_counter()
             f_res = run_fold(model_config, X_tr, y_tr, X_val, y_val, val_rel)
+            dt_fold = time.perf_counter() - t_fold
+
             fold_exact_f1s.append(f_res["headline_exact_f1"])
             fold_relaxed_f1s.append(f_res["headline_relaxed_f1"])
             fold_token_f1s.append(f_res["headline_token_f1"])
             fold_diag_f1s.append(f_res["diagnostic_exact_f1"])
+            print(f"  Fold {fold_idx}/5: Exact={f_res['headline_exact_f1']:.3f} Relax={f_res['headline_relaxed_f1']:.3f} ({dt_fold:.1f}s)", flush=True)
 
         elapsed = time.perf_counter() - t0
         mean_exact = float(np.mean(fold_exact_f1s))
@@ -244,7 +248,8 @@ def main():
         }
         results.append(row)
         print(
-            f"  Exact F1: {mean_exact:.4f} +/- {std_exact:.4f} (delta={delta:+.4f}) -> {decision} [{elapsed:.1f}s]"
+            f"  Exact F1: {mean_exact:.4f} +/- {std_exact:.4f} (delta={delta:+.4f}) -> {decision} [{elapsed:.1f}s]",
+            flush=True,
         )
 
         # Write intermediate CSV
