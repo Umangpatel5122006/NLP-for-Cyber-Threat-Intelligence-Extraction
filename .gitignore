@@ -17,8 +17,7 @@ dist/
 *.egg-info/
 .eggs/
 
-# Models & Weights (root directory only)
-/models/
+
 
 # Results & Intermediate temporary outputs
 results/*.tmp
