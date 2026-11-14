@@ -33,11 +33,18 @@ libraries are absent. To install those experiments separately, use
 `.\.venv\Scripts\python.exe -m pip install -e ".[neural]"`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** dependency compatibility and both pipeline tests passed.
-The full suite could not complete because Windows Application Control blocked
-native extensions used by spaCy and pandas. This is recorded in
-`results/environment_validation.txt` and
-`checkpoints/ENVIRONMENT_SETUP.md`; no new NER benchmark scores are claimed.
+**Current validation:** dependency compatibility, 26 evaluation/report tests,
+and both pipeline tests passed. Full discovery still has three spaCy-related
+module import errors caused by Windows Application Control. The latest output
+is in `results/evaluation_validation.txt`; the earlier environment checkpoint is
+in `checkpoints/ENVIRONMENT_SETUP.md`. No new NER benchmark scores are claimed.
+
+**Evaluation correction:** new reports use metrics version 2, which excludes
+`O` from token scores and uses one-to-one relaxed-span matching. Token and
+relaxed figures in the historical tables below need recalculation; they have
+not been replaced with new benchmark results. See
+[the evaluation checkpoint](checkpoints/EVALUATION_FIXES.md) and
+[the scoring protocol](docs/paper_protocol.md).
 
 ---
 
@@ -235,7 +242,7 @@ Tested across 9 conditions using 5-fold report-grouped cross-validation:
 ## Running Evaluation and Tests
 
 ```bash
-# Run unit test suite (26 tests)
+# Run unit test suite
 python -m unittest discover -s tests
 
 # Multi-perspective baseline evaluation (exact, relaxed, token, 5-class errors)

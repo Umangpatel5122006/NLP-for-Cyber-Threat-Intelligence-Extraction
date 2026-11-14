@@ -1,4 +1,8 @@
+import csv
+import itertools
+import tempfile
 import unittest
+from pathlib import Path
 
 from cti.eval.metrics import (
     classify_errors,
@@ -101,6 +105,137 @@ class EvalMetricsTests(unittest.TestCase):
         self.assertEqual(tokens["per_label"]["ACTOR"]["recall"], 0.5)
         self.assertAlmostEqual(tokens["per_label"]["ACTOR"]["f1"], 0.6667, places=3)
 
+    def test_missing_all_entities_gets_no_credit_for_background_tokens(self):
+        metrics = token_level_metrics(
+            [["B-ACTOR", "O", "O", "O"]], [["O", "O", "O", "O"]]
+        )
+        self.assertNotIn("O", metrics["per_label"])
+        self.assertEqual(metrics["micro_f1"], 0.0)
+        self.assertEqual(metrics["macro_f1"], 0.0)
+
+    def test_entity_prediction_on_background_is_a_false_positive(self):
+        metrics = token_level_metrics(
+            [["B-ACTOR", "O"]], [["B-ACTOR", "B-ACTOR"]]
+        )
+        self.assertEqual(metrics["micro_precision"], 0.5)
+        self.assertEqual(metrics["micro_recall"], 1.0)
+        self.assertAlmostEqual(metrics["micro_f1"], 2 / 3, places=4)
+
+    def test_predicted_only_entity_types_are_scored(self):
+        metrics = token_level_metrics([["O"]], [["B-TOOL"]])
+        self.assertEqual(set(metrics["per_label"]), {"TOOL"})
+        self.assertEqual(metrics["per_label"]["TOOL"]["support"], 0)
+        self.assertEqual(metrics["micro_f1"], 0.0)
+
+    def test_empty_token_scores_have_the_same_schema(self):
+        keys = set(token_level_metrics([["B-ACTOR"]], [["B-ACTOR"]]))
+        for gold, predictions in (([], []), ([[]], [[]]), ([["O"]], [["O"]])):
+            with self.subTest(gold=gold):
+                metrics = token_level_metrics(gold, predictions)
+                self.assertEqual(set(metrics), keys)
+                self.assertEqual(metrics["per_label"], {})
+                for key in keys - {"per_label"}:
+                    self.assertEqual(metrics[key], 0.0)
+
+    def test_one_prediction_cannot_recall_two_gold_spans(self):
+        metrics = relaxed_span_metrics(
+            [["B-ACTOR", "O", "B-ACTOR"]],
+            [["B-ACTOR", "I-ACTOR", "I-ACTOR"]],
+        )
+        self.assertEqual(metrics["precision"], 1.0)
+        self.assertEqual(metrics["recall"], 0.5)
+        self.assertAlmostEqual(metrics["f1"], 2 / 3, places=4)
+        self.assertEqual(metrics["per_label"]["ACTOR"]["true_positives"], 1)
+
+    def test_two_predictions_cannot_both_match_one_gold_span(self):
+        metrics = relaxed_span_metrics(
+            [["B-ACTOR", "I-ACTOR", "I-ACTOR"]],
+            [["B-ACTOR", "O", "B-ACTOR"]],
+        )
+        self.assertEqual(metrics["precision"], 0.5)
+        self.assertEqual(metrics["recall"], 1.0)
+        self.assertAlmostEqual(metrics["f1"], 2 / 3, places=4)
+
+    def test_relaxed_matching_recovers_multiple_distinct_pairs(self):
+        metrics = relaxed_span_metrics(
+            [["B-ACTOR", "I-ACTOR", "I-ACTOR", "B-ACTOR"]],
+            [["B-ACTOR", "O", "B-ACTOR", "I-ACTOR"]],
+        )
+        self.assertEqual(metrics["f1"], 1.0)
+        self.assertEqual(metrics["per_label"]["ACTOR"]["true_positives"], 2)
+
+    def test_relaxed_matching_does_not_cross_sentence_boundaries(self):
+        metrics = relaxed_span_metrics(
+            [["B-ACTOR"], ["O"]], [["O"], ["B-ACTOR"]]
+        )
+        self.assertEqual(metrics["f1"], 0.0)
+
+    def test_relaxed_matching_agrees_with_exhaustive_pairing(self):
+        sequences = []
+        for tags in itertools.product(("O", "B-ACTOR", "I-ACTOR"), repeat=4):
+            if all(
+                tag != "I-ACTOR" or (index > 0 and tags[index - 1] != "O")
+                for index, tag in enumerate(tags)
+            ):
+                sequences.append(list(tags))
+
+        def best_pairing(gold_spans, predicted_spans, index=0, used=frozenset()):
+            if index == len(gold_spans):
+                return 0
+            best = best_pairing(gold_spans, predicted_spans, index + 1, used)
+            _, start, end = gold_spans[index]
+            for p_index, (_, p_start, p_end) in enumerate(predicted_spans):
+                if p_index not in used and max(start, p_start) < min(end, p_end):
+                    best = max(best, 1 + best_pairing(
+                        gold_spans, predicted_spans, index + 1, used | {p_index}
+                    ))
+            return best
+
+        for gold in sequences:
+            for predictions in sequences:
+                expected = best_pairing(extract_spans(gold), extract_spans(predictions))
+                metrics = relaxed_span_metrics([gold], [predictions])
+                actual = metrics["per_label"].get("ACTOR", {}).get("true_positives", 0)
+                self.assertEqual(actual, expected, (gold, predictions))
+
+    def test_strict_per_label_counts_follow_strict_iob2(self):
+        gold, predictions = [["B-ACTOR", "O"]], [["I-ACTOR", "O"]]
+        default = exact_span_metrics(gold, predictions)
+        strict = exact_span_metrics(gold, predictions, mode="strict")
+        self.assertEqual(default["f1"], 1.0)
+        self.assertEqual(strict["f1"], 0.0)
+        self.assertEqual(strict["per_label"]["ACTOR"]["predicted"], 0)
+        self.assertEqual(strict["per_label"]["ACTOR"]["true_positives"], 0)
+        self.assertEqual(strict["per_label"]["ACTOR"]["f1"], 0.0)
+
+    def test_exact_scoring_rejects_unknown_mode(self):
+        with self.assertRaisesRegex(ValueError, "mode"):
+            exact_span_metrics([["O"]], [["O"]], mode="typo")
+
+    def test_metrics_reject_misaligned_sequences(self):
+        functions = (
+            exact_span_metrics, relaxed_span_metrics, token_level_metrics,
+            classify_errors, evaluate_predictions,
+        )
+        cases = (
+            ([["O"]], []),
+            ([["B-ACTOR"], ["O"]], [["B-ACTOR", "O"], []]),
+        )
+        for function in functions:
+            for gold, predictions in cases:
+                with self.subTest(function=function.__name__, gold=gold):
+                    with self.assertRaises(ValueError):
+                        function(gold, predictions)
+
+    def test_empty_evaluation_bundle_has_zero_scores(self):
+        for gold in ([], [[]], [["O"]]):
+            with self.subTest(gold=gold):
+                bundle = evaluate_predictions(gold, gold)
+                for key in ("exact_default", "exact_strict", "relaxed"):
+                    self.assertEqual(bundle[key]["f1"], 0.0)
+                self.assertEqual(bundle["token_level"]["macro_f1"], 0.0)
+                self.assertEqual(bundle["error_taxonomy"]["total_gold"], 0)
+
     def test_evaluate_predictions_bundle(self):
         gold = [["B-ACTOR", "O"], ["O", "B-TOOL"]]
         pred = [["B-ACTOR", "O"], ["O", "O"]]
@@ -113,6 +248,59 @@ class EvalMetricsTests(unittest.TestCase):
         self.assertIn("error_taxonomy", bundle)
         self.assertEqual(bundle["error_taxonomy"]["counts"]["exact_match"], 1)
         self.assertEqual(bundle["error_taxonomy"]["counts"]["missed"], 1)
+
+
+class EvaluationReportTests(unittest.TestCase):
+    def make_summary(self, **overrides):
+        from cti.eval.report import generate_evaluation_summary
+
+        arguments = {
+            "model_name": "synthetic",
+            "layer": "entities",
+            "gold": [["B-ACTOR", "O"]],
+            "predictions": [["O", "O"]],
+            "doc_ids": ["synthetic-report"],
+            "sources": ["synthetic-source"],
+            "relevant_mask": [True],
+        }
+        arguments.update(overrides)
+        return generate_evaluation_summary(**arguments)
+
+    def test_report_exports_corrected_scores_and_metrics_version(self):
+        from cti.eval.report import export_report_csv, export_report_markdown
+
+        summary = self.make_summary()
+        self.assertEqual(summary["metrics_version"], "2")
+        self.assertEqual(summary["per_source"]["synthetic-source"]["token_macro_f1"], 0.0)
+        with tempfile.TemporaryDirectory() as directory:
+            csv_path = Path(directory) / "report.csv"
+            md_path = Path(directory) / "report.md"
+            export_report_csv(summary, csv_path)
+            export_report_markdown(summary, md_path)
+            with csv_path.open(encoding="utf-8", newline="") as file:
+                rows = list(csv.DictReader(file))
+            self.assertTrue(rows)
+            self.assertTrue(all(row["metrics_version"] == "2" for row in rows))
+            token = next(row for row in rows if row["metric_mode"] == "token_macro")
+            self.assertEqual(float(token["f1"]), 0.0)
+            self.assertIn("Metrics version", md_path.read_text(encoding="utf-8"))
+
+    def test_reports_handle_a_diagnostic_subset_without_entities(self):
+        from cti.eval.report import export_report_csv, export_report_markdown
+
+        summary = self.make_summary(gold=[["O", "O"]], relevant_mask=[False])
+        diagnostic = summary["diagnostic_relevant_only"]
+        self.assertEqual(diagnostic["relevant_sentences"], 0)
+        self.assertEqual(diagnostic["evaluation"]["token_level"]["macro_f1"], 0.0)
+        with tempfile.TemporaryDirectory() as directory:
+            export_report_csv(summary, Path(directory) / "report.csv")
+            export_report_markdown(summary, Path(directory) / "report.md")
+
+    def test_report_rejects_truncated_sentence_metadata(self):
+        for override in ({"doc_ids": []}, {"sources": []}, {"relevant_mask": []}):
+            with self.subTest(override=override):
+                with self.assertRaises(ValueError):
+                    self.make_summary(**override)
 
 
 class CVAndBootstrapTests(unittest.TestCase):

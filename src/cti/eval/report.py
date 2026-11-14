@@ -12,7 +12,13 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
-from cti.eval.metrics import evaluate_predictions, exact_span_metrics, relaxed_span_metrics, token_level_metrics
+from cti.eval.metrics import (
+    METRICS_VERSION,
+    evaluate_predictions,
+    exact_span_metrics,
+    relaxed_span_metrics,
+    token_level_metrics,
+)
 
 
 def per_source_breakdown(
@@ -63,11 +69,16 @@ def generate_evaluation_summary(
     relevant_mask: Optional[List[bool]] = None,
 ) -> Dict[str, Any]:
     """Compile a complete evaluation report bundle with headline and diagnostic metrics."""
+    if not (len(gold) == len(predictions) == len(doc_ids) == len(sources)):
+        raise ValueError("gold, predictions, doc_ids, and sources must have identical lengths.")
+    if relevant_mask is not None and len(relevant_mask) != len(gold):
+        raise ValueError("relevant_mask must have one entry per sentence.")
     # 1. Headline (all sentences end-to-end)
     headline_eval = evaluate_predictions(gold, predictions)
     source_results = per_source_breakdown(gold, predictions, sources)
 
     summary = {
+        "metrics_version": METRICS_VERSION,
         "model_name": model_name,
         "layer": layer,
         "total_sentences": len(gold),
@@ -101,6 +112,8 @@ def export_report_markdown(summary: Dict[str, Any], output_path: Path):
 
     lines = [
         f"# Evaluation Report: {m} (Layer: {layer})",
+        "",
+        f"Metrics version: {summary.get('metrics_version', 'legacy/unspecified')}",
         "",
         "## 1. Headline Metrics (All-Sentence End-to-End)",
         f"- **Total Sentences Evaluated**: {summary['total_sentences']}",
@@ -278,5 +291,6 @@ def export_report_csv(summary: Dict[str, Any], output_path: Path):
             "f1": s["exact_f1"],
         })
 
-    df = pd.DataFrame(rows)
+    version = summary.get("metrics_version", "legacy/unspecified")
+    df = pd.DataFrame([{"metrics_version": version, **row} for row in rows])
     df.to_csv(output_path, index=False, encoding="utf-8")

@@ -1,5 +1,9 @@
 # Project progress, in order
 
+Latest checkpoint: [evaluation correctness fixes](EVALUATION_FIXES.md).
+New reports use metrics version 2. Historical token and relaxed-span figures
+below need recalculation; the original experiment records are preserved.
+
 ## 1. Project goal and structure
 
 The project aims to extract threat-related entities, actions, and indicators of compromise (IOCs) from cybersecurity reports. Its core design is modular: components register under names, and a pipeline builds them from configuration so modules can be changed without rewriting the pipeline.

@@ -2,8 +2,8 @@
 
 Supports:
 - Exact-span evaluation via seqeval (both default and strict IOB2 modes)
-- Relaxed span evaluation (span overlap with matching label)
-- Token-level micro and macro F1
+- Relaxed span evaluation (one-to-one overlap with matching label)
+- Token-level micro and macro F1 excluding O
 - Error taxonomy: Exact Match, Boundary Error, Wrong Type, Missed, Spurious
 """
 
@@ -11,21 +11,46 @@ from collections import defaultdict
 from typing import Any, Dict, List, Set, Tuple
 
 from seqeval.metrics import (
-    classification_report as seqeval_classification_report,
     f1_score as seqeval_f1_score,
     precision_score as seqeval_precision_score,
     recall_score as seqeval_recall_score,
 )
 from seqeval.metrics.sequence_labeling import get_entities
-from seqeval.scheme import IOB2
+from seqeval.scheme import Entities, IOB2
 from sklearn.metrics import precision_recall_fscore_support
 
 
-def extract_spans(sequence: List[str]) -> List[Tuple[str, int, int]]:
+METRICS_VERSION = "2"
+
+
+def _validate_alignment(gold, predictions):
+    """Reject missing sentences and token misalignment before any aggregation."""
+    if len(gold) != len(predictions):
+        raise ValueError(
+            f"Sequence count mismatch: {len(gold)} gold vs {len(predictions)} predictions."
+        )
+    for index, (g_seq, p_seq) in enumerate(zip(gold, predictions)):
+        if len(g_seq) != len(p_seq):
+            raise ValueError(
+                f"Sentence {index}: token count mismatch: "
+                f"{len(g_seq)} gold vs {len(p_seq)} predictions."
+            )
+
+
+def extract_spans(
+    sequence: List[str], mode: str = "default"
+) -> List[Tuple[str, int, int]]:
     """Extract entity spans as (label, start_token, end_token) with end exclusive.
     
-    Uses seqeval get_entities to guarantee consistency with exact span scoring.
+    Use the matching seqeval parser for default or strict IOB2 scoring.
     """
+    if mode == "strict":
+        return [
+            (entity.tag, entity.start, entity.end)
+            for entity in Entities([sequence], scheme=IOB2).entities[0]
+        ]
+    if mode != "default":
+        raise ValueError("mode must be 'default' or 'strict'.")
     return [(label, start, end + 1) for label, start, end in get_entities(sequence)]
 
 
@@ -41,10 +66,17 @@ def exact_span_metrics(
         predictions: list of predicted BIO tag sequences
         mode: 'default' for standard seqeval, or 'strict' for strict IOB2
     """
-    if len(gold) != len(predictions):
-        raise ValueError(
-            f"Sequence count mismatch: {len(gold)} gold vs {len(predictions)} predictions."
-        )
+    _validate_alignment(gold, predictions)
+    if mode not in ("default", "strict"):
+        raise ValueError("mode must be 'default' or 'strict'.")
+    if not gold:
+        return {
+            "mode": mode,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "per_label": {},
+        }
 
     kwargs = {}
     if mode == "strict":
@@ -61,8 +93,8 @@ def exact_span_metrics(
 
     all_labels: Set[str] = set()
     for g_seq, p_seq in zip(gold, predictions):
-        g_spans = set(extract_spans(g_seq))
-        p_spans = set(extract_spans(p_seq))
+        g_spans = set(extract_spans(g_seq, mode=mode))
+        p_spans = set(extract_spans(p_seq, mode=mode))
 
         for lbl, _, _ in g_spans:
             gold_by_label[lbl] += 1
@@ -99,63 +131,74 @@ def exact_span_metrics(
     }
 
 
+def _count_overlap_matches(gold_spans, predicted_spans):
+    """Maximum one-to-one overlap count for ordered, disjoint BIO spans.
+
+    Within one label and sentence, spans in either list cannot overlap each
+    other. Matching the earliest overlapping pair therefore leaves the maximum
+    number of possible later pairs. Advancing both pointers consumes each span
+    at most once.
+    """
+    gold_index = predicted_index = matches = 0
+    while gold_index < len(gold_spans) and predicted_index < len(predicted_spans):
+        g_start, g_end = gold_spans[gold_index]
+        p_start, p_end = predicted_spans[predicted_index]
+        if g_end <= p_start:
+            gold_index += 1
+        elif p_end <= g_start:
+            predicted_index += 1
+        else:
+            matches += 1
+            gold_index += 1
+            predicted_index += 1
+    return matches
+
+
 def relaxed_span_metrics(
     gold: List[List[str]],
     predictions: List[List[str]],
 ) -> Dict[str, Any]:
-    """Calculate relaxed-span metrics where spans with matching labels overlap.
-    
-    A predicted span is a true positive if it overlaps at least one gold span of the same label.
-    A gold span is recalled if at least one predicted span of the same label overlaps it.
+    """Score one-to-one, same-label overlaps within each sentence.
+
+    A split or merged prediction cannot claim multiple true positives from one
+    span. The same matched-pair count is used for precision and recall.
     """
-    if len(gold) != len(predictions):
-        raise ValueError("Sequence count mismatch.")
+    _validate_alignment(gold, predictions)
 
     all_labels: Set[str] = set()
     total_gold: Dict[str, int] = defaultdict(int)
     total_pred: Dict[str, int] = defaultdict(int)
-    recalled_gold: Dict[str, int] = defaultdict(int)
-    valid_pred: Dict[str, int] = defaultdict(int)
+    matched: Dict[str, int] = defaultdict(int)
 
     for g_seq, p_seq in zip(gold, predictions):
-        g_spans = extract_spans(g_seq)
-        p_spans = extract_spans(p_seq)
-
-        for lbl, _, _ in g_spans:
+        gold_by_label = defaultdict(list)
+        pred_by_label = defaultdict(list)
+        for lbl, start, end in extract_spans(g_seq):
             total_gold[lbl] += 1
             all_labels.add(lbl)
-        for lbl, _, _ in p_spans:
+            gold_by_label[lbl].append((start, end))
+        for lbl, start, end in extract_spans(p_seq):
             total_pred[lbl] += 1
             all_labels.add(lbl)
+            pred_by_label[lbl].append((start, end))
 
-        # Check gold spans for matching overlapping prediction
-        for g_lbl, g_start, g_end in g_spans:
-            for p_lbl, p_start, p_end in p_spans:
-                if g_lbl == p_lbl and max(g_start, p_start) < min(g_end, p_end):
-                    recalled_gold[g_lbl] += 1
-                    break
-
-        # Check predicted spans for matching overlapping gold
-        for p_lbl, p_start, p_end in p_spans:
-            for g_lbl, g_start, g_end in g_spans:
-                if g_lbl == p_lbl and max(g_start, p_start) < min(g_end, p_end):
-                    valid_pred[p_lbl] += 1
-                    break
+        for lbl in gold_by_label.keys() & pred_by_label.keys():
+            matched[lbl] += _count_overlap_matches(
+                gold_by_label[lbl], pred_by_label[lbl]
+            )
 
     per_label = {}
-    total_tp_p = sum(valid_pred.values())
+    total_tp = sum(matched.values())
     total_pred_cnt = sum(total_pred.values())
-    total_tp_g = sum(recalled_gold.values())
     total_gold_cnt = sum(total_gold.values())
 
     for lbl in sorted(all_labels):
-        tp_p = valid_pred[lbl]
+        tp = matched[lbl]
         pred_cnt = total_pred[lbl]
-        tp_g = recalled_gold[lbl]
         gold_cnt = total_gold[lbl]
 
-        p = tp_p / pred_cnt if pred_cnt > 0 else 0.0
-        r = tp_g / gold_cnt if gold_cnt > 0 else 0.0
+        p = tp / pred_cnt if pred_cnt > 0 else 0.0
+        r = tp / gold_cnt if gold_cnt > 0 else 0.0
         f1 = (2 * p * r / (p + r)) if (p + r) > 0 else 0.0
         per_label[lbl] = {
             "precision": round(p, 4),
@@ -163,10 +206,11 @@ def relaxed_span_metrics(
             "f1": round(f1, 4),
             "support": gold_cnt,
             "predicted": pred_cnt,
+            "true_positives": tp,
         }
 
-    overall_p = total_tp_p / total_pred_cnt if total_pred_cnt > 0 else 0.0
-    overall_r = total_tp_g / total_gold_cnt if total_gold_cnt > 0 else 0.0
+    overall_p = total_tp / total_pred_cnt if total_pred_cnt > 0 else 0.0
+    overall_r = total_tp / total_gold_cnt if total_gold_cnt > 0 else 0.0
     overall_f1 = (2 * overall_p * overall_r / (overall_p + overall_r)) if (overall_p + overall_r) > 0 else 0.0
 
     return {
@@ -181,9 +225,8 @@ def token_level_metrics(
     gold: List[List[str]],
     predictions: List[List[str]],
 ) -> Dict[str, Any]:
-    """Calculate token-level precision, recall, and F1 across entity types."""
-    if len(gold) != len(predictions):
-        raise ValueError("Sequence count mismatch.")
+    """Score entity types excluding O, retaining entity-vs-O errors."""
+    _validate_alignment(gold, predictions)
 
     # Flatten tokens and strip B-/I- prefixes to get raw entity types (or 'O')
     flat_gold = [
@@ -195,13 +238,15 @@ def token_level_metrics(
         for seq in predictions for tag in seq
     ]
 
-    labels = sorted(list(set(flat_gold) | set(flat_pred) - {"O"}))
+    labels = sorted((set(flat_gold) | set(flat_pred)) - {"O"})
     if not labels:
         return {
+            "micro_precision": 0.0,
+            "micro_recall": 0.0,
             "micro_f1": 0.0,
+            "macro_precision": 0.0,
+            "macro_recall": 0.0,
             "macro_f1": 0.0,
-            "precision": 0.0,
-            "recall": 0.0,
             "per_label": {},
         }
 
@@ -246,9 +291,10 @@ def classify_errors(
     - exact_match: same label, identical token boundary
     - boundary_error: same label, overlapping span, non-identical boundary
     - wrong_type: overlapping span, different label
-    - missed: gold span with zero overlapping predicted spans
-    - spurious: predicted span with zero overlapping gold spans
+    - missed: gold span left unmatched after the preceding pairing stages
+    - spurious: prediction left unmatched after the preceding pairing stages
     """
+    _validate_alignment(gold, predictions)
     counts = {
         "exact_match": 0,
         "boundary_error": 0,
