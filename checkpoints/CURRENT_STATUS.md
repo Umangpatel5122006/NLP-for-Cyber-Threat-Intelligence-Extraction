@@ -117,17 +117,34 @@ For the **entities layer**, relevant-only dev F1 ranged from 0.264 for BiLSTM-CR
 
 The relevance classifiers had dev F1 of 0.679 for Logistic Regression and 0.685 for LinearSVC. Applied before the CRF, they modestly improved all-dev F1 over unfiltered CRF output in both layers, but their false negatives limit the two-stage system.
 
-## 9. What remains unfinished
+## 9. Completed Milestones (Phase 5: M0, M1, M2)
 
-The project has working data preparation, preprocessing, IOC extraction, BIO generation, multiple model implementations, and dev-only experiments. Several evaluation or integration tasks remain:
+The project has completed the hygiene, leakage audit, and evaluation harness milestones of Phase 5:
 
-1. **Confirm comparison with the SMAH-CTI paper.** The project notes report the paper’s baseline at roughly 74–81 F1, but the exact scoring and evaluation setup have not yet been verified against the current results.
-2. **Broaden metrics.** The latest benchmark reports exact-span seqeval metrics and per-label reports. A comparable partial-overlap and token-level evaluation, plus metrics by data source, is not yet included in that benchmark.
-3. **Integrate relevance filtering into the app pipeline.** The TF-IDF classifiers are currently experimental code in the notebook, not registered pipeline modules; the notebook does not use `context_before`.
-4. **Test three separate entity layers.** `THREAT_ACTOR`, `MALWARE_TOOL`, and `INFRASTRUCTURE` are still combined in `entities`. Separate taggers might help or might introduce conflicts; this has not been measured.
-5. **Improve entity/action performance.** The reported best conditional dev results are still modest, especially for `ACTION` and `INFRASTRUCTURE`.
-6. **Keep the test split untouched** until model design and dev comparisons are complete; only then run one final test evaluation.
+1. **Milestone 0 (Baseline Lock & Hygiene)**:
+   - Pinned core dependencies in `requirements.txt` and deep learning dependencies in `requirements-optional.txt`.
+   - Populated `.gitignore` and untracked `.pyc` files while keeping all datasets tracked.
+   - Recorded unedited baseline outputs in `results/baseline_before_changes.txt`.
+   - Published learning note `docs/learning/M0_baseline_hygiene.md`.
+2. **Milestone 1 (Leakage & Data Audit)**:
+   - Audited gazetteer (`notebooks/10_build_gazetteer.py`): eliminated 13 leaked terms (`scilc.exe`, `telegram`, `active directory`, `plc`, `domain controller`, `github`, `svchost.exe`, `c2 server`, etc.), separated 57 ATT&CK campaigns into `CAMPAIGN`, added length/stop-word filters, and recorded term provenance in `data/external/gazetteer_provenance.json`.
+   - Measured leakage impact (`results/gazetteer_leak_check.md`): removing `scilc.exe` dropped CRF `MALWARE_TOOL` F1 by 0.013, while MEMM improved by +0.008 F1.
+   - Enforced test split lock: `load_smah` and `load_bio` refuse `test` without `CTI_ALLOW_TEST=1`.
+   - Audited irrelevant sentences: identified 32,270 unlabelled entity mentions and exported a 100-mention sample to `results/unlabelled_mentions_sample.csv`.
+   - Published learning note `docs/learning/M1_leakage_and_data_audit.md`.
+3. **Milestone 2 (Evaluation Harness)**:
+   - Built `src/cti/eval/`: exact seqeval (default and strict IOB2), relaxed span overlap, token-level macro/micro F1, 5-class error taxonomy, report-grouped K-fold cross-validation (`cv.py`), cluster bootstrapping (`bootstrap.py`), and reporting utilities (`report.py`).
+   - Expanded unit test coverage from 11 to 26 passing unit tests in `tests/`.
+   - Refactored `notebooks/07_compare.py` and `notebooks/12_relevant_only.py`.
+   - Documented protocol in `docs/paper_protocol.md` and authored `docs/learning/M2_evaluation_harness.md`.
+   - Produced baseline evaluation reports: `results/crf_baseline_m2_crf_tagger_entities.csv` and `.md`.
 
-## 10. Current working-tree note
+## 10. Next Milestone: M3 (CRF Tuning)
 
-At the time of this summary, the working tree has uncommitted changes in [README.md](/E:/STUDY/college-projects/NLP-for-Cyber-Threat-Intelligence-Extraction/README.md) and [test_models_preprocessing.py](/E:/STUDY/college-projects/NLP-for-Cyber-Threat-Intelligence-Extraction/tests/test_models_preprocessing.py), plus new files [memm.py](/E:/STUDY/college-projects/NLP-for-Cyber-Threat-Intelligence-Extraction/src/cti/models/memm.py) and [12_relevant_only.py](/E:/STUDY/college-projects/NLP-for-Cyber-Threat-Intelligence-Extraction/notebooks/12_relevant_only.py). The focused regression suite previously passed 11 tests. No final evaluation on the test split has been reported.
+With the evaluation harness and leakage-free dataset locked, the immediate next focus is Milestone 3:
+1. Feature extraction caching via `joblib`.
+2. Stage 1: Coarse random search on regularization (`c1`, `c2`), `feature.minfreq`, and training algorithms (`lbfgs`, `l2sgd`, `ap`, `pa`, `arow`).
+3. Stage 2: Top configs evaluated with 5-fold report-grouped CV.
+4. Stage 3: Feature-group ablation (orthographic, affixes, IOC patterns, gazetteer, windows, bigrams, trigger words).
+5. Stage 4: New feature exploration (document consistency, two-pass predictions, word clusters).
+
