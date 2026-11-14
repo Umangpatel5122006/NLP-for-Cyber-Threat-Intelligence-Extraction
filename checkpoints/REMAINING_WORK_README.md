@@ -92,10 +92,10 @@ Do not tune further until causes 1-3 are checked.
 
 ### Stage B - P5b: relevance filter as a pipeline module
 
-- [ ] **B1.** Move the TF-IDF classifier out of the notebook into `src/cti/models/relevance.py` (registered module, `fit`/`predict`, saved with joblib).
+- [x] **B1.** Reusable TF-IDF classifier in `src/cti/models/relevance.py`, registered document module, joblib persistence, train/dev CLI, and saved dev predictions. See `checkpoints/RELEVANCE_MODULE.md`. The old notebook remains as experiment history.
 - [ ] **B2.** Add features: word + character n-grams, `context_before`, source name.
 - [ ] **B3.** Tune the decision threshold for **recall**, because every missed relevant sentence is lost for the later stages.
-- [ ] **B4.** Evaluate sentence-level P/R/F1 and the downstream effect on NER and technique mapping.
+- [ ] **B4.** Sentence-level dev P/R/F1 is recorded (0.6265 / 0.7419 / 0.6793 at threshold 0.5); downstream NER and technique effects still need evaluation.
 - [ ] **B5.** Alternatives to record for P11: Naive Bayes, gradient boosting, sentence embeddings + LogReg, fine-tuned encoder.
 
 ### Stage C - P6: attack-technique classifier

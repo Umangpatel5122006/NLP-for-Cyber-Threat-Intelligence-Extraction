@@ -1,0 +1,10 @@
+# Run from the repository root after: python -m cti.train_relevance
+pipeline:
+  - module: cleaner
+  - module: defanger
+  - module: language_detector
+  - module: sentence_splitter
+  - module: ioc_finder
+  - module: relevance_filter
+    params:
+      model_path: models/relevance.joblib

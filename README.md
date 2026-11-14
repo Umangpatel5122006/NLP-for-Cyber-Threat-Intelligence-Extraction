@@ -33,10 +33,11 @@ libraries are absent. To install those experiments separately, use
 `.\.venv\Scripts\python.exe -m pip install -e ".[neural]"`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** dependency compatibility, 26 evaluation/report tests,
-and both pipeline tests passed. Full discovery still has three spaCy-related
+**Current validation:** dependency compatibility and 44 tests passed, including
+26 evaluation/report tests, 16 relevance tests, and both pipeline tests.
+Full discovery still has three spaCy-related
 module import errors caused by Windows Application Control. The latest output
-is in `results/evaluation_validation.txt`; the earlier environment checkpoint is
+is in `results/relevance_validation.txt`; the earlier environment checkpoint is
 in `checkpoints/ENVIRONMENT_SETUP.md`. No new NER benchmark scores are claimed.
 
 **Evaluation correction:** new reports use metrics version 2, which excludes
@@ -59,6 +60,40 @@ The pipeline follows a modular, plug-in architecture configured via `configs/con
 6. **Statistical NER Taggers**: Models implement the shared `BaseTagger` interface and can be selected by registry name. Current options include `crf_tagger`, `memm_tagger`, `token_logreg`, `spacy_ner`, and `bilstm_crf`. Each is trained on token-aligned BIO tags across two specialized layers:
    - `entities` layer: `THREAT_ACTOR`, `MALWARE_TOOL`, `INFRASTRUCTURE`
    - `action` layer: `ACTION`
+
+---
+
+## Saved Sentence Relevance Baseline
+
+The word unigram/bigram TF-IDF + balanced Logistic Regression baseline is now
+available as `SentenceRelevanceClassifier` in `src/cti/models/relevance.py`.
+Training and prediction both apply the existing cleaner and defanger.
+
+```powershell
+.\.venv\Scripts\python.exe -X utf8 -m cti.train_relevance
+.\.venv\Scripts\python.exe -X utf8 -m unittest discover -s tests -p test_relevance.py -v
+```
+
+Training uses the 8,635 official train sentences and evaluates the 1,238 dev
+sentences. At the fixed threshold 0.5, relevant-class precision is **0.6265**,
+recall **0.7419**, and F1 **0.6793**. This is sentence classification using
+dataset-provided sentence boundaries, not end-to-end NER. The test split is not
+used, and this result is consistent with the earlier notebook baseline.
+
+The command saves `models/relevance.joblib` with a JSON manifest and records
+dev metrics/provenance in `results/relevance_v1_dev.json`, with per-sentence
+scores in `results/relevance_v1_dev.predictions.csv`. Saved model files are
+ignored by Git and can be regenerated using the command above.
+
+`configs/config_relevance.yaml` adds the saved classifier to the document
+pipeline. Each sentence gains `relevance_score` and `relevant` fields; report
+text, sentence offsets, and all IOCs are retained. Other languages are explicitly
+marked unsupported by this English classifier. Scores describe dataset
+relevance and are not calibrated probabilities that an attack occurred.
+
+See [the relevance checkpoint](checkpoints/RELEVANCE_MODULE.md) for review
+commands, limitations, and next steps. The original `configs/config.yaml`
+remains usable without a trained model.
 
 ---
 

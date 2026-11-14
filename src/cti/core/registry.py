@@ -13,6 +13,7 @@ _BUILTIN_MODULES = {
     "ioc_finder": "cti.extractors.ioc_finder",
     "ioc_regex": "cti.extractors.ioc_regex",
     "dummy": "cti.extractors.dummy",
+    "relevance_filter": "cti.models.relevance",
 }
 
 

@@ -1,8 +1,14 @@
 # Project progress, in order
 
-Latest checkpoint: [evaluation correctness fixes](EVALUATION_FIXES.md).
+Latest checkpoint: [saved sentence relevance module](RELEVANCE_MODULE.md).
+The earlier [evaluation correctness fixes](EVALUATION_FIXES.md) are committed.
 New reports use metrics version 2. Historical token and relaxed-span figures
 below need recalculation; the original experiment records are preserved.
+
+The relevance baseline now trains on the official train split, saves/reloads
+its fitted TF-IDF + Logistic Regression pipeline, and annotates live sentences.
+Dev sentence F1 is 0.6793 at threshold 0.5; this is not a new NER result.
+Full test discovery currently has 44 passing tests and three spaCy import errors.
 
 ## 1. Project goal and structure
 
