@@ -1,0 +1,35 @@
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Models & Weights
+models/
+
+# Results & Intermediate temporary outputs
+results/*.tmp
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editor / IDE configuration
+.vscode/
+.idea/
+*.swp
+*.swo
