@@ -1,0 +1,14 @@
+# Train first with: python -m cti.train_ner
+# Relevance annotation is optional; hard gating is disabled by default.
+pipeline:
+  - module: cleaner
+  - module: defanger
+  - module: language_detector
+  - module: sentence_splitter
+  - module: ioc_finder
+  - module: ner_entities
+    params:
+      model_path: models/ner_entities.joblib
+  - module: ner_action
+    params:
+      model_path: models/ner_action.joblib

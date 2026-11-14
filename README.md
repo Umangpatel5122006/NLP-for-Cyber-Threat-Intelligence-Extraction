@@ -38,26 +38,29 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** dependency compatibility and 49 tests passed, including
-26 evaluation/report tests, 16 relevance tests, five scope-policy tests, and both pipeline tests.
-Full discovery still has three spaCy-related
-module import errors caused by Windows Application Control. The latest output
-is in `results/classical_scope_validation.txt`; the earlier environment checkpoint is
-in `checkpoints/ENVIRONMENT_SETUP.md`. No new NER benchmark scores are claimed.
+**Current validation:** all **78 tests pass** in an isolated Ubuntu-24.04 WSL
+environment with Python 3.12.3 and the pinned core dependencies. This includes
+16 new saved-NER tests; see `results/ner_validation.txt` and
+[the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
+blocks native spaCy imports in the Windows environment. No security settings
+were changed. The latest [NER checkpoint](checkpoints/NER_INTEGRATION.md) records
+real training, dev results and document inference.
 
 **Evaluation correction:** new reports use metrics version 2, which excludes
 `O` from token scores and uses one-to-one relaxed-span matching. Token and
-relaxed figures in the historical tables below need recalculation; they have
-not been replaced with new benchmark results. See
+relaxed figures in the historical tables below need recalculation. New saved-NER
+results below use the corrected metrics and retain their own provenance. See
 [the evaluation checkpoint](checkpoints/EVALUATION_FIXES.md) and
 [the scoring protocol](docs/paper_protocol.md).
 
-The prepared [Classical NLP tests workflow](.github/workflows/classical-nlp.yml)
+The [Classical NLP tests workflow](.github/workflows/classical-nlp.yml)
 checks the complete classical suite on Ubuntu/Python 3.11 after a push or pull
 request and can also be run manually in Actions. It checks tokenizer startup,
 excludes neural packages, and records test/train-dev validation artifacts.
-Its YAML, shell blocks, and embedded Python have been checked locally; a remote
-CI run has not yet been performed. See [the scope checkpoint](checkpoints/CLASSICAL_SCOPE.md).
+The preceding committed scope step passed all 62 tests and relevance persistence
+in [GitHub Actions](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43631773684).
+This step adds real entity/action training and inference to CI; the updated
+workflow has been checked locally and awaits a remote run after commit/push.
 
 ---
 
@@ -109,7 +112,50 @@ remains usable without a trained model.
 
 ---
 
-## Relevant-Only Model Comparison (Dev Set)
+## Saved Classical NER and Report Analysis
+
+Entity and action CRFs can now be trained, saved, reloaded and used in the
+document pipeline. The example below uses the prepared WSL environment from
+PowerShell at the repository root:
+
+```powershell
+# Models are already trained locally; regenerate only when needed.
+wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.train_ner'
+
+# Analyze a report with preprocessing, IOC extraction and both saved NER layers.
+wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.analyze --input examples/sample_report.txt --output results/ner_demo.json'
+Get-Content results/ner_demo.json
+```
+
+In another working pinned environment, run the same `cti.train_ner` and
+`cti.analyze` modules with that environment's Python. Retrain there: saved NER
+models reject incompatible runtime versions or changed feature resources.
+
+Both CRFs train on 3,006 relevant train sentences and evaluate **all 1,238 dev
+sentences**, with no relevance gate. The official test split is unused.
+
+| Layer | All-dev exact P | All-dev exact R | All-dev exact F1 | All-dev relaxed F1 | All-dev token macro F1 |
+|---|---:|---:|---:|---:|---:|
+| Entities | 0.2470 | 0.2735 | 0.2596 | 0.3258 | 0.2865 |
+| Action | 0.1330 | 0.1431 | 0.1379 | 0.4643 | 0.3957 |
+
+These metrics version 2 results establish saved-model baselines. Action
+boundaries still need improvement. Evaluation uses the existing processed BIO
+labels, rather than raw-span or end-to-end report annotations. The corresponding
+`results/ner_v2_*` files retain metrics, provenance and aligned dev predictions;
+both models produce identical full-dev predictions after reload.
+
+`configs/ner_training.yaml` selects training settings; `configs/config_ner.yaml`
+selects document modules. Artifacts and manifests are saved under ignored
+`models/ner_{entities,action}.*`. The sample output retains both IOC and NER
+evidence. NER confidence is `null`, and offsets refer to normalized
+`document.text`. Mapping to the original report is the next integration step
+before frontend highlighting. See [the NER checkpoint](checkpoints/NER_INTEGRATION.md)
+for review commands and limitations.
+
+---
+
+## Historical Relevant-Only Model Comparison (Dev Set)
 
 `notebooks/12_relevant_only.py` compares NER taggers trained on relevant
 sentences only. The first score evaluates all dev sentences, while the
@@ -219,7 +265,7 @@ To run any existing comparison:
 The results in this section are the original CRF comparison trained with all
 training sentences. They are not directly comparable to the later relevant-only
 training results above. Use the relevant-only tables above when comparing the
-current CRF, MEMM, spaCy, and other models on relevant dev sentences.
+classical CRF, MEMM, and token Logistic Regression models on relevant dev sentences.
 
 The CRF feature extractor in `src/cti/models/crf.py` utilizes:
 - Rich orthographic, prefix/suffix (1–4 chars from clean word roots), and shape features.

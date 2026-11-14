@@ -51,6 +51,22 @@ jobs:
           .venv/bin/python -m cti.train_relevance \
             --output models/ci-relevance.joblib \
             --report results/ci-relevance-dev.json
+      - name: Train and reload classical entity/action taggers
+        run: |
+          .venv/bin/python -m cti.train_ner --results-dir results/ci-ner
+      - name: Check saved NER document inference
+        run: |
+          .venv/bin/python -m cti.analyze \
+            --text "APT29 used Mimikatz and contacted 10.1.2[.]3." \
+            --output results/ci-ner/demo.json
+          .venv/bin/python - <<'PY'
+          import json
+          from pathlib import Path
+          result = json.loads(Path("results/ci-ner/demo.json").read_text(encoding="utf-8"))
+          assert set(result["metadata"]["ner"]) == {"entities", "action"}
+          assert all(item["status"] == "ok" for item in result["metadata"]["ner"].values())
+          assert all(result["text"][e["start"]:e["end"]] == e["text"] for e in result["entities"])
+          PY
       - name: Upload validation evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -62,3 +78,4 @@ jobs:
             results/ci-unittest.txt
             results/ci-relevance-dev.json
             results/ci-relevance-dev.predictions.csv
+            results/ci-ner/

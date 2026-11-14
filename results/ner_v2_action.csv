@@ -1,0 +1,13 @@
+metrics_version,model,layer,scope,partition,metric_mode,precision,recall,f1
+2,crf_tagger,action,headline_all_dev,all,exact_span_default,0.133,0.1431,0.1379
+2,crf_tagger,action,headline_all_dev,all,relaxed_span,0.448,0.4819,0.4643
+2,crf_tagger,action,headline_all_dev,all,token_macro,0.3861,0.4058,0.3957
+2,crf_tagger,action,headline_all_dev,ACTION,exact_span_per_label,0.133,0.1431,0.1379
+2,crf_tagger,action,diagnostic_relevant_dev,all,exact_span_default,0.2384,0.1431,0.1788
+2,crf_tagger,action,diagnostic_relevant_dev,all,relaxed_span,0.8027,0.4819,0.6023
+2,crf_tagger,action,diagnostic_relevant_dev,ACTION,exact_span_per_label,0.2384,0.1431,0.1788
+2,crf_tagger,action,per_source,aptnotes,exact_span_default,0.1316,0.1695,0.1481
+2,crf_tagger,action,per_source,crowdstrike,exact_span_default,0.0772,0.1338,0.0979
+2,crf_tagger,action,per_source,mandiant,exact_span_default,0.0857,0.1364,0.1053
+2,crf_tagger,action,per_source,mitre,exact_span_default,0.2214,0.1239,0.1589
+2,crf_tagger,action,per_source,sentinel,exact_span_default,0.2571,0.1957,0.2222

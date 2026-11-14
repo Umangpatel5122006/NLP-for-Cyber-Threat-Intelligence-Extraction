@@ -1,0 +1,7 @@
+NER train/dev integration run: 2026-11-15 (Asia/Calcutta)
+Runtime: Ubuntu 24.04 WSL, Python 3.12.3, pinned core dependencies
+Training crf_tagger/entities: 3006 train sentences; dev=1238
+entities: all-dev exact F1=0.2596; reload identical; saved models/ner_entities.joblib
+Training crf_tagger/action: 3006 train sentences; dev=1238
+
+Action-only continuation completed successfully; see ner_action_training.txt (exit code 0).

@@ -1,0 +1,22 @@
+# Existing entity CV choice; ACTION remains an explicit classical baseline.
+# This is integration/persistence configuration, not a new tuning search.
+train_relevant_only: true
+layers:
+  entities:
+    model: crf_tagger
+    parameters:
+      algorithm: lbfgs
+      c1: 1.8427
+      c2: 0.137
+      min_freq: 3
+      max_iterations: 100
+      all_possible_transitions: true
+  action:
+    model: crf_tagger
+    parameters:
+      algorithm: lbfgs
+      c1: 1.0
+      c2: 1.0
+      min_freq: 0
+      max_iterations: 200
+      all_possible_transitions: true

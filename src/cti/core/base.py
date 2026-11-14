@@ -11,7 +11,7 @@ class Entity:
     start: int           # start position idx in the document
     end: int             # end position idx in the document
     source: str = ""     # which module(Ex: CRF NER , ioc_regex etc) found it
-    confidence: float = 1.0  # how sure it is correct NER(Name Entity Recognistion)
+    confidence: float | None = 1.0  # None when the module has no confidence estimate
 
 
 @dataclass

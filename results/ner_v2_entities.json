@@ -1,0 +1,668 @@
+{
+  "metrics_version": "2",
+  "model_name": "crf_tagger",
+  "layer": "entities",
+  "total_sentences": 1238,
+  "headline_all_sentences": {
+    "exact_default": {
+      "mode": "default",
+      "precision": 0.247,
+      "recall": 0.2735,
+      "f1": 0.2596,
+      "per_label": {
+        "INFRASTRUCTURE": {
+          "precision": 0.2081,
+          "recall": 0.2291,
+          "f1": 0.2181,
+          "support": 406,
+          "predicted": 447,
+          "true_positives": 93
+        },
+        "MALWARE_TOOL": {
+          "precision": 0.223,
+          "recall": 0.2178,
+          "f1": 0.2204,
+          "support": 303,
+          "predicted": 296,
+          "true_positives": 66
+        },
+        "THREAT_ACTOR": {
+          "precision": 0.3424,
+          "recall": 0.4536,
+          "f1": 0.3902,
+          "support": 194,
+          "predicted": 257,
+          "true_positives": 88
+        }
+      }
+    },
+    "exact_strict": {
+      "mode": "strict",
+      "precision": 0.247,
+      "recall": 0.2735,
+      "f1": 0.2596,
+      "per_label": {
+        "INFRASTRUCTURE": {
+          "precision": 0.2081,
+          "recall": 0.2291,
+          "f1": 0.2181,
+          "support": 406,
+          "predicted": 447,
+          "true_positives": 93
+        },
+        "MALWARE_TOOL": {
+          "precision": 0.223,
+          "recall": 0.2178,
+          "f1": 0.2204,
+          "support": 303,
+          "predicted": 296,
+          "true_positives": 66
+        },
+        "THREAT_ACTOR": {
+          "precision": 0.3424,
+          "recall": 0.4536,
+          "f1": 0.3902,
+          "support": 194,
+          "predicted": 257,
+          "true_positives": 88
+        }
+      }
+    },
+    "relaxed": {
+      "precision": 0.31,
+      "recall": 0.3433,
+      "f1": 0.3258,
+      "per_label": {
+        "INFRASTRUCTURE": {
+          "precision": 0.2506,
+          "recall": 0.2759,
+          "f1": 0.2626,
+          "support": 406,
+          "predicted": 447,
+          "true_positives": 112
+        },
+        "MALWARE_TOOL": {
+          "precision": 0.2703,
+          "recall": 0.264,
+          "f1": 0.2671,
+          "support": 303,
+          "predicted": 296,
+          "true_positives": 80
+        },
+        "THREAT_ACTOR": {
+          "precision": 0.4591,
+          "recall": 0.6082,
+          "f1": 0.5233,
+          "support": 194,
+          "predicted": 257,
+          "true_positives": 118
+        }
+      }
+    },
+    "token_level": {
+      "micro_precision": 0.2006,
+      "micro_recall": 0.3335,
+      "micro_f1": 0.2506,
+      "macro_precision": 0.24,
+      "macro_recall": 0.364,
+      "macro_f1": 0.2865,
+      "per_label": {
+        "INFRASTRUCTURE": {
+          "precision": 0.1548,
+          "recall": 0.3033,
+          "f1": 0.205,
+          "support": 1032
+        },
+        "MALWARE_TOOL": {
+          "precision": 0.1903,
+          "recall": 0.209,
+          "f1": 0.1992,
+          "support": 469
+        },
+        "THREAT_ACTOR": {
+          "precision": 0.3748,
+          "recall": 0.5797,
+          "f1": 0.4552,
+          "support": 364
+        }
+      }
+    },
+    "error_taxonomy": {
+      "counts": {
+        "exact_match": 247,
+        "boundary_error": 63,
+        "wrong_type": 123,
+        "missed": 470,
+        "spurious": 567
+      },
+      "total_gold": 903,
+      "total_predicted": 1000,
+      "per_label": {
+        "MALWARE_TOOL": {
+          "wrong_type": 62,
+          "exact_match": 66,
+          "spurious": 157,
+          "missed": 161,
+          "boundary_error": 14
+        },
+        "THREAT_ACTOR": {
+          "missed": 64,
+          "boundary_error": 30,
+          "exact_match": 88,
+          "wrong_type": 12,
+          "spurious": 137
+        },
+        "INFRASTRUCTURE": {
+          "spurious": 273,
+          "wrong_type": 49,
+          "missed": 245,
+          "exact_match": 93,
+          "boundary_error": 19
+        }
+      },
+      "type_confusion_pairs": {
+        "MALWARE_TOOL -> INFRASTRUCTURE": 60,
+        "INFRASTRUCTURE -> MALWARE_TOOL": 49,
+        "THREAT_ACTOR -> MALWARE_TOOL": 10,
+        "MALWARE_TOOL -> THREAT_ACTOR": 2,
+        "THREAT_ACTOR -> INFRASTRUCTURE": 2
+      }
+    }
+  },
+  "per_source": {
+    "aptnotes": {
+      "sentence_count": 155,
+      "exact_p": 0.2658,
+      "exact_r": 0.3182,
+      "exact_f1": 0.2897,
+      "relaxed_p": 0.3418,
+      "relaxed_r": 0.4091,
+      "relaxed_f1": 0.3724,
+      "token_macro_f1": 0.3056,
+      "per_label": {
+        "INFRASTRUCTURE": {
+          "precision": 0.2903,
+          "recall": 0.2812,
+          "f1": 0.2857,
+          "support": 32,
+          "predicted": 31,
+          "true_positives": 9
+        },
+        "MALWARE_TOOL": {
+          "precision": 0.2727,
+          "recall": 0.3,
+          "f1": 0.2857,
+          "support": 20,
+          "predicted": 22,
+          "true_positives": 6
+        },
+        "THREAT_ACTOR": {
+          "precision": 0.2308,
+          "recall": 0.4286,
+          "f1": 0.3,
+          "support": 14,
+          "predicted": 26,
+          "true_positives": 6
+        }
+      }
+    },
+    "crowdstrike": {
+      "sentence_count": 437,
+      "exact_p": 0.1831,
+      "exact_r": 0.3418,
+      "exact_f1": 0.2384,
+      "relaxed_p": 0.2271,
+      "relaxed_r": 0.4241,
+      "relaxed_f1": 0.2958,
+      "token_macro_f1": 0.2408,
+      "per_label": {
+        "INFRASTRUCTURE": {
+          "precision": 0.2533,
+          "recall": 0.3393,
+          "f1": 0.2901,
+          "support": 56,
+          "predicted": 75,
+          "true_positives": 19
+        },
+        "MALWARE_TOOL": {
+          "precision": 0.0426,
+          "recall": 0.2,
+          "f1": 0.0702,
+          "support": 20,
+          "predicted": 94,
+          "true_positives": 4
+        },
+        "THREAT_ACTOR": {
+          "precision": 0.246,
+          "recall": 0.378,
+          "f1": 0.2981,
+          "support": 82,
+          "predicted": 126,
+          "true_positives": 31
+        }
+      }
+    },
+    "mandiant": {
+      "sentence_count": 226,
+      "exact_p": 0.1858,
+      "exact_r": 0.4884,
+      "exact_f1": 0.2692,
+      "relaxed_p": 0.2168,
+      "relaxed_r": 0.5698,
+      "relaxed_f1": 0.3141,
+      "token_macro_f1": 0.289,
+      "per_label": {
+        "INFRASTRUCTURE": {
+          "precision": 0.137,
+          "recall": 0.4255,
+          "f1": 0.2073,
+          "support": 47,
+          "predicted": 146,
+          "true_positives": 20
+        },
+        "MALWARE_TOOL": {
+          "precision": 0.3137,
+          "recall": 0.5714,
+          "f1": 0.4051,
+          "support": 28,
+          "predicted": 51,
+          "true_positives": 16
+        },
+        "THREAT_ACTOR": {
+          "precision": 0.2069,
+          "recall": 0.5455,
+          "f1": 0.3,
+          "support": 11,
+          "predicted": 29,
+          "true_positives": 6
+        }
+      }
+    },
+    "mitre": {
+      "sentence_count": 280,
+      "exact_p": 0.3619,
+      "exact_r": 0.239,
+      "exact_f1": 0.2879,
+      "relaxed_p": 0.4508,
+      "relaxed_r": 0.2977,
+      "relaxed_f1": 0.3586,
+      "token_macro_f1": 0.3879,
+      "per_label": {
+        "INFRASTRUCTURE": {
+          "precision": 0.2786,
+          "recall": 0.1806,
+          "f1": 0.2191,
+          "support": 216,
+          "predicted": 140,
+          "true_positives": 39
+        },
+        "MALWARE_TOOL": {
+          "precision": 0.3248,
+          "recall": 0.1881,
+          "f1": 0.2382,
+          "support": 202,
+          "predicted": 117,
+          "true_positives": 38
+        },
+        "THREAT_ACTOR": {
+          "precision": 0.6379,
+          "recall": 0.6271,
+          "f1": 0.6325,
+          "support": 59,
+          "predicted": 58,
+          "true_positives": 37
+        }
+      }
+    },
+    "sentinel": {
+      "sentence_count": 140,
+      "exact_p": 0.1882,
+      "exact_r": 0.1379,
+      "exact_f1": 0.1592,
+      "relaxed_p": 0.2941,
+      "relaxed_r": 0.2155,
+      "relaxed_f1": 0.2488,
+      "token_macro_f1": 0.2518,
+      "per_label": {
+        "INFRASTRUCTURE": {
+          "precision": 0.1091,
+          "recall": 0.1091,
+          "f1": 0.1091,
+          "support": 55,
+          "predicted": 55,
+          "true_positives": 6
+        },
+        "MALWARE_TOOL": {
+          "precision": 0.1667,
+          "recall": 0.0606,
+          "f1": 0.0889,
+          "support": 33,
+          "predicted": 12,
+          "true_positives": 2
+        },
+        "THREAT_ACTOR": {
+          "precision": 0.4444,
+          "recall": 0.2857,
+          "f1": 0.3478,
+          "support": 28,
+          "predicted": 18,
+          "true_positives": 8
+        }
+      }
+    }
+  },
+  "diagnostic_relevant_only": {
+    "relevant_sentences": 434,
+    "evaluation": {
+      "exact_default": {
+        "mode": "default",
+        "precision": 0.4403,
+        "recall": 0.2735,
+        "f1": 0.3374,
+        "per_label": {
+          "INFRASTRUCTURE": {
+            "precision": 0.3974,
+            "recall": 0.2291,
+            "f1": 0.2906,
+            "support": 406,
+            "predicted": 234,
+            "true_positives": 93
+          },
+          "MALWARE_TOOL": {
+            "precision": 0.3708,
+            "recall": 0.2178,
+            "f1": 0.2744,
+            "support": 303,
+            "predicted": 178,
+            "true_positives": 66
+          },
+          "THREAT_ACTOR": {
+            "precision": 0.5906,
+            "recall": 0.4536,
+            "f1": 0.5131,
+            "support": 194,
+            "predicted": 149,
+            "true_positives": 88
+          }
+        }
+      },
+      "exact_strict": {
+        "mode": "strict",
+        "precision": 0.4403,
+        "recall": 0.2735,
+        "f1": 0.3374,
+        "per_label": {
+          "INFRASTRUCTURE": {
+            "precision": 0.3974,
+            "recall": 0.2291,
+            "f1": 0.2906,
+            "support": 406,
+            "predicted": 234,
+            "true_positives": 93
+          },
+          "MALWARE_TOOL": {
+            "precision": 0.3708,
+            "recall": 0.2178,
+            "f1": 0.2744,
+            "support": 303,
+            "predicted": 178,
+            "true_positives": 66
+          },
+          "THREAT_ACTOR": {
+            "precision": 0.5906,
+            "recall": 0.4536,
+            "f1": 0.5131,
+            "support": 194,
+            "predicted": 149,
+            "true_positives": 88
+          }
+        }
+      },
+      "relaxed": {
+        "precision": 0.5526,
+        "recall": 0.3433,
+        "f1": 0.4235,
+        "per_label": {
+          "INFRASTRUCTURE": {
+            "precision": 0.4786,
+            "recall": 0.2759,
+            "f1": 0.35,
+            "support": 406,
+            "predicted": 234,
+            "true_positives": 112
+          },
+          "MALWARE_TOOL": {
+            "precision": 0.4494,
+            "recall": 0.264,
+            "f1": 0.3326,
+            "support": 303,
+            "predicted": 178,
+            "true_positives": 80
+          },
+          "THREAT_ACTOR": {
+            "precision": 0.7919,
+            "recall": 0.6082,
+            "f1": 0.688,
+            "support": 194,
+            "predicted": 149,
+            "true_positives": 118
+          }
+        }
+      },
+      "token_level": {
+        "micro_precision": 0.4386,
+        "micro_recall": 0.3335,
+        "micro_f1": 0.3789,
+        "macro_precision": 0.4711,
+        "macro_recall": 0.364,
+        "macro_f1": 0.4101,
+        "per_label": {
+          "INFRASTRUCTURE": {
+            "precision": 0.3864,
+            "recall": 0.3033,
+            "f1": 0.3398,
+            "support": 1032
+          },
+          "MALWARE_TOOL": {
+            "precision": 0.3141,
+            "recall": 0.209,
+            "f1": 0.251,
+            "support": 469
+          },
+          "THREAT_ACTOR": {
+            "precision": 0.7128,
+            "recall": 0.5797,
+            "f1": 0.6394,
+            "support": 364
+          }
+        }
+      },
+      "error_taxonomy": {
+        "counts": {
+          "exact_match": 247,
+          "boundary_error": 63,
+          "wrong_type": 123,
+          "missed": 470,
+          "spurious": 128
+        },
+        "total_gold": 903,
+        "total_predicted": 561,
+        "per_label": {
+          "MALWARE_TOOL": {
+            "wrong_type": 62,
+            "exact_match": 66,
+            "missed": 161,
+            "spurious": 39,
+            "boundary_error": 14
+          },
+          "THREAT_ACTOR": {
+            "missed": 64,
+            "boundary_error": 30,
+            "exact_match": 88,
+            "wrong_type": 12,
+            "spurious": 29
+          },
+          "INFRASTRUCTURE": {
+            "spurious": 60,
+            "wrong_type": 49,
+            "missed": 245,
+            "exact_match": 93,
+            "boundary_error": 19
+          }
+        },
+        "type_confusion_pairs": {
+          "MALWARE_TOOL -> INFRASTRUCTURE": 60,
+          "INFRASTRUCTURE -> MALWARE_TOOL": 49,
+          "THREAT_ACTOR -> MALWARE_TOOL": 10,
+          "MALWARE_TOOL -> THREAT_ACTOR": 2,
+          "THREAT_ACTOR -> INFRASTRUCTURE": 2
+        }
+      }
+    }
+  },
+  "artifact": {
+    "artifact_version": 1,
+    "kind": "classical_bio_ner",
+    "model_name": "crf_tagger",
+    "layer": "entities",
+    "language": "en",
+    "labels": [
+      "INFRASTRUCTURE",
+      "MALWARE_TOOL",
+      "THREAT_ACTOR"
+    ],
+    "parameters": {
+      "algorithm": "lbfgs",
+      "c1": 1.8427,
+      "c2": 0.137,
+      "max_iterations": 100,
+      "min_freq": 3,
+      "all_possible_transitions": true,
+      "feature_config": {}
+    },
+    "environment": {
+      "python_major_minor": "3.12",
+      "packages": {
+        "spacy": "3.8.16",
+        "scikit-learn": "1.9.1",
+        "sklearn-crfsuite": "0.5.0",
+        "python-crfsuite": "0.9.12",
+        "joblib": "1.6.0"
+      },
+      "dependency_sha256": {
+        "src/cti/models/base.py": "78b31d5a0275748e06d61aa0b5e6d9dc6a36d397fad6b825076cb3ee105284e9",
+        "src/cti/models/crf.py": "cf24edf1cf2fe2421433c84e9165ed7a3c6b446bd512242031b32cb6066f66fc",
+        "src/cti/models/memm.py": "b9203a9767bfa2fa8f1d8c7e519b8ba7e3519e9dd7161809357753f7a13ab12d",
+        "src/cti/preprocessing/tokenizer.py": "9bf2b706af8270b3f94ffe9a01be9f00bb53e29a0794b9b41356cba72f2630ab",
+        "configs/labels.yaml": "c97c18862be8a70eadab268bb1ca6914007ebd864e2d573ebf3fae0e3af5b0ac",
+        "data/external/gazetteer.json": "299138401b1c6b494b64038941ae1d1c94a5d3267c2a83eb4a0b5c20d6643221"
+      }
+    },
+    "metadata": {
+      "created_at_utc": "2026-11-14T20:25:14.240219+00:00",
+      "base_commit": "433e971fe829fc6155fc2fd34474d038fcc9a33c",
+      "training_policy": "relevant_only",
+      "training_sentences": 3006,
+      "dev_sentences": 1238,
+      "train_report_ids": [
+        "02_aptnotes_report",
+        "03_aptnotes_report",
+        "04_aptnotes_report",
+        "05_aptnotes_report",
+        "06_aptnotes_report",
+        "07_aptnotes_report",
+        "08_aptnotes_report",
+        "09_aptnotes_report",
+        "100_mitre_report",
+        "11_aptnotes_report",
+        "12_aptnotes_report",
+        "14_aptnotes_report",
+        "15_aptnotes_report",
+        "18_aptnotes_report",
+        "19_aptnotes_report",
+        "20_aptnotes_report",
+        "22_mandiant_report",
+        "23_mandiant_report",
+        "24_mandiant_report",
+        "26_mandiant_report",
+        "28_mandiant_report",
+        "30_mandiant_report",
+        "31_mandiant_report",
+        "32_mandiant_report",
+        "33_mandiant_report",
+        "34_mandiant_report",
+        "35_mandiant_report",
+        "38_mandiant_report",
+        "39_mandiant_report",
+        "40_crowdstrike_report",
+        "41_crowdstrike_report",
+        "45_crowdstrike_report",
+        "47_crowdstrike_report",
+        "48_crowdstrike_report",
+        "49_crowdstrike_report",
+        "50_crowdstrike_report",
+        "51_crowdstrike_report",
+        "52_SentinelOne_report",
+        "53_SentinelOne_report",
+        "55_SentinelOne_report",
+        "56_SentinelOne_report",
+        "57_SentinelOne_report",
+        "60_SentinelOne_report",
+        "61_SentinelOne_report",
+        "62_SentinelOne_report",
+        "64_SentinelOne_report",
+        "65_SentinelOne_report",
+        "66_SentinelOne_report",
+        "68_SentinelOne_report",
+        "70_SentinelOne_report",
+        "71_SentinelOne_report",
+        "72_SentinelOne_report",
+        "74_mitre_report",
+        "75_mitre_report",
+        "76_mitre_report",
+        "79_mitre_report",
+        "80_mitre_report",
+        "83_mitre_report",
+        "85_mitre_report",
+        "86_mitre_report",
+        "87_mitre_report",
+        "88_mitre_report",
+        "89_mitre_report",
+        "90_mitre_report",
+        "92_mitre_report",
+        "93_mitre_report",
+        "94_mitre_report",
+        "95_mitre_report",
+        "96_mitre_report",
+        "98_mitre_report"
+      ],
+      "dev_report_ids": [
+        "10_aptnotes_report",
+        "16_aptnotes_report",
+        "27_mandiant_report",
+        "29_mandiant_report",
+        "46_crowdstrike_report",
+        "54_SentinelOne_report",
+        "69_SentinelOne_report",
+        "78_mitre_report",
+        "81_mitre_report",
+        "97_mitre_report"
+      ],
+      "test_split_used": false,
+      "raw_dataset_sha256_lf": "c32bd166e893683800121ae9e13197770a345987912dc9dc31f0be19d9693b5a",
+      "processed_train_sha256_lf": "dfe9a52fc3c1baac987459572dc7c5f9affeddc0271d0413c973ac805122f627",
+      "processed_dev_sha256_lf": "024b5ced3d7198392c14ec312467391d0f74adb9ce79f58aead77bc380a8e28e",
+      "training_config_sha256_lf": "15f23573d960d3f5669384ede62eb25e39d86801fbc61c7e3bb29a316991b4c8",
+      "source_sha256_lf": {
+        "src/cti/train_ner.py": "1ca555c49830f9f56d591809e637bd5e7ad845ef54013d945bb503b354046165",
+        "src/cti/models/ner_artifact.py": "4d04a94df66caf796ee66cf67e2d169fff008ff27fc86e49abcebac200d8a2a0",
+        "src/cti/models/ner_data.py": "5c62df8c838089657ecc669a6df34776e61fbe2ba39b45dce2c4887d8fa7f502",
+        "src/cti/eval/metrics.py": "5eda5b5d7814a59fd1d61d75e47ffa20e363ef086109119ee3280c505f172989"
+      },
+      "metrics_version": "2",
+      "evaluation_scope": "original processed BIO; all-dev headline, relevant-dev diagnostic; no relevance gate"
+    },
+    "artifact_sha256": "d5195ebe781197a15ebea3e31b15228334c236e05bec2f1b2c91de3a6033cd79"
+  },
+  "reload_predictions_identical": true
+}

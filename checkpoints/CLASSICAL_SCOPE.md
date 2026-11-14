@@ -2,6 +2,12 @@
 
 Date: 2026-11-15 (Asia/Calcutta)
 
+Follow-up: this committed step (`433e971`) subsequently passed its
+[GitHub Actions run](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43631773684)
+with all 62 tests and real relevance persistence. The original preparation
+record below is preserved. See [NER_INTEGRATION.md](NER_INTEGRATION.md) for the
+latest 78-test local WSL validation and saved NER work.
+
 ## Confirmed scope
 
 The user clarified that classical ML is allowed and deep learning is excluded.

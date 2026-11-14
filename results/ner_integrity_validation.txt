@@ -1,0 +1,6 @@
+Saved classical NER integrity audit (train/dev only)
+entities: 1238 dev predictions identical after reload; all metrics independently recomputed and equal.
+entities: code/config/data hashes match; 70 train and 10 dev reports disjoint; protected test IDs excluded.
+action: 1238 dev predictions identical after reload; all metrics independently recomputed and equal.
+action: code/config/data hashes match; 70 train and 10 dev reports disjoint; protected test IDs excluded.
+Demo: both NER layers succeeded; every span matches normalized document text; NER confidence null; IOC preserved.

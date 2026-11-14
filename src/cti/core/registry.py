@@ -15,6 +15,8 @@ _BUILTIN_MODULES = {
     "ioc_regex": "cti.extractors.ioc_regex",
     "dummy": "cti.extractors.dummy",
     "relevance_filter": "cti.models.relevance",
+    "ner_entities": "cti.extractors.ner",
+    "ner_action": "cti.extractors.ner",
 }
 
 

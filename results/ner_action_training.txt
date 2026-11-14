@@ -1,0 +1,2 @@
+Training crf_tagger/action: 3006 train sentences; dev=1238
+action: all-dev exact F1=0.1379; reload identical; saved models/ner_action.joblib

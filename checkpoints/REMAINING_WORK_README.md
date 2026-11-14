@@ -17,17 +17,21 @@ Last synced: 2026-11-15
 | P2 | Preprocessing | **Done** | cleaner, defanger, language detector, sentence splitter, spaCy tokenizer |
 | P3 | IOC extraction | **Done** | `ioc_finder` in pipeline, `ioc_regex` as fallback |
 | P4 | NER training data (BIO) | **Done** | two layers (`entities`, `action`), span sanitation, 99-100% retention, audit passed |
-| P5 | Statistical NER | **Classical experiments available** | CRF, MEMM, token LogReg; neural experiments are historical and excluded |
+| P5 | Statistical NER | **Saved classical baselines integrated** | CRF entity/action artifacts, train/dev CLI and reports; MEMM and token LogReg persistence tested |
 | P5b | Relevance filter | **Reusable module complete** | saved TF-IDF + LogReg, train/dev CLI, opt-in document pipeline; threshold work remains |
 | P6 | Attack-technique classifier | Not started | labels exist in SMAH-CTI (`tactic`, `techniques`) |
 | P6b | Vulnerabilities and affected systems (new) | Not started | no gold labels in SMAH-CTI |
 | P7 | Relation extraction | Not started | |
-| P8 | Full pipeline integration | **Partial** | preprocessing + IOC + saved relevance; NER and technique integration remain |
+| P8 | Full pipeline integration | **Partial** | preprocessing + IOC + saved relevance/NER; original offsets, merging and techniques remain |
 | P9 | Evaluation | **Partial** | corrected metrics version 2, grouped validation utilities; official test reserved |
-| P10 | Output, demo, feed ingestion | Not started | |
+| P10 | Output, demo, feed ingestion | **CLI and JSON baseline** | `cti.analyze`, sample report/output; frontend, exports and feeds remain |
 | P11 | Upgrade guide, report, demo | Not started | |
 
-**Current position:** corrected evaluation and saved relevance are implemented. Validate the classical suite in an approved runtime/CI, then integrate saved entity/action taggers and regenerate development diagnostics. The prepared CI workflow has not yet been run remotely.
+**Current position:** saved entity/action taggers now run in the document pipeline,
+with corrected dev diagnostics and identical predictions after reload. All 78
+tests pass in WSL. The preceding scope commit passed 62 tests in GitHub Actions;
+the updated NER workflow awaits its remote run. See [NER_INTEGRATION.md](NER_INTEGRATION.md).
+Original-text offset mapping is the next reviewable integration step.
 
 ---
 
@@ -127,8 +131,8 @@ Matches "vulnerabilities" and "affected systems" in the title. SMAH-CTI has no g
 
 ### Stage F - P8: full pipeline integration
 
-- [ ] **F1. Model persistence.** Relevance training/persistence is complete. Add equivalent joblib artifacts and manifests for classical entity/action taggers.
-- [ ] **F2. NER modules in the pipeline:** `ner_entities` and `ner_action` wrap trained taggers: sentence split → tokenize → predict → BIO to character spans → `Entity` with confidence from marginals.
+- [x] **F1. Model persistence.** Relevance and classical entity/action artifacts have manifests and train/dev reload checks. CRF, MEMM and token LogReg round trips are tested.
+- [x] **F2. NER modules in the pipeline:** `ner_entities` and `ner_action` wrap saved taggers: sentence split → tokenize → predict → BIO to character spans. Confidence is explicitly unavailable (`null`); calibrated marginal confidence remains optional future work.
 - [ ] **F3. Offset mapping.** Defanging changes text length, so keep a map from defanged positions back to the original report text. This is needed for highlighting and evidence in the output.
 - [ ] **F4. Merge policy.** Resolve overlaps between IOC entities and NER entities (domain inside URL or email; INFRASTRUCTURE vs IOC), deduplicate, normalize (lowercase hashes, canonical domains), keep source and confidence.
 - [ ] **F5. Final pipeline order:** cleaner → defanger → language detector → sentence splitter → ioc_finder → relevance filter → NER (entities, action) → system/vulnerability taggers → technique classifier → relation extractor → merger.
@@ -140,7 +144,7 @@ Matches "vulnerabilities" and "affected systems" in the title. SMAH-CTI has no g
 - [ ] **G1. Result schema (JSON):** entities with character positions, label, confidence, source module; IOCs; techniques with ATT&CK IDs; relations; metadata (language, model versions).
 - [ ] **G2. STIX 2.1 export** with the `stix2` library: indicator, malware, tool, intrusion-set, vulnerability, attack-pattern, relationship, report. Validate the bundle.
 - [ ] **G3. Input adapters.** Plain text, HTML (trafilatura or BeautifulSoup), PDF (pdfplumber or PyMuPDF), and RSS/advisory feeds, since the project covers threat-intelligence feeds.
-- [ ] **G4. Interfaces.** CLI (`analyze report.txt`), a small FastAPI endpoint, and a Streamlit demo that highlights extracted entities in the report text.
+- [ ] **G4. Interfaces.** `python -m cti.analyze --input report.txt` provides the CLI/JSON baseline. A small FastAPI endpoint and frontend highlighting remain; implement original-report offset mapping first.
 - [ ] **G5. Real-report check.** Run the full system on 3-5 public reports that are **not** in SMAH-CTI and review the output by hand.
 
 ### Stage H - P9: final evaluation (done last)

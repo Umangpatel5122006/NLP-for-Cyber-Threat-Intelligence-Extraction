@@ -1,6 +1,7 @@
 # Project progress, in order
 
-Latest checkpoint: [classical-only methods and CI](CLASSICAL_SCOPE.md).
+Latest checkpoint: [saved classical NER and document inference](NER_INTEGRATION.md).
+The preceding [classical-only methods and CI](CLASSICAL_SCOPE.md) step is committed.
 The [saved sentence relevance module](RELEVANCE_MODULE.md) is committed.
 The earlier [evaluation correctness fixes](EVALUATION_FIXES.md) are committed.
 New reports use metrics version 2. Historical token and relaxed-span figures
@@ -8,11 +9,22 @@ below need recalculation; the original experiment records are preserved.
 
 The relevance baseline now trains on the official train split, saves/reloads
 its fitted TF-IDF + Logistic Regression pipeline, and annotates live sentences.
-Dev sentence F1 is 0.6793 at threshold 0.5; this is not a new NER result.
-Full test discovery currently has 49 passing tests and three spaCy import errors.
+Dev sentence F1 is 0.6793 at threshold 0.5. Entity and action CRFs now also have
+saved artifacts, full-dev reload checks and live document modules. New metrics
+version 2 all-dev exact F1 is 0.2596 (entities) and 0.1379 (actions), using the
+existing processed BIO labels. The official test split is still reserved.
+All 78 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
+native imports remain blocked by Application Control without policy changes.
 Deep learning is excluded. Allowed NER choices are CRF, MEMM, and token Logistic
 Regression; historical neural experiments are guarded against execution.
-The prepared CI workflow still needs an actual remote run.
+The committed scope step passed 62 tests and relevance persistence in GitHub
+Actions. This step extends CI to NER training/inference; that update awaits a
+remote run after commit/push. See the latest checkpoint for evidence and
+[WSL_SETUP.md](../docs/WSL_SETUP.md) for working local commands.
+
+Next: map normalized positions back to the original report, then define an
+IOC/NER merge policy before frontend highlighting. Current NER offsets refer to
+normalized `document.text`, and confidence is explicitly unavailable (`null`).
 
 ## 1. Project goal and structure
 
