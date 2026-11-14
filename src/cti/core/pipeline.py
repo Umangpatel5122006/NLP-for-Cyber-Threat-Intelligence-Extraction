@@ -10,17 +10,20 @@ import pkgutil
 import yaml
 
 from cti.core.base import Document
+from cti.core.model_policy import EXCLUDED_NER_MODELS
 from cti.core.registry import create
 
 
 def load_all_modules():
-    """Explicitly import all modules, including optional neural experiments.
+    """Explicitly import in-scope modules, skipping historical neural models.
 
     Configured document pipelines use lazy built-in registration instead.
     """
     for pkg_name in ["cti.preprocessing", "cti.extractors", "cti.models"]:
         pkg = importlib.import_module(pkg_name)
         for m in pkgutil.iter_modules(pkg.__path__):
+            if pkg_name == "cti.models" and m.name in EXCLUDED_NER_MODELS:
+                continue
             importlib.import_module(f"{pkg_name}.{m.name}")
 
 

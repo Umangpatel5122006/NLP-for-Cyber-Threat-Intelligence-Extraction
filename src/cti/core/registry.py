@@ -1,6 +1,7 @@
 import importlib
 
 from cti.core.base import BaseModule
+from cti.core.model_policy import check_model_scope
 
 _REGISTRY: dict[str, type[BaseModule]] = {}
 
@@ -19,6 +20,7 @@ _BUILTIN_MODULES = {
 
 def register(name: str):
     """Decorator: sign a module up in the phone book under `name`."""
+    check_model_scope(name)
     def wrapper(cls):
         _REGISTRY[name] = cls
         return cls
@@ -27,6 +29,7 @@ def register(name: str):
 
 def create(name: str, **kwargs) -> BaseModule:
     """Look a module up by name and build it."""
+    check_model_scope(name)
     if name not in _REGISTRY and name in _BUILTIN_MODULES:
         importlib.import_module(_BUILTIN_MODULES[name])
     if name not in _REGISTRY:

@@ -6,17 +6,12 @@ import time
 from pathlib import Path
 
 from cti.core.registry import create
+from cti.core.model_policy import CLASSICAL_NER_MODULES
 from cti.eval.metrics import evaluate_predictions
 from cti.models.data import load_bio
 
 ROOT = Path(__file__).resolve().parents[1]
-MODELS = {
-    "crf_tagger": "cti.models.crf",
-    "memm_tagger": "cti.models.memm",
-    "token_logreg": "cti.models.memm",
-    "spacy_ner": "cti.models.spacy_ner",
-    "bilstm_crf": "cti.models.bilstm_crf",
-}
+MODELS = CLASSICAL_NER_MODULES
 
 
 def main():
@@ -26,11 +21,13 @@ def main():
     parser.add_argument(
         "--models",
         default="crf_tagger",
-        help="Comma-separated model names (crf_tagger, memm_tagger, token_logreg, spacy_ner, bilstm_crf).",
+        help="Comma-separated classical models: " + ", ".join(MODELS),
     )
     args = parser.parse_args()
 
     selected_models = [m.strip() for m in args.models.split(",") if m.strip()]
+    if not selected_models:
+        parser.error("--models must name at least one classical model.")
     for m in selected_models:
         if m not in MODELS:
             parser.error(f"Unknown model: {m}. Choose from: {list(MODELS.keys())}")

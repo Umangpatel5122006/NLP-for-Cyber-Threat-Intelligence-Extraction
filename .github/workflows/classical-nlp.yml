@@ -1,0 +1,64 @@
+name: Classical NLP tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONUTF8: "1"
+      CTI_ALLOW_TEST: "0"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install the pinned core environment
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --upgrade pip
+          .venv/bin/python -m pip install -r requirements-lock.txt
+          .venv/bin/python -m pip install --no-build-isolation -e .
+          .venv/bin/python -m pip check
+      - name: Verify scope and tokenizer initialization
+        run: |
+          .venv/bin/python - <<'PY'
+          import importlib.util
+          import spacy
+          from cti.core.model_policy import CLASSICAL_NER_MODULES
+          assert set(CLASSICAL_NER_MODULES) == {"crf_tagger", "memm_tagger", "token_logreg"}
+          assert spacy.blank("en").pipe_names == []
+          for name in ("torch", "transformers", "torchcrf", "accelerate"):
+              assert importlib.util.find_spec(name) is None, name
+          PY
+      - name: Run the complete classical suite
+        run: |
+          .venv/bin/python -VV > results/ci-environment.txt
+          .venv/bin/python -m pip freeze --all >> results/ci-environment.txt
+          .venv/bin/python -m unittest discover -s tests -v 2>&1 | tee results/ci-unittest.txt
+      - name: Exercise train/dev relevance persistence
+        run: |
+          .venv/bin/python -m cti.train_relevance \
+            --output models/ci-relevance.joblib \
+            --report results/ci-relevance-dev.json
+      - name: Upload validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: classical-nlp-validation
+          if-no-files-found: ignore
+          path: |
+            results/ci-environment.txt
+            results/ci-unittest.txt
+            results/ci-relevance-dev.json
+            results/ci-relevance-dev.predictions.csv

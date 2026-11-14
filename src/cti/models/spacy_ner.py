@@ -1,3 +1,9 @@
+"""Historical neural NER experiment; spaCy tokenization remains in scope."""
+
+from cti.core.model_policy import check_model_scope
+
+check_model_scope("spacy_ner")
+
 import random
 
 import spacy

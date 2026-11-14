@@ -1,6 +1,7 @@
 # Project progress, in order
 
-Latest checkpoint: [saved sentence relevance module](RELEVANCE_MODULE.md).
+Latest checkpoint: [classical-only methods and CI](CLASSICAL_SCOPE.md).
+The [saved sentence relevance module](RELEVANCE_MODULE.md) is committed.
 The earlier [evaluation correctness fixes](EVALUATION_FIXES.md) are committed.
 New reports use metrics version 2. Historical token and relaxed-span figures
 below need recalculation; the original experiment records are preserved.
@@ -8,7 +9,10 @@ below need recalculation; the original experiment records are preserved.
 The relevance baseline now trains on the official train split, saves/reloads
 its fitted TF-IDF + Logistic Regression pipeline, and annotates live sentences.
 Dev sentence F1 is 0.6793 at threshold 0.5; this is not a new NER result.
-Full test discovery currently has 44 passing tests and three spaCy import errors.
+Full test discovery currently has 49 passing tests and three spaCy import errors.
+Deep learning is excluded. Allowed NER choices are CRF, MEMM, and token Logistic
+Regression; historical neural experiments are guarded against execution.
+The prepared CI workflow still needs an actual remote run.
 
 ## 1. Project goal and structure
 

@@ -2,6 +2,11 @@
 
 An NLP-powered system that extracts cyber threats, attack techniques, vulnerabilities, affected systems, and indicators of compromise (IOCs) from unstructured security reports and threat intelligence feeds.
 
+**Methods constraint:** classical NLP and classical ML only. Active NER models
+are CRF, MEMM, and token Logistic Regression. Trained spaCy NER, BiLSTMs,
+transformers, neural embeddings, and LLMs are excluded. spaCy's blank tokenizer,
+token shapes, and rule-based dictionary matching remain in scope.
+
 ---
 
 ## Setup and Baseline Checks
@@ -28,16 +33,16 @@ py -3.11 -m venv .venv
 The configured document pipeline imports its selected built-in modules on demand.
 Additional custom modules can register themselves before the pipeline is built.
 
-Neural experiments are optional. Their two unit tests skip when the required
-libraries are absent. To install those experiments separately, use
-`.\.venv\Scripts\python.exe -m pip install -e ".[neural]"`.
+Historical neural experiments are disabled before their dependencies load.
+They are excluded from active comparisons and tests; there is no neural package
+extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** dependency compatibility and 44 tests passed, including
-26 evaluation/report tests, 16 relevance tests, and both pipeline tests.
+**Current validation:** dependency compatibility and 49 tests passed, including
+26 evaluation/report tests, 16 relevance tests, five scope-policy tests, and both pipeline tests.
 Full discovery still has three spaCy-related
 module import errors caused by Windows Application Control. The latest output
-is in `results/relevance_validation.txt`; the earlier environment checkpoint is
+is in `results/classical_scope_validation.txt`; the earlier environment checkpoint is
 in `checkpoints/ENVIRONMENT_SETUP.md`. No new NER benchmark scores are claimed.
 
 **Evaluation correction:** new reports use metrics version 2, which excludes
@@ -46,6 +51,13 @@ relaxed figures in the historical tables below need recalculation; they have
 not been replaced with new benchmark results. See
 [the evaluation checkpoint](checkpoints/EVALUATION_FIXES.md) and
 [the scoring protocol](docs/paper_protocol.md).
+
+The prepared [Classical NLP tests workflow](.github/workflows/classical-nlp.yml)
+checks the complete classical suite on Ubuntu/Python 3.11 after a push or pull
+request and can also be run manually in Actions. It checks tokenizer startup,
+excludes neural packages, and records test/train-dev validation artifacts.
+Its YAML, shell blocks, and embedded Python have been checked locally; a remote
+CI run has not yet been performed. See [the scope checkpoint](checkpoints/CLASSICAL_SCOPE.md).
 
 ---
 
@@ -57,7 +69,7 @@ The pipeline follows a modular, plug-in architecture configured via `configs/con
 3. **Language Detector (`language_detector`)**: Identifies document script and language (`en`, `hi`, `mr`, `gu`).
 4. **Sentence Splitter (`sentence_splitter`)**: Sentence boundary detection aware of IP addresses, domain names, CTI abbreviations (e.g., `e.g.`, `i.e.`), and the Devanagari danda.
 5. **IOC Extractor (`ioc_finder` / `ioc_regex`)**: Rule-based indicator extraction for IPs, domains, URLs, hashes, CVEs, and emails.
-6. **Statistical NER Taggers**: Models implement the shared `BaseTagger` interface and can be selected by registry name. Current options include `crf_tagger`, `memm_tagger`, `token_logreg`, `spacy_ner`, and `bilstm_crf`. Each is trained on token-aligned BIO tags across two specialized layers:
+6. **Classical NER Taggers**: Models implement the shared `BaseTagger` interface and can be selected by registry name: `crf_tagger`, `memm_tagger`, and `token_logreg`. Each is trained on token-aligned BIO tags across two specialized layers:
    - `entities` layer: `THREAT_ACTOR`, `MALWARE_TOOL`, `INFRASTRUCTURE`
    - `action` layer: `ACTION`
 
@@ -110,8 +122,6 @@ the relevance classifier's false negatives.
 | CRF (`crf_tagger`) | 0.242 | 0.287 | 0.262 | 0.428 | 0.287 | 0.344 |
 | MEMM (`memm_tagger`) | 0.216 | 0.309 | 0.254 | 0.408 | 0.309 | 0.352 |
 | Token Logistic Regression (`token_logreg`) | 0.140 | 0.308 | 0.193 | 0.283 | 0.308 | 0.295 |
-| spaCy NER (`spacy_ner`) | 0.199 | 0.332 | 0.249 | 0.386 | 0.332 | **0.357** |
-| BiLSTM-CRF (`bilstm_crf`) | 0.182 | 0.212 | 0.196 | 0.350 | 0.212 | 0.264 |
 
 Per-label relevant-dev F1:
 
@@ -120,8 +130,6 @@ Per-label relevant-dev F1:
 | CRF | 0.485 | 0.289 | 0.312 |
 | MEMM | **0.507** | 0.306 | 0.311 |
 | Token Logistic Regression | 0.421 | **0.309** | 0.226 |
-| spaCy NER | 0.522 | 0.335 | 0.285 |
-| BiLSTM-CRF | 0.455 | 0.174 | 0.233 |
 
 The TF-IDF relevance classifiers scored positive-class (relevant) F1 of 0.679
 for Logistic Regression and 0.685 for LinearSVC. Filtering CRF output with
@@ -144,9 +152,9 @@ Choose a layer or model subset without editing the script:
 .\.venv\Scripts\python.exe notebooks\12_relevant_only.py --models crf_tagger,memm_tagger
 ```
 
-The BERT-style encoder remains an optional, separate upgrade; it is excluded
-from this CPU-friendly comparison because the earlier DistilBERT run took
-about 2.5 hours.
+Earlier neural results are preserved in
+[the historical comparison record](docs/history/neural_comparisons.md).
+They are excluded from the active project and future model selection.
 
 ---
 
@@ -161,8 +169,6 @@ metrics. The test split was not used.
 | CRF (`crf_tagger`) | 0.135 | 0.150 | 0.142 | 0.245 | 0.150 | 0.186 |
 | MEMM (`memm_tagger`) | 0.118 | 0.197 | 0.148 | 0.229 | 0.197 | **0.212** |
 | Token Logistic Regression (`token_logreg`) | 0.031 | 0.122 | 0.049 | 0.066 | 0.122 | 0.085 |
-| spaCy NER (`spacy_ner`) | 0.096 | 0.202 | 0.130 | 0.205 | 0.202 | 0.204 |
-| BiLSTM-CRF (`bilstm_crf`) | 0.122 | 0.161 | 0.139 | 0.221 | 0.161 | 0.186 |
 
 The TF-IDF relevance classifiers are unchanged because they predict sentence
 relevance, not entity labels. Applying their predictions to the CRF's action

@@ -1,10 +1,10 @@
 # NLP for Cyber Threat Intelligence Extraction - Status Map and Remaining Work
 
-Last synced: 2026-11-14
+Last synced: 2026-11-15
 
 **Project goal (unchanged):** an NLP system that automatically extracts **cyber threats, attack techniques, vulnerabilities, affected systems and indicators of compromise (IOCs)** from security reports and threat-intelligence feeds.
 
-**Professor's constraints:** no LLM, no direct LLM API, simpler ML + statistical NLP only. Every component stays modular (registry + `configs/config.yaml`) so it can be swapped for a newer model without touching other code. Language flexibility for Hindi, Marathi and Gujarati is built in as we go.
+**Confirmed methods constraint:** classical NLP and classical ML only. No deep learning: BERT/transformers, BiLSTMs, neural embeddings, trained spaCy NER/parsers, and LLMs are excluded. spaCy's blank tokenizer and rule-based matcher remain allowed. Older checkpoint suggestions for neural upgrades are superseded. See `AGENTS.md` and `checkpoints/CLASSICAL_SCOPE.md`.
 
 ---
 
@@ -17,17 +17,17 @@ Last synced: 2026-11-14
 | P2 | Preprocessing | **Done** | cleaner, defanger, language detector, sentence splitter, spaCy tokenizer |
 | P3 | IOC extraction | **Done** | `ioc_finder` in pipeline, `ioc_regex` as fallback |
 | P4 | NER training data (BIO) | **Done** | two layers (`entities`, `action`), span sanitation, 99-100% retention, audit passed |
-| P5 | Statistical NER | **Mostly done** | CRF, MEMM, token LogReg, spaCy NER, BiLSTM-CRF, DistilBERT compared on dev |
-| P5b | Relevance filter (new) | **Experimental** | TF-IDF LogReg/LinearSVC in a notebook only |
+| P5 | Statistical NER | **Classical experiments available** | CRF, MEMM, token LogReg; neural experiments are historical and excluded |
+| P5b | Relevance filter | **Reusable module complete** | saved TF-IDF + LogReg, train/dev CLI, opt-in document pipeline; threshold work remains |
 | P6 | Attack-technique classifier | Not started | labels exist in SMAH-CTI (`tactic`, `techniques`) |
 | P6b | Vulnerabilities and affected systems (new) | Not started | no gold labels in SMAH-CTI |
 | P7 | Relation extraction | Not started | |
-| P8 | Full pipeline integration | **Partial** | preprocessing + IOC only; NER, relevance, techniques not in the config pipeline |
-| P9 | Evaluation | **Partial** | exact-span seqeval on dev only; test split untouched |
+| P8 | Full pipeline integration | **Partial** | preprocessing + IOC + saved relevance; NER and technique integration remain |
+| P9 | Evaluation | **Partial** | corrected metrics version 2, grouped validation utilities; official test reserved |
 | P10 | Output, demo, feed ingestion | Not started | |
 | P11 | Upgrade guide, report, demo | Not started | |
 
-**Exact position:** inside **P5**. The relevant-only comparison is finished. The next step is **P5 Step 8: verify how the paper scores NER and broaden our metrics.**
+**Current position:** corrected evaluation and saved relevance are implemented. Validate the classical suite in an approved runtime/CI, then integrate saved entity/action taggers and regenerate development diagnostics. The prepared CI workflow has not yet been run remotely.
 
 ---
 
@@ -42,30 +42,24 @@ Dev has only 10 reports, so differences of a few points are noise. The test spli
 | CRF | 0.262 | 0.344 |
 | MEMM | 0.254 | 0.352 |
 | Token LogReg | 0.193 | 0.295 |
-| spaCy NER | 0.249 | 0.357 |
-| BiLSTM-CRF | 0.196 | 0.264 |
 
-**Action layer**, relevant-dev F1: CRF 0.186, MEMM 0.212, spaCy 0.204, BiLSTM-CRF 0.186, token LogReg 0.085.
+**Action layer**, historical relevant-dev F1: CRF 0.186, MEMM 0.212, token LogReg 0.085. Excluded neural results are preserved in `docs/history/neural_comparisons.md`.
 
 **Other results:**
-- Earlier all-sentence training: CRF 0.200, DistilBERT 0.245 (2.5 h on CPU).
+- Earlier all-sentence CRF training: dev exact F1 0.200.
 - Training on relevant sentences only lifted CRF all-dev F1 from 0.200 to 0.262 and recall from 0.137 to 0.287.
 - Relevance classifiers reach dev F1 of about 0.68. Filtering before the CRF gives all-dev F1 of 0.274-0.278.
-- The SMAH-CTI paper reports NER baseline F1 of roughly 74-81. **The gap is still about 40 points** and its cause is not yet explained.
+- The verified released paper reports strict character-span NER F1 around 0.14-0.22, not the previously assumed 74-81. Direct comparison still requires matching split, label layers, and original span conventions. See `docs/paper_protocol.md`.
 
 ---
 
-## 3. Open question that drives the next work
+## 3. Questions that drive the next work
 
-Why are we far below 74-81? Candidate causes, to be tested in this order:
-
-1. **Different scoring** (partial or token-level instead of exact match, or relevant sentences only).
-2. **Unlabeled mentions** in sentences marked irrelevant, which teach the model that real entities are "O".
-3. **Span-boundary conventions** in the annotations (exact match punishes small boundary differences).
-4. **Model strength** (the paper's baselines may be fine-tuned transformers).
-5. **Dev noise** (10 reports).
-
-Do not tune further until causes 1-3 are checked.
+The supposed 40-point gap was based on an unsupported benchmark assumption.
+Focus next on exact-span errors, incomplete annotations, sentence relevance
+recall, source variation, and stable report-grouped comparisons of the allowed
+classical models. Historical token/relaxed figures need recomputation under
+metrics version 2. Neural model upgrades are outside project scope.
 
 ---
 
@@ -82,10 +76,10 @@ Do not tune further until causes 1-3 are checked.
 - [ ] **A7. Decision thresholds.** Use `predict_marginals` to trade precision for recall per label, tuned on dev.
 - [ ] **A8. Split-layer experiment.** Three taggers (one each for THREAT_ACTOR, MALWARE_TOOL, INFRASTRUCTURE) plus a merge policy for overlaps.
 - [ ] **A9. Rules and post-processing.** Boundary normalization, generic mentions, file-name rules.
-- [ ] **A10. Ensemble.** Token- or span-level voting across CRF, MEMM and spaCy.
+- [ ] **A10. Ensemble.** Token- or span-level voting across CRF, MEMM and token Logistic Regression.
 - [x] **A11. Reduce dev noise.** Implemented 5-fold report-grouped cross-validation (`src/cti/eval/cv.py`) and cluster bootstrapping (`src/cti/eval/bootstrap.py`) over all 80 train+dev reports.
 - [ ] **A12. Action layer.** Repeat tuning for `ACTION` layer.
-- [ ] **A13. Optional encoder upgrade.** Fine-tune a BERT-style model on relevant sentences only with dev-based early stopping (CPU warning).
+- **A13. Excluded:** neural encoder upgrades are outside the confirmed scope.
 
 
 **Exit criteria:** best configuration per layer chosen on dev, a metrics table with all three scoring modes, and a written explanation of the gap to the paper.
@@ -96,7 +90,7 @@ Do not tune further until causes 1-3 are checked.
 - [ ] **B2.** Add features: word + character n-grams, `context_before`, source name.
 - [ ] **B3.** Tune the decision threshold for **recall**, because every missed relevant sentence is lost for the later stages.
 - [ ] **B4.** Sentence-level dev P/R/F1 is recorded (0.6265 / 0.7419 / 0.6793 at threshold 0.5); downstream NER and technique effects still need evaluation.
-- [ ] **B5.** Alternatives to record for P11: Naive Bayes, gradient boosting, sentence embeddings + LogReg, fine-tuned encoder.
+- [ ] **B5.** Classical alternatives: Naive Bayes, LinearSVC, word/character n-grams, and context features.
 
 ### Stage C - P6: attack-technique classifier
 
@@ -109,7 +103,7 @@ Matches the "attack techniques" part of the project title.
 - [ ] **C5. Features.** `context_before`, extracted ACTION spans, entity types present.
 - [ ] **C6. Metrics.** Micro/macro F1, per-tactic F1, top-k accuracy, results on relevant sentences vs end-to-end after the relevance filter.
 - [ ] **C7. Register `technique_classifier`**: writes ATT&CK IDs and names into `doc.metadata["techniques"]` per sentence.
-- [ ] **C8. Alternatives for P11:** Naive Bayes, Random Forest, kNN, classifier chains, sentence embeddings + LogReg, encoder fine-tuning.
+- [ ] **C8. Classical alternatives:** Naive Bayes, Random Forest, kNN, classifier chains, and TF-IDF similarity retrieval.
 
 ### Stage D - P6b: vulnerabilities and affected systems
 
@@ -126,19 +120,19 @@ Matches "vulnerabilities" and "affected systems" in the title. SMAH-CTI has no g
 ### Stage E - P7: relation extraction
 
 - [ ] **E1. Define relation types:** actor-uses-malware/tool, malware-exploits-CVE, actor/malware-targets-system, indicator-associated-with-malware.
-- [ ] **E2. Rule baseline:** same-sentence co-occurrence of two entities plus trigger verbs ("uses", "deploys", "exploits", "targets"); spaCy dependency patterns if a parser model is available.
+- [ ] **E2. Rule baseline:** generate same-sentence entity-pair candidates, then apply trigger verbs ("uses", "deploys", "exploits", "targets") and negation rules. Do not use a neural dependency parser.
 - [ ] **E3. Classical ML:** LogReg on entity-pair features (entity types, words between, distance, trigger words).
 - [ ] **E4. Validation:** check actor-malware pairs against ATT&CK "uses" relationships (distant supervision) and hand-check a sample of 100 relations, since SMAH-CTI has no relation gold.
 - [ ] **E5. Register `relation_extractor`** writing to `doc.metadata["relations"]`.
 
 ### Stage F - P8: full pipeline integration
 
-- [ ] **F1. Model persistence.** `train.py` CLI that trains each module and saves it under `models/` (joblib for CRF/MEMM/relevance, `to_disk` for spaCy) with a manifest: date, data version, dev metrics.
+- [ ] **F1. Model persistence.** Relevance training/persistence is complete. Add equivalent joblib artifacts and manifests for classical entity/action taggers.
 - [ ] **F2. NER modules in the pipeline:** `ner_entities` and `ner_action` wrap trained taggers: sentence split → tokenize → predict → BIO to character spans → `Entity` with confidence from marginals.
 - [ ] **F3. Offset mapping.** Defanging changes text length, so keep a map from defanged positions back to the original report text. This is needed for highlighting and evidence in the output.
 - [ ] **F4. Merge policy.** Resolve overlaps between IOC entities and NER entities (domain inside URL or email; INFRASTRUCTURE vs IOC), deduplicate, normalize (lowercase hashes, canonical domains), keep source and confidence.
 - [ ] **F5. Final pipeline order:** cleaner → defanger → language detector → sentence splitter → ioc_finder → relevance filter → NER (entities, action) → system/vulnerability taggers → technique classifier → relation extractor → merger.
-- [ ] **F6. Language routing.** English runs the full pipeline. For Hindi, Marathi and Gujarati: IOC extraction works as is (indicators are language-independent); for the rest, choose and test one strategy: multilingual encoder fine-tuned on English data and tested on a small hand-labeled sample, or an offline translation step, or an explicit "IOC-only" fallback with a warning. Create about 30 test sentences per language.
+- [ ] **F6. Language routing.** Validate an explicit IOC-only fallback for Hindi, Marathi and Gujarati first. Further extraction needs tested language-specific dictionaries/rules or classical taggers with suitable annotated data. Neural translation/encoders are excluded. Create a small evaluation sample per language.
 - [ ] **F7. Tests.** Unit test per new module; one end-to-end test on a short sample report; regression test that fails if dev F1 drops.
 
 ### Stage G - P10: outputs and input feeds
@@ -159,27 +153,27 @@ Matches "vulnerabilities" and "affected systems" in the title. SMAH-CTI has no g
 
 ### Stage I - P11: upgrade guide, report and demo
 
-- [ ] **I1. Swap-in table** for every module: current model, modern alternative, how to swap (one config line), cost and licensing.
+- [ ] **I1. Swap-in table** for every module: current method, allowed classical alternative, integration, cost and licensing.
 
-| Module | Now | Modern swap-ins |
+| Module | Now | Allowed alternatives |
 |---|---|---|
-| NER | CRF / MEMM / spaCy | BiLSTM-CRF, BERT-style encoders (DistilBERT, security-domain encoders such as SecBERT or CyBERT: verify on the Hub), span-based encoder NER |
-| Relevance | TF-IDF + LogReg | sentence embeddings + LogReg, fine-tuned encoder |
-| Techniques | TF-IDF + LogReg | embeddings + LogReg, encoder fine-tuning; MITRE TRAM is a real-world reference (check its current design) |
-| IOC | ioc-finder | iocextract, iocsearcher (verify), custom rules |
-| Language ID | script heuristic | fastText language-ID, lingua |
-| Sentence splitting | regex | NLTK Punkt, wtpsplit (multilingual neural) |
-| Relations | patterns / LogReg | encoder-based relation classifiers |
+| NER | CRF / MEMM / token LogReg | HMM, structured perceptron, label-specific CRFs, dictionary/rule features |
+| Relevance | TF-IDF + LogReg | character n-grams + LinearSVC, Naive Bayes, context features |
+| Techniques | planned TF-IDF + linear models | classifier chains, hierarchical classifiers, lexical similarity |
+| IOC | ioc-finder | existing custom regex and normalization rules |
+| Language ID | script heuristic | character n-gram classical classifier, validated dictionaries |
+| Sentence splitting | regex | rule refinement, classical statistical sentence segmentation |
+| Relations | planned patterns / LogReg | entity-pair features + linear classifier, trigger/negation rules |
 | Output | JSON / STIX 2.1 | TAXII server, MISP or OpenCTI connectors, SIEM export |
 
 - [ ] **I2. Production notes:** Docker packaging, model registry/versioning (for example MLflow), monitoring for drift, and a human-review loop that feeds corrected labels back into training.
-- [ ] **I3. Note on industry practice:** many current systems use LLM-based extraction. That approach is excluded from this project by the professor's rule, and the report should say so.
+- [ ] **I3. Method scope:** explain that all deep learning, including trained spaCy NER and neural encoders, is excluded. Keep earlier neural results in historical records only.
 - [ ] **I4. Final report and demo script:** architecture diagram, dataset and license note (CC BY-NC 4.0, non-commercial), results tables, limitations.
 
 ### Stage J - Engineering hygiene (do alongside the other stages)
 
 - [ ] **J1. Commit the uncommitted work now:** `README.md`, `tests/test_models_preprocessing.py`, `src/cti/models/memm.py`, `notebooks/12_relevant_only.py`.
-- [ ] **J2. Dependencies.** Create `requirements.txt` (or optional dependency groups in `pyproject.toml`) for sklearn-crfsuite, spaCy, ioc-finder, seqeval, pyyaml, and optional torch/transformers.
+- [x] **J2. Dependencies.** Pinned core dependencies and metadata are present. The neural extra is removed; its former requirements are archived under `docs/history/`.
 - [ ] **J3. `.gitignore`** for `venv/`, `data/raw`, `data/external`, `models/`, caches.
 - [ ] **J4. Reproducibility:** fixed seeds, results saved in `results/`, one script that regenerates every table.
 - [ ] **J5. Keep the test split locked** until Stage H.
@@ -188,11 +182,11 @@ Matches "vulnerabilities" and "affected systems" in the title. SMAH-CTI has no g
 
 ## 5. Immediate next steps (in order)
 
-1. **A1** Read the paper's evaluation section and record the protocol.
-2. **A2** Add relaxed and token-level metrics with per-label and per-source output.
-3. **J1** Commit the current work.
-4. **A4** Training-set policy experiment and audit of unlabeled mentions.
-5. **B1** Move the relevance classifier into a registered module.
+1. Review and run the prepared classical CI workflow after the user's normal commit/push.
+2. Record a full passing classical baseline in a runtime that loads the tokenizer.
+3. Add saved CRF/MEMM entity/action inference to the document pipeline.
+4. Regenerate dev diagnostics under metrics version 2 and compare relevance thresholds.
+5. Implement TF-IDF + linear multi-label ATT&CK tactic/technique classifiers.
 
 ## 6. Definition of done (maps to the project description)
 
@@ -202,4 +196,4 @@ Matches "vulnerabilities" and "affected systems" in the title. SMAH-CTI has no g
 - [ ] **Affected systems:** system/software tagger with a small gold evaluation
 - [ ] **IOCs:** extracted from reports and feeds, defanging handled, STIX output
 - [ ] **Reports and feeds** accepted as input (text, HTML, PDF, RSS)
-- [ ] **No LLM**, modular swap-ins documented, language flexibility demonstrated
+- [ ] **Classical NLP/ML only, no deep learning**, modular alternatives documented, language support evaluated honestly

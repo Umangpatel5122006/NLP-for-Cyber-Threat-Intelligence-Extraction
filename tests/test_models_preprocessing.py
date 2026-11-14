@@ -1,4 +1,3 @@
-import importlib.util
 import json
 import os
 import tempfile
@@ -13,16 +12,11 @@ from cti.models.base import validate_training_data
 from cti.models.crf import CRFTagger
 from cti.models.data import load_bio
 from cti.models.memm import MEMMTagger, TokenLogisticTagger
-from cti.models.spacy_ner import SpacyNER
 from cti.preprocessing.cleaner import TextCleaner
 from cti.preprocessing.defanger import Defanger
 from cti.preprocessing.language_detector import LanguageDetector
 from cti.preprocessing.sentence_splitter import SentenceSplitter
 from cti.preprocessing.tokenizer import tokenize
-
-
-def has_dependencies(*names):
-    return all(importlib.util.find_spec(name) is not None for name in names)
 
 
 class ModelContractTests(unittest.TestCase):
@@ -33,20 +27,6 @@ class ModelContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "orphaned I-tag"):
             validate_training_data([["apt29"]], [["I-ACTOR"]])
 
-    @unittest.skipUnless(
-        has_dependencies("torch", "transformers"),
-        "Optional neural dependencies are not installed.",
-    )
-    def test_bert_subword_labels_align_once_per_word(self):
-        from cti.models.bert_ner import _align_word_labels
-
-        labels = _align_word_labels(
-            [None, 0, 0, 1, None],
-            ["B-ACTOR", "O"],
-            {"B-ACTOR": 1, "O": 0},
-        )
-        self.assertEqual(labels, [-100, 1, -100, 0, -100])
-
     def test_crf_preserves_empty_sentence_positions(self):
         model = CRFTagger(max_iterations=5)
         model.fit(
@@ -55,30 +35,6 @@ class ModelContractTests(unittest.TestCase):
         )
         predictions = model.predict([["apt29"], [], ["mimikatz", "ran"]])
         self.assertEqual([len(sequence) for sequence in predictions], [1, 0, 2])
-
-    @unittest.skipUnless(
-        has_dependencies("torch", "torchcrf"),
-        "Optional neural dependencies are not installed.",
-    )
-    def test_bilstm_crf_preserves_empty_sentence_positions(self):
-        from cti.models.bilstm_crf import BiLSTMCRF
-
-        model = BiLSTMCRF(epochs=1, batch_size=2, min_freq=1)
-        model.fit(
-            [["apt29", "used"], ["mimikatz"]],
-            [["B-ACTOR", "O"], ["B-TOOL"]],
-        )
-        predictions = model.predict([["apt29"], [], ["mimikatz", "ran"]])
-        self.assertEqual([len(sequence) for sequence in predictions], [1, 0, 2])
-
-    def test_spacy_ner_preserves_empty_sentence_positions(self):
-        model = SpacyNER(epochs=1, dropout=0)
-        model.fit(
-            [["apt29", "used"], ["mimikatz"]],
-            [["B-ACTOR", "O"], ["B-TOOL"]],
-        )
-        predictions = model.predict([["apt29"], [], ["mimikatz"]])
-        self.assertEqual([len(sequence) for sequence in predictions], [1, 0, 1])
 
     def test_sklearn_sequence_taggers_follow_bio_interface(self):
         tokens = [

@@ -1,3 +1,9 @@
+"""Historical excluded experiment; retained for provenance only."""
+
+from cti.core.model_policy import check_model_scope
+
+check_model_scope("bert_ner")
+
 import torch
 from transformers import (AutoModelForTokenClassification, AutoTokenizer,
                           DataCollatorForTokenClassification, Trainer, TrainingArguments)

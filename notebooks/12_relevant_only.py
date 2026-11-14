@@ -1,7 +1,7 @@
 r"""Compare swappable NER models and relevance filters on the dev split.
 
 Run from the repository root:
-    .\venv\Scripts\python.exe notebooks\12_relevant_only.py
+    .\.venv\Scripts\python.exe notebooks\12_relevant_only.py
 
 Only the development split is evaluated; the test split is never loaded.
 Integrated with src/cti/eval/ for multi-perspective metrics, error taxonomy,
@@ -22,6 +22,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.svm import LinearSVC
 
 from cti.core.dataset import load_smah
+from cti.core.model_policy import CLASSICAL_NER_MODULES
 from cti.core.registry import create
 from cti.eval.metrics import evaluate_predictions, exact_span_metrics
 from cti.eval.report import (
@@ -32,13 +33,7 @@ from cti.eval.report import (
 
 ROOT = Path(__file__).resolve().parents[1]
 PROCESSED = ROOT / "data" / "processed"
-MODEL_MODULES = {
-    "crf_tagger": "cti.models.crf",
-    "memm_tagger": "cti.models.memm",
-    "token_logreg": "cti.models.memm",
-    "spacy_ner": "cti.models.spacy_ner",
-    "bilstm_crf": "cti.models.bilstm_crf",
-}
+MODEL_MODULES = CLASSICAL_NER_MODULES
 
 
 def _load_split(layer, split, raw_splits):
@@ -94,12 +89,10 @@ def _subset(tokens, tags, selector):
     )
 
 
-def _make_model(name, max_iterations, epochs):
+def _make_model(name, max_iterations):
     importlib.import_module(MODEL_MODULES[name])
     if name == "crf_tagger":
         return create(name, max_iterations=max_iterations)
-    if name in ("spacy_ner", "bilstm_crf"):
-        return create(name, epochs=epochs)
     return create(name)
 
 
@@ -140,11 +133,10 @@ def main():
     parser.add_argument("--layer", default="entities", choices=("entities", "action"))
     parser.add_argument(
         "--models",
-        default="crf_tagger,memm_tagger,token_logreg,spacy_ner,bilstm_crf",
-        help="Comma-separated registered NER model names.",
+        default=",".join(MODEL_MODULES),
+        help="Comma-separated classical NER models: " + ", ".join(MODEL_MODULES),
     )
     parser.add_argument("--max-iterations", type=int, default=200)
-    parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--skip-relevance", action="store_true")
     parser.add_argument(
         "--export-prefix",
@@ -152,8 +144,8 @@ def main():
         help="Optional prefix for exporting report markdown and CSV to results/ (e.g. crf_baseline_m2).",
     )
     args = parser.parse_args()
-    if args.max_iterations < 1 or args.epochs < 1:
-        parser.error("--max-iterations and --epochs must be positive.")
+    if args.max_iterations < 1:
+        parser.error("--max-iterations must be positive.")
     model_names = [name.strip() for name in args.models.split(",") if name.strip()]
     if not model_names:
         parser.error("--models must name at least one model.")
@@ -192,7 +184,7 @@ def main():
 
     for name in model_names:
         print(f"\n=== NER: {name} ===")
-        model = _make_model(name, args.max_iterations, args.epochs)
+        model = _make_model(name, args.max_iterations)
         started = time.perf_counter()
         model.fit(train_rel_x, train_rel_y)
         predictions = model.predict(dev_x)

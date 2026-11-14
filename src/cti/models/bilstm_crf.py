@@ -1,3 +1,9 @@
+"""Historical excluded experiment; retained for provenance only."""
+
+from cti.core.model_policy import check_model_scope
+
+check_model_scope("bilstm_crf")
+
 from collections import Counter
 
 import torch
