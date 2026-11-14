@@ -1,0 +1,6 @@
+# Optional deep learning dependencies (PyTorch / Transformers / Accelerate)
+# Not needed for default statistical pipeline (CRF, MEMM, LogReg, rules)
+torch==2.14.1
+pytorch-crf==0.7.2
+transformers==5.20.2
+accelerate==1.15.0
