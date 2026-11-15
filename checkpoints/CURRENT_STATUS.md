@@ -1,6 +1,7 @@
 # Project progress, in order
 
-Latest checkpoint: [consolidated findings and frontend readiness](FINDING_MERGE.md).
+Latest checkpoint: [local browser workbench and API](BROWSER_WORKBENCH.md).
+The [consolidated findings](FINDING_MERGE.md) step is committed.
 The [original-report evidence offsets](OFFSET_MAPPING.md) step is committed.
 The [saved classical NER and document inference](NER_INTEGRATION.md) step is committed.
 The preceding [classical-only methods and CI](CLASSICAL_SCOPE.md) step is committed.
@@ -15,13 +16,13 @@ Dev sentence F1 is 0.6793 at threshold 0.5. Entity and action CRFs now also have
 saved artifacts, full-dev reload checks and live document modules. New metrics
 version 2 all-dev exact F1 is 0.2596 (entities) and 0.1379 (actions), using the
 existing processed BIO labels. The official test split is still reserved.
-All 121 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
+All 138 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
 native imports remain blocked by Application Control without policy changes.
 Deep learning is excluded. Allowed NER choices are CRF, MEMM, and token Logistic
 Regression; historical neural experiments are guarded against execution.
-The committed offset step passed 96 tests, relevance persistence, both real CRF
-training/reload runs and original-offset inference in GitHub Actions. The current merge
-assertions await a remote run after commit/push. See the latest checkpoint for evidence and
+The committed merge step passed its classical validation workflow in GitHub
+Actions. The current JavaScript/API additions await a remote run after
+commit/push. See the latest checkpoint for evidence and
 [WSL_SETUP.md](../docs/WSL_SETUP.md) for working local commands.
 
 Original-report mapping is implemented for cleaning/defanging. The document
@@ -31,8 +32,15 @@ spans alongside normalized offsets. The configured pipelines now add consolidate
 evidence. All 25 new merger tests also pass on Windows. Mixed-case IOC source
 alignment is fixed without changing URL path case.
 
-After review of this step, a basic prediction-review frontend can be next:
-report input, original-text highlighting, primary findings and source details.
+The local browser workbench now provides report input/file upload, original-text
+highlighting, finding filters, source/component details and JSON export. HTML,
+CSS and JavaScript are served with a Python API using the existing pipeline.
+One command, `python -m cti.web`, starts both. All 17 API tests also pass on
+Windows; actual Chrome checks cover real NER/IOC inference, Unicode uploads,
+mobile layout and error states. See the latest checkpoint for the WSL command.
+
+Next: use this UI to inspect action boundary errors on train/dev and make a
+reviewable classical model/feature improvement against the saved baseline.
 Model accuracy, technique classification, remaining extraction tasks and final
 frozen evaluation still need work. NER confidence remains unavailable (`null`)
 and no aggregate confidence is invented during merging.

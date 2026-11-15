@@ -1,0 +1,227 @@
+"""Loopback-only HTTP API and static UI for the classical CTI review demo."""
+
+import argparse
+import json
+import sys
+import threading
+import time
+from dataclasses import asdict
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from urllib.parse import urlsplit
+
+import yaml
+
+from cti.core.pipeline import Pipeline
+from cti.core.registry import create
+
+
+ROOT = Path(__file__).resolve().parents[3]
+ASSETS = Path(__file__).with_name("static")
+MAX_CHARACTERS = 100_000
+MAX_BODY_BYTES = 1_048_576
+MODES = {"ner": "Entities + IOCs", "ioc": "IOCs only"}
+STATIC = {
+    "/": ("index.html", "text/html; charset=utf-8"),
+    "/app.js": ("app.js", "text/javascript; charset=utf-8"),
+    "/styles.css": ("styles.css", "text/css; charset=utf-8"),
+}
+
+
+class ReviewError(Exception):
+    def __init__(self, status, code, message):
+        super().__init__(message)
+        self.status, self.code, self.message = status, code, message
+
+
+def _load_pipeline(mode):
+    name = "config_ner.yaml" if mode == "ner" else "config.yaml"
+    config = yaml.safe_load((ROOT / "configs" / name).read_text(encoding="utf-8"))
+    modules = []
+    for step in config["pipeline"]:
+        params = dict(step.get("params", {}))
+        if "model_path" in params:
+            params["model_path"] = str(ROOT / params["model_path"])
+        modules.append(create(step["module"], **params))
+    return Pipeline(modules)
+
+
+class ReviewEngine:
+    def __init__(self, ioc_only=False, loader=None):
+        self.ioc_only = ioc_only
+        self.loader = _load_pipeline if loader is None else loader
+        self._pipelines, self._failures = {}, {}
+        self._lock = threading.RLock()
+
+    def _pipeline(self, mode):
+        if mode not in MODES:
+            raise ReviewError(400, "invalid_mode", "Choose a supported analysis mode.")
+        if mode == "ner" and self.ioc_only:
+            raise ReviewError(503, "mode_disabled", "Entity models are disabled in this server. IOC mode is available.")
+        if mode in self._failures:
+            raise self._failures[mode]
+        if mode not in self._pipelines:
+            try:
+                self._pipelines[mode] = self.loader(mode)
+            except FileNotFoundError:
+                self._failures[mode] = ReviewError(503, "models_missing", "Saved models are missing. Use IOC mode or train the entity models.")
+            except (ImportError, OSError):
+                self._failures[mode] = ReviewError(503, "runtime_unavailable", "This runtime cannot load the entity models. Use IOC mode or the prepared WSL environment.")
+            except Exception:
+                self._failures[mode] = ReviewError(503, "models_unavailable", "This mode could not initialize. Check the server setup and restart it.")
+            if mode in self._failures:
+                raise self._failures[mode]
+        return self._pipelines[mode]
+
+    def status(self):
+        modes = []
+        with self._lock:
+            for mode, label in MODES.items():
+                details = {"id": mode, "label": label, "ready": True, "message": ""}
+                try:
+                    self._pipeline(mode)
+                except ReviewError as error:
+                    details.update(ready=False, code=error.code, message=error.message)
+                modes.append(details)
+        return {"schema_version": 1, "modes": modes, "max_characters": MAX_CHARACTERS}
+
+    def analyze(self, payload):
+        if not isinstance(payload, dict) or set(payload) != {"text", "mode"}:
+            raise ReviewError(400, "invalid_request", "Provide report text and an analysis mode.")
+        text, mode = payload["text"], payload["mode"]
+        if not isinstance(mode, str) or mode not in MODES:
+            raise ReviewError(400, "invalid_mode", "Choose a supported analysis mode.")
+        if not isinstance(text, str) or not text.strip():
+            raise ReviewError(400, "empty_report", "Add report text before analyzing.")
+        if len(text) > MAX_CHARACTERS:
+            raise ReviewError(413, "report_too_large", f"Reports can contain up to {MAX_CHARACTERS:,} characters.")
+        # Reject unpaired surrogate escapes, which cannot be exported as UTF-8.
+        try:
+            text.encode("utf-8")
+        except UnicodeEncodeError:
+            raise ReviewError(400, "invalid_unicode", "The report must contain valid UTF-8 text.") from None
+        if not self._lock.acquire(blocking=False):
+            raise ReviewError(429, "analysis_busy", "Another analysis is running. Try again shortly.")
+        try:
+            pipeline = self._pipeline(mode)
+            started = time.perf_counter()
+            document = pipeline.run(text)
+            return {
+                "document": asdict(document),
+                "analysis": {"mode": mode, "elapsed_ms": round((time.perf_counter() - started) * 1000)},
+            }
+        finally:
+            self._lock.release()
+
+
+class ReviewHandler(BaseHTTPRequestHandler):
+    def setup(self):
+        super().setup()
+        self.connection.settimeout(30)
+
+    def log_message(self, format, *args):
+        # Reports and request details are not written to an access log.
+        pass
+
+    def _reply(self, status, body, content_type="application/json; charset=utf-8", head=False):
+        if not isinstance(body, bytes):
+            body = json.dumps(body, ensure_ascii=False, allow_nan=False).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'")
+        self.end_headers()
+        if not head:
+            try:
+                self.wfile.write(body)
+            except (BrokenPipeError, ConnectionResetError):
+                pass
+
+    def _check_origin(self):
+        hosts = {f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}"}
+        host = self.headers.get("Host", "").lower()
+        if host not in hosts:
+            raise ReviewError(403, "invalid_host", "Use the server's localhost address.")
+        origin = self.headers.get("Origin")
+        if origin is not None and origin != "http://" + host:
+            raise ReviewError(403, "invalid_origin", "Open the review app on the same local server.")
+
+    def _error(self, error, head=False):
+        self._reply(error.status, {"error": {"code": error.code, "message": error.message}}, head=head)
+
+    def do_GET(self, head=False):
+        try:
+            self._check_origin()
+            path = urlsplit(self.path).path
+            if path in STATIC:
+                filename, content_type = STATIC[path]
+                self._reply(200, (ASSETS / filename).read_bytes(), content_type, head=head)
+            elif path == "/api/status":
+                self._reply(200, self.server.engine.status(), head=head)
+            elif path == "/api/example":
+                text = (ROOT / "examples/merge_report.txt").read_bytes().decode("utf-8")
+                self._reply(200, {"text": text, "filename": "merge_report.txt"}, head=head)
+            else:
+                raise ReviewError(404, "not_found", "This page or endpoint was not found.")
+        except ReviewError as error:
+            self._error(error, head=head)
+
+    def do_HEAD(self):
+        self.do_GET(head=True)
+
+    def do_POST(self):
+        try:
+            self._check_origin()
+            if urlsplit(self.path).path != "/api/analyze":
+                raise ReviewError(404, "not_found", "This endpoint was not found.")
+            if self.headers.get_content_type() != "application/json":
+                raise ReviewError(415, "invalid_content_type", "Send a JSON analysis request.")
+            length = self.headers.get("Content-Length")
+            if length is None:
+                raise ReviewError(411, "length_required", "The request needs a content length.")
+            try:
+                length = int(length)
+            except ValueError:
+                raise ReviewError(400, "invalid_length", "Invalid request length.") from None
+            if not 0 < length <= MAX_BODY_BYTES:
+                raise ReviewError(413, "request_too_large", "The analysis request is too large.")
+            try:
+                payload = json.loads(self.rfile.read(length).decode("utf-8"))
+            except (ValueError, UnicodeDecodeError):
+                raise ReviewError(400, "invalid_json", "Send valid UTF-8 JSON.") from None
+            self._reply(200, self.server.engine.analyze(payload))
+        except ReviewError as error:
+            self._error(error)
+        except Exception as error:
+            print(f"Analysis failed ({type(error).__name__}).", file=sys.stderr, flush=True)
+            self._error(ReviewError(500, "analysis_failed", "Analysis failed. Check the local server terminal."))
+
+    def do_OPTIONS(self):
+        self._reply(405, {"error": {"code": "method_not_allowed", "message": "Use the local review app."}})
+
+
+def create_server(host="127.0.0.1", port=8765, engine=None):
+    if host not in ("127.0.0.1", "localhost"):
+        raise ValueError("The review demo binds to loopback only.")
+    server = ThreadingHTTPServer((host, port), ReviewHandler)
+    server.daemon_threads = True
+    server.engine = ReviewEngine() if engine is None else engine
+    return server
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--host", choices=("127.0.0.1", "localhost"), default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument("--ioc-only", action="store_true", help="Skip loading saved entity/action models.")
+    args = parser.parse_args(argv)
+    with create_server(args.host, args.port, ReviewEngine(ioc_only=args.ioc_only)) as server:
+        print(f"CTI Workbench: http://{args.host}:{server.server_port}", flush=True)
+        print("Press Ctrl+C to stop.", flush=True)
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            pass

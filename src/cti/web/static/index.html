@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Review cyber threat reports with classical NLP and inspect the evidence behind each finding.">
+  <title>CTI Workbench · Report analysis</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#report-input">Skip to report input</a>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="CTI Workbench home">
+      <span class="brand-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 3 27 8v8c0 7-11 13-11 13S5 23 5 16V8z"/><path d="m10 16 4 4 8-9"/></svg></span>
+      <span>CTI<span class="brand-light"> Workbench</span></span>
+    </a>
+    <nav aria-label="Main navigation"><a class="nav-active" href="#workspace">Report workspace</a><button id="method-button" class="nav-button" type="button">Method notes <span aria-hidden="true">↗</span></button></nav>
+    <span class="local-badge"><span class="dot"></span> Local analysis</span>
+  </header>
+  <main id="workspace">
+    <section class="page-heading">
+      <div><p class="eyebrow">CYBER THREAT INTELLIGENCE / REPORT REVIEW</p><h1>Report analysis<span class="title-dot">.</span></h1><p class="lead">Turn a security report into findings you can trace back to the source.</p></div>
+      <button id="connection-status" class="connection" type="button" title="Refresh server connection"><span class="dot"></span><span id="connection-text">Connecting to engine…</span><span aria-hidden="true">↻</span></button>
+    </section>
+    <div id="notice" class="notice" role="status" hidden></div>
+    <section class="stats" aria-label="Analysis summary">
+      <article class="stat"><span class="stat-label">Primary findings</span><strong id="stat-findings">—</strong><span class="stat-note">Consolidated occurrences</span></article>
+      <article class="stat"><span class="stat-label"><span class="swatch ioc"></span> Indicators</span><strong id="stat-iocs">—</strong><span class="stat-note">IPs, domains, URLs &amp; more</span></article>
+      <article class="stat"><span class="stat-label"><span class="swatch actor"></span> Threat entities</span><strong id="stat-entities">—</strong><span class="stat-note">Actors, tools &amp; infrastructure</span></article>
+      <article class="stat"><span class="stat-label"><span class="swatch action"></span> Actions</span><strong id="stat-actions">—</strong><span class="stat-note">Predicted action spans</span></article>
+    </section>
+    <section class="analysis-grid" aria-label="Analyze a report">
+      <section class="panel source-panel">
+        <div class="panel-heading"><h2><span class="step">01</span> Source report</h2><button id="example-button" class="text-button" type="button">Load example <span aria-hidden="true">↗</span></button></div>
+        <div class="source-body">
+          <div class="input-toolbar"><label for="report-input">REPORT TEXT</label><span id="character-count">0 characters</span></div>
+          <textarea id="report-input" spellcheck="false" aria-describedby="input-help" placeholder="Paste a threat intelligence report here.&#10;&#10;APT29 used Mimikatz to steal credentials.&#10;It contacted hxxps://evil[.]example[.]com."></textarea>
+          <div class="file-toolbar"><label class="file-button" for="report-file"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 13V3m-4 4 4-4 4 4M3 12v5h14v-5"/></svg>Upload text file</label><input id="report-file" class="file-input" type="file" accept=".txt,.md,text/plain,text/markdown"><span id="file-name">UTF-8 · .txt or .md</span><button id="clear-button" class="text-button subtle" type="button">Clear</button></div>
+          <p id="input-help" class="field-help">Original spelling and defanged indicators are retained as evidence.</p>
+          <div class="run-controls"><div class="mode-field"><label for="analysis-mode">ANALYSIS MODE</label><select id="analysis-mode" disabled><option value="ner">Entities + IOCs</option><option value="ioc">IOCs only</option></select></div><button id="analyze-button" class="primary-button" type="button" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 8 6-8 6z"/></svg><span>Analyze report</span></button></div>
+        </div>
+      </section>
+      <section class="panel evidence-panel">
+        <div class="panel-heading"><h2><span class="step">02</span> Evidence map</h2><span id="analysis-timing" class="small-meta">Original report</span></div>
+        <div class="legend" aria-label="Highlight categories"><span><i class="swatch actor"></i>Actor</span><span><i class="swatch tool"></i>Tool</span><span><i class="swatch action"></i>Action</span><span><i class="swatch ioc"></i>Indicator</span><span><i class="swatch infra"></i>Infrastructure</span></div>
+        <div id="report-empty" class="empty-state"><svg class="empty-icon" viewBox="0 0 64 64" aria-hidden="true"><path d="M16 7h24l9 9v41H16zM39 7v11h10M24 29h17M24 36h11M24 43h17"/><circle cx="43" cy="43" r="9"/><path d="m49 50 7 7"/></svg><h3>Your report, with the evidence in view.</h3><p>Analyze a report to highlight its findings.<br>Select a highlight or a finding to inspect its sources.</p><span class="empty-caption">CLASSICAL NLP · SOURCE-ALIGNED EVIDENCE</span></div>
+        <pre id="report-view" class="report-view" tabindex="0" aria-label="Original report with finding highlights" hidden></pre>
+        <div class="panel-foot"><span class="dot"></span><span id="map-note">Highlights will reference the original report.</span></div>
+      </section>
+    </section>
+    <section class="panel findings-panel" aria-labelledby="findings-heading">
+      <div class="panel-heading"><h2 id="findings-heading"><span class="step">03</span> Findings <span id="finding-count" class="count-badge">0</span></h2><button id="download-button" class="secondary-button" type="button" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10m-4-4 4 4 4-4M3 14v3h14v-3"/></svg>Export JSON</button></div>
+      <div class="review-grid">
+        <div class="findings-column">
+          <div class="filters"><label class="search-field"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="m12 12 5 5"/></svg><span class="sr-only">Search findings</span><input id="finding-search" type="search" placeholder="Search findings or sources" disabled></label><label><span class="sr-only">Filter by label</span><select id="label-filter" disabled><option value="">All labels</option></select></label></div>
+          <div class="list-toolbar"><span id="result-summary">No analysis yet</span><label class="checkbox-label"><input id="show-components" type="checkbox" disabled>Show host components</label></div>
+          <div id="finding-list" class="finding-list" aria-label="Consolidated findings"><div class="list-empty"><span class="empty-plus" aria-hidden="true">+</span><p>Findings will appear here.</p><small>Start with your report or load the example above.</small></div></div>
+        </div>
+        <aside id="finding-detail" class="finding-detail" aria-label="Selected finding details"><div class="detail-empty"><span class="detail-symbol" aria-hidden="true">⌁</span><h3>Follow the evidence</h3><p>Select a finding to see the original excerpt, detector sources, and related overlaps.</p></div></aside>
+      </div>
+    </section>
+    <footer class="footer"><span><span class="footer-brand">CTI Workbench</span> / Classical NLP research baseline</span><span id="scope-note">English entity &amp; action models · Rule-based IOCs</span></footer>
+  </main>
+  <dialog id="method-dialog">
+    <div class="dialog-heading"><span class="eyebrow">ABOUT THIS WORKSPACE</span><button id="close-method" class="icon-button" type="button" aria-label="Close method notes">×</button></div>
+    <h2>Traceable findings.<br>Classical methods.</h2><p>Entity and action tagging uses the saved CRF models. Indicators are extracted with rules. IOC-only mode runs without the entity models.</p><h3>Read the sources, not a combined score</h3><p>Each finding retains its original observations. Rule matches and model predictions are different kinds of evidence; the merger does not create an overall attack probability. NER confidence is unavailable.</p><h3>Highlights follow the original report</h3><p>Cleaning and defanging happen for analysis. Highlights use source-covering spans in the supplied report, including Unicode and defanged indicators. Host components and overlaps remain available for inspection.</p><p class="dialog-note">This workspace reviews the current research baseline. English NER covers threat actors, malware/tools, infrastructure and actions.</p>
+  </dialog>
+</body>
+</html>

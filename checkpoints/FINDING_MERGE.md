@@ -2,6 +2,11 @@
 
 Date: 2026-11-15 (Asia/Calcutta)
 
+Follow-up: this step was committed as `3041904` and its
+[GitHub Actions run](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43680752877)
+succeeded. The next [browser checkpoint](BROWSER_WORKBENCH.md) adds the local
+frontend/API. The original implementation record below is preserved.
+
 ## Result
 
 The configured pipelines now finish with `result_merger`, producing a

@@ -1,0 +1,3 @@
+Real localhost NER API output equals the existing merge-report CLI document exactly.
+Original text, findings, source evidence, offsets and per-source confidence unchanged.
+Both saved CRF binaries unchanged. Official test split not evaluated.

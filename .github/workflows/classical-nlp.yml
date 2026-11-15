@@ -41,6 +41,13 @@ jobs:
           for name in ("torch", "transformers", "torchcrf", "accelerate"):
               assert importlib.util.find_spec(name) is None, name
           PY
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: "24"
+      - name: Check frontend JavaScript syntax
+        run: |
+          node --check src/cti/web/static/app.js
+          node --check scripts/check_web_ui.mjs
       - name: Run the complete classical suite
         run: |
           .venv/bin/python -VV > results/ci-environment.txt
@@ -80,6 +87,21 @@ jobs:
           keys = lambda rows: {(e["start"], e["end"], e["label"], e["source"], e["confidence"]) for e in rows}
           assert keys(result["entities"]) == keys([e for f in result["findings"] for e in f["evidence"]])
           assert all({edge["left_id"], edge["right_id"]} <= identifiers for edge in result["overlaps"])
+          PY
+      - name: Check the review API with real saved models
+        run: |
+          .venv/bin/python - <<'PY'
+          import json
+          from pathlib import Path
+          from cti.web.server import ReviewEngine
+          engine = ReviewEngine()
+          assert all(mode["ready"] for mode in engine.status()["modes"])
+          for mode in ("ner", "ioc"):
+              result = engine.analyze({"mode": mode, "text": "APT29 contacted 10.1.2[.]3."})
+              assert result["analysis"]["mode"] == mode
+              assert result["document"]["findings"]
+              assert result["document"]["original_text"] == "APT29 contacted 10.1.2[.]3."
+              Path(f"results/ci-ner/web-{mode}.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
           PY
       - name: Upload validation evidence
         if: always()

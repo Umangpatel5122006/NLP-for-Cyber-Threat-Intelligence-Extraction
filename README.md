@@ -9,6 +9,30 @@ token shapes, and rule-based dictionary matching remain in scope.
 
 ---
 
+## Run the Browser Workbench
+
+Frontend and NLP backend start together with one command from the project root:
+
+```powershell
+wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.web'
+```
+
+Open **http://127.0.0.1:8765**, load the example and select **Analyze report**.
+The responsive UI supports original-text highlights, finding filters, source
+evidence/components and JSON export. It uses browser HTML/CSS/JavaScript with
+the existing Python pipeline; no npm installation is needed.
+
+For IOC-only use on native Windows:
+
+```powershell
+.\.venv\Scripts\python.exe -m cti.web --ioc-only
+```
+
+Press Ctrl+C to stop. See [the browser checkpoint](checkpoints/BROWSER_WORKBENCH.md)
+for screenshots, the API contract, setup and validation.
+
+---
+
 ## Setup and Baseline Checks
 
 The core dependency snapshot targets **Windows x64 with Python 3.11**. Run
@@ -38,14 +62,16 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** all **121 tests pass** in an isolated Ubuntu-24.04 WSL
+**Current validation:** all **138 tests pass** in an isolated Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
-saved-NER, original-offset and 25 merger tests; see `results/merge_validation.txt` and
+saved-NER, original-offset, merger and 17 API tests; see `results/web_validation.txt` and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
-were changed. The 25 merger tests also pass in Windows Python 3.11.
-The latest [merge checkpoint](checkpoints/FINDING_MERGE.md) records consolidated
-findings and frontend readiness. The [offset checkpoint](checkpoints/OFFSET_MAPPING.md) records original
+were changed. The 17 API tests also pass in Windows Python 3.11, and actual
+Chrome checks cover the responsive frontend and real saved-model inference.
+The latest [browser checkpoint](checkpoints/BROWSER_WORKBENCH.md) records the
+local UI/API and its validation. The [merge checkpoint](checkpoints/FINDING_MERGE.md) records consolidated
+findings. The [offset checkpoint](checkpoints/OFFSET_MAPPING.md) records original
 evidence projection; the [NER checkpoint](checkpoints/NER_INTEGRATION.md) records
 real training, dev results and document inference.
 
@@ -60,10 +86,9 @@ The [Classical NLP tests workflow](.github/workflows/classical-nlp.yml)
 checks the complete classical suite on Ubuntu/Python 3.11 after a push or pull
 request and can also be run manually in Actions. It checks tokenizer startup,
 excludes neural packages, and records test/train-dev validation artifacts.
-The committed offset step passed all 96 tests, relevance persistence, real
-entity/action training and original-evidence inference checks in
-[GitHub Actions](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43679041828).
-This step adds finding/evidence assertions to CI; the updated workflow has been
+The committed merge step passed its classical validation workflow in
+[GitHub Actions](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43680752877).
+This step adds JavaScript syntax and real-model API assertions to CI; the updated workflow has been
 checked locally and awaits a remote run after commit/push.
 
 ---
@@ -187,10 +212,10 @@ separate positions. Canonical IOC values are additional fields and preserve
 the source spelling in evidence. Mixed-case IOC source alignment is also fixed;
 URL path/query/fragment case is preserved.
 
-After reviewing this merge step, the backend can support a basic frontend for
-report input, original-text highlighting, findings and source-evidence review.
-Model accuracy improvements and the remaining extraction tasks continue
-separately. See [the merge checkpoint](checkpoints/FINDING_MERGE.md) for the
+The browser workbench now provides report input, original-text highlighting,
+findings and source-evidence review using this schema. Model accuracy
+improvements and the remaining extraction tasks continue separately.
+See [the merge checkpoint](checkpoints/FINDING_MERGE.md) for the
 schema, merge rules, limitations, test evidence and review commands.
 
 ---

@@ -16,6 +16,15 @@ wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m u
 wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.analyze --input examples/sample_report.txt --output results/ner_demo.json'
 ```
 
+For the browser frontend and backend together:
+
+```powershell
+wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.web'
+```
+
+Open http://127.0.0.1:8765 in Windows; Ctrl+C stops the server. See
+[the browser checkpoint](../checkpoints/BROWSER_WORKBENCH.md) for UI review steps.
+
 The saved NER artifacts were trained in this environment. Loading deliberately
 checks Python minor version, relevant package versions, and feature resources.
 Retrain after changing those dependencies; do not bypass the manifest checks.

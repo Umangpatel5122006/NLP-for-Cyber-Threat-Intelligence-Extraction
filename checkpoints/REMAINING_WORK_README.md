@@ -24,17 +24,19 @@ Last synced: 2026-11-15
 | P7 | Relation extraction | Not started | |
 | P8 | Full pipeline integration | **Partial** | preprocessing + IOC + saved relevance/NER + original offsets + merged findings; techniques and remaining extractors remain |
 | P9 | Evaluation | **Partial** | corrected metrics version 2, grouped validation utilities; official test reserved |
-| P10 | Output, demo, feed ingestion | **CLI and JSON baseline** | `cti.analyze`, sample report/output; frontend, exports and feeds remain |
+| P10 | Output, demo, feed ingestion | **Local browser, API and JSON** | `cti.web`, original highlights, source review, JSON download; STIX and feeds remain |
 | P11 | Upgrade guide, report, demo | Not started | |
 
 **Current position:** saved entity/action taggers now run in the document pipeline,
 with corrected dev diagnostics and identical predictions after reload. Original
 evidence mapping covers cleaner/defanger changes. Consolidated findings now keep
 per-source evidence, actual host components and explicit overlap information.
-All 121 tests pass in WSL, and all 25 merger tests pass on Windows. The preceding
-offset commit passed its 96-test GitHub Actions run, including real training and
-inference. See [FINDING_MERGE.md](FINDING_MERGE.md). A basic report-review frontend
-can be the next step after review; model/extraction improvements still remain.
+The local browser workbench now reuses this pipeline through an API, with report
+input/upload, original highlights, filters, evidence details and JSON export.
+All 138 tests pass in WSL, 17 API tests pass on Windows, and real Chrome UI checks
+pass. The preceding merge commit passed its GitHub Actions run. See
+[BROWSER_WORKBENCH.md](BROWSER_WORKBENCH.md). Next: return to classical model
+quality and remaining extraction tasks; the official test split stays reserved.
 
 ---
 
@@ -147,7 +149,7 @@ Matches "vulnerabilities" and "affected systems" in the title. SMAH-CTI has no g
 - [ ] **G1. Result schema (JSON):** raw entities, consolidated findings/components, original positions, per-source evidence and overlap metadata are implemented. Technique/ATT&CK IDs and semantic relations remain.
 - [ ] **G2. STIX 2.1 export** with the `stix2` library: indicator, malware, tool, intrusion-set, vulnerability, attack-pattern, relationship, report. Validate the bundle.
 - [ ] **G3. Input adapters.** Plain text, HTML (trafilatura or BeautifulSoup), PDF (pdfplumber or PyMuPDF), and RSS/advisory feeds, since the project covers threat-intelligence feeds.
-- [ ] **G4. Interfaces.** `python -m cti.analyze --input report.txt` provides the CLI/JSON baseline with original evidence and merged findings. A basic frontend is now a reasonable next step after review; reuse the Python pipeline for inference. A small API and further UI/export work remain.
+- [x] **G4. Local interfaces.** `python -m cti.analyze` provides the CLI. `python -m cti.web` starts the browser UI and Python API together, with original highlights, merged findings, source review and JSON export. A public multi-user deployment is separate future scope.
 - [ ] **G5. Real-report check.** Run the full system on 3-5 public reports that are **not** in SMAH-CTI and review the output by hand.
 
 ### Stage H - P9: final evaluation (done last)

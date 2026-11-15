@@ -1,0 +1,3 @@
+Final wheel build passed with the pinned WSL environment.
+All three frontend assets match their final source bytes exactly.
+Tracked egg-info metadata restored after the build.
