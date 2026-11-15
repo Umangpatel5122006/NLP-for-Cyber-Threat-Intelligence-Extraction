@@ -1,13 +1,23 @@
 # Project progress, in order
 
-Latest local checkpoint: [action background training](ACTION_BACKGROUND_EXPERIMENT.md).
+Latest local checkpoint: [train-only action error audit](ACTION_ERROR_AUDIT.md).
+Frozen OOF predictions show 559 exact actions, 1,702 partial overlaps and 2,192
+gold actions with no overlap. Boundary pairs more often contain extra tokens;
+correct endings are less frequent than correct starts. All training BIO regenerates
+exactly, but 21 identical-token groups have conflicting action tags. Local CSVs
+provide all 43 conflict records with context and 48 deterministic error examples.
+All 299 WSL tests pass; inputs/model hashes are verified. No fitting, label/split
+changes or dev/test evaluation occurred. Review conflicts and predeclare a
+classical boundary-feature comparison next; neither is a completed model upgrade.
+
+Previous local checkpoint: [action background training](ACTION_BACKGROUND_EXPERIMENT.md).
 All six capped/all-background candidate fold fits completed. Both policies reduce
 background action predictions but lose too many correct actions: training-CV
 exact F1 falls from 0.1323 to 0.1142 / 0.0927. Neither wins any fold or passes
 the fixed gain/recall policy. The current model remains active; dev/test were
 not evaluated and no new candidate binary was created. All 288 WSL tests and
 the independent prediction/sampling audit pass. Active model/config hashes are
-unchanged. A train-only action error audit is the next step, not completed work.
+unchanged. The subsequent error audit is recorded above.
 
 Previous local checkpoint: [action relevance comparison](ACTION_RELEVANCE_EXPERIMENT.md).
 Four predeclared TF-IDF/Logistic Regression cutoffs were compared on three

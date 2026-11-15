@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "strict_counts_reproduce_frozen_cv": true,
+  "all_policy_gold_counts_identical": true,
+  "upstream_inputs_match_audited_hashes": true,
+  "active_files_unchanged": true,
+  "source_annotation_checks": {
+    "duplicate_projected_action_spans": 0,
+    "unique_projected_spans_not_retained": 17,
+    "removed_projected_spans_overlapping_retained": 17,
+    "retained_spans_not_from_single_annotations": 0,
+    "raw_action_annotations": 4470,
+    "raw_annotations_without_projected_tokens": 0,
+    "invalid_action_offsets": 0,
+    "action_text_slice_mismatches": 0,
+    "bio_regeneration_errors": 0,
+    "bio_regeneration_mismatched_sentences": 0,
+    "tokenization_mismatched_sentences": 0
+  },
+  "dev_evaluated": false,
+  "test_evaluated": false,
+  "summary_sha256_lf": "2a079c2679d211b116c0b043557aa4217423514a5d6029d9149a43f17873ea21",
+  "note": "Integrity pass is not an annotation-quality approval; review reported source/duplicate discrepancies separately."
+}
