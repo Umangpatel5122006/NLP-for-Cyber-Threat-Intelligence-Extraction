@@ -14,6 +14,7 @@ _BUILTIN_MODULES = {
     "ioc_finder": "cti.extractors.ioc_finder",
     "ioc_regex": "cti.extractors.ioc_regex",
     "message_risk": "cti.extractors.message_risk",
+    "message_classifier": "cti.extractors.message_classifier",
     "dummy": "cti.extractors.dummy",
     "relevance_filter": "cti.models.relevance",
     "ner_entities": "cti.extractors.ner",

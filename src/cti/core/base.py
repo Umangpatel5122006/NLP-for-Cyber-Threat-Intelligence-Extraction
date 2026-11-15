@@ -53,6 +53,7 @@ class Document:
     metadata: dict = field(default_factory=dict)
     findings: list[Finding] = field(default_factory=list)
     overlaps: list[FindingOverlap] = field(default_factory=list)
+    review_findings: list[dict] = field(default_factory=list)
     original_text: str = field(init=False)
 
     def __post_init__(self):
@@ -80,6 +81,9 @@ class Document:
         """Derived merge output must be rebuilt after detector/text changes."""
         self.findings.clear()
         self.overlaps.clear()
+        self.review_findings.clear()
+        self.metadata.pop("review", None)
+        self.metadata.pop("message_assessment", None)
         self.metadata.pop("merge", None)
 
     def original_span(self, start, end):

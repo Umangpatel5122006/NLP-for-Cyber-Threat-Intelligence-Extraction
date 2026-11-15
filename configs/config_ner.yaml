@@ -6,6 +6,9 @@ pipeline:
   - module: language_detector
   - module: sentence_splitter
   - module: message_risk
+  - module: message_classifier
+    params:
+      model_path: models/message_spam.joblib
   - module: ioc_finder
   - module: ner_entities
     params:

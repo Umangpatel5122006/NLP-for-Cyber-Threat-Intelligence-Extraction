@@ -182,6 +182,9 @@ class ReviewHTTPTests(unittest.TestCase):
         doc = json.loads(body)["document"]
         self.assertEqual(doc["metadata"]["message_risk"]["status"], "suspicious")
         self.assertEqual(doc["findings"], [])
+        self.assertTrue(doc["review_findings"])
+        self.assertEqual(doc["review_findings"][0]["kind"], "message_rule")
+        self.assertEqual(doc["metadata"]["message_assessment"]["status"], "suspicious")
         self.assertEqual(doc["original_text"], USER_MESSAGE)
 
     def test_unknown_paths_and_traversal_do_not_serve_repository_files(self):

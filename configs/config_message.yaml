@@ -1,0 +1,12 @@
+# Optional SMS model; train with python -m cti.train_message --download.
+pipeline:
+  - module: cleaner
+  - module: defanger
+  - module: language_detector
+  - module: sentence_splitter
+  - module: message_risk
+  - module: ioc_finder
+  - module: message_classifier
+    params:
+      model_path: models/message_spam.joblib
+  - module: result_merger

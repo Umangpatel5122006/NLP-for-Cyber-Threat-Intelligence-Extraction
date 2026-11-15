@@ -27,7 +27,7 @@
     <div id="notice" class="notice" role="status" hidden></div>
     <div id="risk-alert" class="risk-alert" role="status" hidden><div><strong id="risk-headline"></strong><p id="risk-alert-summary"></p></div><a href="#message-risk">View evidence</a></div>
     <section class="stats" aria-label="Analysis summary">
-      <article class="stat"><span class="stat-label">Extracted findings</span><strong id="stat-findings">—</strong><span class="stat-note">Consolidated occurrences</span></article>
+      <article class="stat"><span class="stat-label">Review findings</span><strong id="stat-findings">—</strong><span class="stat-note">Message detections + extraction</span></article>
       <article class="stat"><span class="stat-label"><span class="swatch ioc"></span> Indicators</span><strong id="stat-iocs">—</strong><span class="stat-note">IPs, domains, URLs &amp; more</span></article>
       <article class="stat"><span class="stat-label"><span class="swatch actor"></span> Threat entities</span><strong id="stat-entities">—</strong><span class="stat-note">Actors, tools &amp; infrastructure</span></article>
       <article class="stat"><span class="stat-label"><span class="swatch action"></span> Actions</span><strong id="stat-actions">—</strong><span class="stat-note">Predicted action spans</span></article>
@@ -47,15 +47,16 @@
       </section>
       <section class="panel evidence-panel">
         <div class="panel-heading"><h2><span class="step">02</span> Evidence map</h2><span id="analysis-timing" class="small-meta">Original report</span></div>
-        <div class="legend" aria-label="Highlight categories"><span><i class="swatch actor"></i>Actor</span><span><i class="swatch tool"></i>Tool</span><span><i class="swatch action"></i>Action</span><span><i class="swatch ioc"></i>Indicator</span><span><i class="swatch infra"></i>Infrastructure</span></div>
+        <div class="legend" aria-label="Highlight categories"><span><i class="swatch actor"></i>Actor</span><span><i class="swatch tool"></i>Tool</span><span><i class="swatch action"></i>Action</span><span><i class="swatch ioc"></i>Indicator</span><span><i class="swatch infra"></i>Infrastructure</span><span><i class="swatch risk"></i>Scam-pattern cue</span></div>
+        <div id="map-risk" class="map-risk" role="status" hidden><strong id="map-risk-title"></strong><p id="map-risk-note"></p><a href="#message-risk">Inspect message-risk evidence</a></div>
         <div id="report-empty" class="empty-state"><svg class="empty-icon" viewBox="0 0 64 64" aria-hidden="true"><path d="M16 7h24l9 9v41H16zM39 7v11h10M24 29h17M24 36h11M24 43h17"/><circle cx="43" cy="43" r="9"/><path d="m49 50 7 7"/></svg><h3>Your report, with the evidence in view.</h3><p>Analyze a report to highlight its findings.<br>Select a highlight or a finding to inspect its sources.</p><span class="empty-caption">CLASSICAL NLP · SOURCE-ALIGNED EVIDENCE</span></div>
         <pre id="report-view" class="report-view" tabindex="0" aria-label="Original report with finding highlights" hidden></pre>
         <div class="panel-foot"><span class="dot"></span><span id="map-note">Highlights will reference the original report.</span></div>
       </section>
     </section>
     <section id="message-risk" class="panel message-risk" aria-labelledby="risk-heading" aria-live="polite" hidden>
-      <div class="panel-heading"><h2 id="risk-heading">Message risk check</h2><span class="small-meta">English rules</span></div>
-      <div class="risk-body"><strong id="risk-status"></strong><p id="risk-summary"></p><ul id="risk-signals"></ul><p id="risk-limitations" class="field-help"></p></div>
+      <div class="panel-heading"><h2 id="risk-heading">Message assessment</h2><span class="small-meta">Classical model + English rules</span></div>
+      <div class="risk-body"><strong id="risk-status"></strong><p id="risk-summary"></p><div id="message-model" class="message-model"><strong id="model-verdict"></strong><p id="model-details"></p><p id="model-disagreement"></p></div><ul id="risk-signals"></ul><p id="risk-limitations" class="field-help"></p></div>
     </section>
     <section class="panel findings-panel" aria-labelledby="findings-heading">
       <div class="panel-heading"><h2 id="findings-heading"><span class="step">03</span> Findings <span id="finding-count" class="count-badge">0</span></h2><button id="download-button" class="secondary-button" type="button" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10m-4-4 4 4 4-4M3 14v3h14v-3"/></svg>Export JSON</button></div>
@@ -68,11 +69,11 @@
         <aside id="finding-detail" class="finding-detail" aria-label="Selected finding details"><div class="detail-empty"><span class="detail-symbol" aria-hidden="true">⌁</span><h3>Follow the evidence</h3><p>Select a finding to see the original excerpt, detector sources, and related overlaps.</p></div></aside>
       </div>
     </section>
-    <footer class="footer"><span><span class="footer-brand">CTI Workbench</span> / Classical NLP research baseline</span><span id="scope-note">English NER &amp; scam patterns · Rule-based IOCs</span></footer>
+    <footer class="footer"><span><span class="footer-brand">CTI Workbench</span> / Classical NLP research baseline</span><span id="scope-note">Classical English NER &amp; SMS model · Message &amp; IOC rules</span></footer>
   </main>
   <dialog id="method-dialog">
     <div class="dialog-heading"><span class="eyebrow">ABOUT THIS WORKSPACE</span><button id="close-method" class="icon-button" type="button" aria-label="Close method notes">×</button></div>
-    <h2>Traceable findings.<br>Classical methods.</h2><p>Entity and action tagging uses the saved CRF models. Indicators are extracted with rules. IOC-only mode runs without the entity models. Both modes also check English scam patterns, independently of extraction.</p><h3>Message risk and extracted indicators</h3><p>A message can be suspicious without an IP, URL or malware name. The message risk check combines nearby money, account, contact and credential cues. It shows source excerpts and can recognize some warning contexts. It does not verify identities or claims, check number reputation, or prove that a message is safe. Other scams and languages can be missed.</p><h3>Read the sources, not a combined score</h3><p>Each finding retains its original observations. Rule matches and model predictions are different kinds of evidence; the merger does not create an overall attack probability. NER confidence is unavailable.</p><h3>Highlights follow the original report</h3><p>Cleaning and defanging happen for analysis. Highlights use source-covering spans in the supplied report, including Unicode and defanged indicators. Host components and overlaps remain available for inspection.</p><p class="dialog-note">This workspace reviews the current research baseline. English NER covers threat actors, malware/tools, infrastructure and actions.</p>
+    <h2>Traceable findings.<br>Classical methods.</h2><p>Entity and action tagging uses saved CRFs. Short English messages (up to 1,000 characters) also use a word/character TF-IDF linear classifier trained on SMS ham/spam labels. Indicators and scam patterns use rules. Both workbench modes include the available SMS model; IOC mode skips the entity/action models.</p><h3>One Findings list, distinct evidence</h3><p>The Findings list includes extracted entities/IOCs, message-rule detections and positive SMS-model predictions. Each row identifies its method and source evidence. Model predictions and rules can disagree; a ham prediction does not erase suspicious rule evidence. The message assessment shows both outcomes.</p><h3>Read the sources, not a combined score</h3><p>No combined attack probability is created. A linear decision margin is not a probability. SMS spam is not verified fraud; the model can miss unfamiliar scams. NER confidence is unavailable. No identity or phone/domain reputation lookup is performed.</p><h3>Highlights follow the original report</h3><p>Cleaning and defanging happen for analysis. Highlights use original source-covering spans, including Unicode and defanged indicators. Host components, overlaps and message cues remain available for inspection.</p><p class="dialog-note">This is a research baseline. CTI extraction and SMS spam are separate tasks with separate evaluation results. No detections does not establish safety.</p>
   </dialog>
 </body>
 </html>

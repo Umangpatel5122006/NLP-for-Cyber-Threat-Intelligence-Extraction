@@ -52,17 +52,29 @@ def main(argv=None):
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--ioc-only", action="store_true")
     parser.add_argument("--train-models", action="store_true", help="Train on train/dev only if no compatible saved NER models are found.")
+    parser.add_argument("--train-message-model", action="store_true", help="Download the pinned SMS corpus and train the classical SMS model when unavailable.")
     parser.add_argument("--check", action="store_true", help="Check setup without starting a server or training.")
     args = parser.parse_args(argv)
     if not 0 < args.port < 65536:
         parser.error("--port must be between 1 and 65535")
     required = "ioc" if args.ioc_only else "ner"
-    checked, chosen = [], None
+    checked, chosen, fallback = [], None, None
     for name, command in candidates():
         print(f"Checking {name}...", flush=True)
         status = readiness(command, args.ioc_only)
         checked.append((name, command, status))
         if ready(status, required):
+            if args.ioc_only and status.get("message_classifier") and not status["message_classifier"].get("ready"):
+                fallback = fallback or (name, command, status)
+                if (args.train_models or args.train_message_model) and not args.check:
+                    try:
+                        probe = subprocess.run([*command, "-c", "import sklearn.svm"], cwd=ROOT, capture_output=True, timeout=90)
+                    except (OSError, subprocess.TimeoutExpired):
+                        continue
+                    if probe.returncode == 0:
+                        chosen = (name, command, status)
+                        break
+                continue
             chosen = (name, command, status)
             break
         if status:
@@ -92,6 +104,7 @@ def main(argv=None):
             if ready(status, "ner"):
                 chosen = (name, command, status)
                 break
+    chosen = chosen or fallback
     if chosen is None:
         print("Full entity mode is unavailable." if required == "ner" else "IOC mode is unavailable.")
         print("Install the pinned dependencies or prepare WSL using docs/WSL_SETUP.md.")
@@ -101,6 +114,15 @@ def main(argv=None):
         raise SystemExit(2)
     name, command, status = chosen
     print(f"Selected {name}: {required} mode ready.", flush=True)
+    if not args.check and (args.train_models or args.train_message_model) and not status.get("message_classifier", {}).get("ready", True):
+        print("Training the classical SMS model (grouped train CV, dev only; no test evaluation)...", flush=True)
+        if subprocess.call([*command, "-m", "cti.train_message", "--download"], cwd=ROOT):
+            raise SystemExit("SMS training failed. Check the terminal output.")
+        status = readiness(command, args.ioc_only)
+        if not status or not status.get("message_classifier", {}).get("ready"):
+            raise SystemExit("SMS model could not reload after training.")
+    if status.get("message_classifier") and not status["message_classifier"].get("ready"):
+        print("SMS model unavailable: rules/IOCs remain available. Use --train-message-model in a working ML runtime.", flush=True)
     if args.check:
         print(json.dumps(status), flush=True)
         return

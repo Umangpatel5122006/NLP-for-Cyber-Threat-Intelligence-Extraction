@@ -26,8 +26,11 @@ The launcher checks the project virtualenv and current Python before the
 prepared WSL interpreter, and requires saved NER readiness by default.
 `--check` only reports setup. `--train-models` explicitly trains missing or
 incompatible artifacts in a working runtime before starting. A teammate's clone
-needs this training because model binaries are not tracked by Git.
-`--ioc-only` starts IOC plus English scam-pattern analysis without NER.
+needs this training because model binaries are not tracked by Git. It also
+prepares the missing SMS classifier from the pinned official UCI corpus.
+`--train-message-model` prepares only the SMS model before startup.
+`--ioc-only` starts IOC plus message rules and the available classical SMS model,
+preferring a compatible message-model runtime without loading NER.
 Direct startup in this prepared environment is still supported:
 `wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.web'`.
 
@@ -45,6 +48,15 @@ wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m c
 
 NER training does not require the separate relevance artifact because hard
 sentence gating is disabled in `configs/config_ner.yaml`.
+
+To train the classical SMS model directly in this environment:
+
+```powershell
+wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.train_message --download'
+```
+
+Only training CV and dev are evaluated. See [data provenance](SMS_DATASET.md)
+and [the integrated checkpoint](../checkpoints/INTEGRATED_FINDINGS_AND_SMS_MODEL.md).
 
 ## Recreate the environment
 

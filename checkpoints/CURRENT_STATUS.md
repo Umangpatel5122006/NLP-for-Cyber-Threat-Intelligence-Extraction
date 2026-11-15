@@ -1,6 +1,8 @@
 # Project progress, in order
 
-Latest checkpoint: [scam-message patterns and NER-mode recovery](MESSAGE_RISK_AND_MODE_RECOVERY.md).
+Latest checkpoint: [unified Findings and trained classical SMS model](INTEGRATED_FINDINGS_AND_SMS_MODEL.md).
+The earlier visibility work is recorded in [RISK_VISIBILITY_AND_MODEL_SCOPE.md](RISK_VISIBILITY_AND_MODEL_SCOPE.md).
+The [scam-message patterns and NER-mode recovery](MESSAGE_RISK_AND_MODE_RECOVERY.md) step is committed.
 The [action boundary features and model upgrade](ACTION_BOUNDARY_FEATURES.md) step is committed.
 The earlier [train-only action comparison](ACTION_EXPERIMENT.md) step is committed.
 The [local browser workbench and API](BROWSER_WORKBENCH.md) step is committed.
@@ -19,12 +21,12 @@ Dev sentence F1 is 0.6793 at threshold 0.5. Entity and action CRFs now also have
 saved artifacts, full-dev reload checks and live document modules. New metrics
 version 2 all-dev exact F1 is 0.2596 (entities) and 0.1551 (actions), using the
 existing processed BIO labels. The official test split is still reserved.
-All 174 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
+All 193 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
 native imports remain blocked by Application Control without policy changes.
 Deep learning is excluded. Allowed NER choices are CRF, MEMM, and token Logistic
 Regression; historical neural experiments are guarded against execution.
 The committed action comparison passed its classical validation workflow
-in GitHub Actions. The new message-risk/menu tests await their remote run after
+in GitHub Actions. The current integration/SMS changes await their remote run after
 commit/push. See the latest checkpoint for evidence and
 [WSL_SETUP.md](../docs/WSL_SETUP.md) for working local commands.
 
@@ -50,7 +52,18 @@ NER options remain selectable with setup guidance; refresh retries failed loads.
 The launcher checks models/runtime, with explicit train/dev training for fresh
 clones. Native Windows also passes 10 risk and 5 launcher tests. New Chrome
 checks verify the message, export, mobile display and missing-model UI recovery.
-This is a rule baseline, not measured SMS-classifier accuracy or fact checking.
+The rule layer remains a disclosed rule baseline rather than fact checking.
+The screenshot's plain-newline message reproduces as suspicious with seven cues
+and zero technical findings. The evidence map now shows the verdict and clickable
+cue highlights directly. The Findings list now includes a message-rule row with
+seven evidence cues through the new combined `review_findings` backend contract.
+A separately trained word/character TF-IDF + linear SVM is active for short
+English SMS. Training-only grouped CV selected it before dev evaluation; dev
+spam F1 is 0.9810 (103 TP, 0 FP, 4 FN, 689 TN). Its 797-row holdout was not evaluated.
+It misses the supplied money/SMS example; rules retain the suspicious finding
+and the UI explicitly shows disagreement. This is not universal scam accuracy.
+Twenty Chrome groups pass. Native Windows now also passes 6 review and 8 launcher
+tests. Existing CTI NER models/metrics remain unchanged and limited.
 
 The first targeted action comparison is complete: three-fold CV over official
 train reports retained the baseline (pooled exact F1 0.1265 vs 0.1208/0.1209).
@@ -64,8 +77,10 @@ the previous artifact backed up. Restart the review server to load it.
 Entity inference and the frontend schema remain compatible. The full Chrome
 check passed using the promoted artifact.
 
-Next: reduce background false positives using a train-only joint relevance/
-action-gating experiment. More spurious spans remain a tradeoff of the new
+Next: obtain broader labeled scam-domain examples and independently evaluate
+the SMS/hybrid assessment. Continue CTI background false-positive reduction
+as a separate train-only relevance/action-gating experiment.
+More spurious spans remain a tradeoff of the new
 model; final-test performance is not yet known.
 Model accuracy, technique classification, remaining extraction tasks and final
 frozen evaluation still need work. NER confidence remains unavailable (`null`)

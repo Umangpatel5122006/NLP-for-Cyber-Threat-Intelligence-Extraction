@@ -91,7 +91,7 @@ try {
   await click("example-button");
   await waitFor("!state.busy && document.getElementById('report-input').value.includes('APT29')");
   await analyze();
-  const summary = await evaluate("({mode:state.result.analysis.mode,actionArtifact:state.result.document.metadata.ner?.action?.artifact_sha256,findings:state.result.document.findings.length,primary:document.getElementById('stat-findings').textContent,map:document.getElementById('report-view').textContent,original:state.result.document.original_text,rows:document.querySelectorAll('.finding-row').length})");
+  const summary = await evaluate("({mode:state.result.analysis.mode,actionArtifact:state.result.document.metadata.ner?.action?.artifact_sha256,findings:state.result.document.review_findings.length,extractions:state.result.document.findings.length,primary:document.getElementById('stat-findings').textContent,map:document.getElementById('report-view').textContent,original:state.result.document.original_text,rows:document.querySelectorAll('.finding-row').length})");
   assert.equal(summary.map, summary.original);
   assert.equal(summary.rows, Number(summary.primary));
   assert.equal(summary.mode, "ner");
@@ -133,7 +133,8 @@ try {
     catch { await new Promise((done) => setTimeout(done, 100)); }
   }
   assert.equal(downloaded.original_text, summary.original);
-  assert.equal(downloaded.findings.length, summary.findings);
+  assert.equal(downloaded.findings.length, summary.extractions);
+  assert.equal(downloaded.review_findings.length, summary.findings);
   assert.ok(downloaded.metadata.message_risk);
   record("Browser JSON download preserves the full original document and finding evidence.");
   await setText("<img src=x onerror='window.ctiInjected=true'> 🛡 APT29 contacted 185.22.10[.]5.");
@@ -165,12 +166,35 @@ try {
     await analyze();
     assert.equal(await evaluate("state.result.document.metadata.message_risk.status"), "suspicious");
     assert.equal(await evaluate("state.result.document.findings.length"), 0);
+    assert.ok(await evaluate("state.result.document.review_findings.length") >= 1);
+    assert.ok(await evaluate("document.querySelectorAll('.finding-row').length") >= 1);
+    assert.ok(Number(await evaluate("document.getElementById('stat-findings').textContent")) >= 1);
+    await evaluate("Array.from(document.querySelectorAll('.finding-row')).find(row=>row.textContent.includes('Suspicious message patterns')).click()");
+    assert.equal(await evaluate("document.querySelector('#finding-detail .detail-title').textContent"), "Suspicious message patterns");
+    assert.equal(await evaluate("document.querySelectorAll('#finding-detail .source-card').length"), 7);
+    assert.ok((await evaluate("document.getElementById('model-disagreement').textContent")).includes("classifier predicts ham"));
     assert.equal(await evaluate("document.getElementById('message-risk').hidden"), false);
     assert.equal(await evaluate("document.getElementById('risk-alert').hidden"), false);
     assert.ok((await evaluate("document.getElementById('risk-headline').textContent")).includes("Suspicious"));
+    assert.equal(await evaluate("document.getElementById('map-risk').hidden"), false);
+    assert.ok((await evaluate("document.getElementById('map-risk-title').textContent")).includes("Suspicious"));
+    assert.ok(await evaluate("document.querySelectorAll('#report-view mark[data-risk-index]').length") >= 6);
     assert.ok((await evaluate("document.getElementById('risk-signals').textContent")).includes("6969696969"));
     assert.equal(await evaluate("document.getElementById('report-view').textContent"), scam);
   }
+  const screenshotMessage = scam.replaceAll("\\", "") + "\n";
+  await setText(screenshotMessage);
+  await analyze();
+  assert.equal(await evaluate("state.result.document.metadata.message_risk.status"), "suspicious");
+  assert.equal(await evaluate("document.getElementById('report-view').textContent"), screenshotMessage);
+  await evaluate("Array.from(document.querySelectorAll('#report-view mark[data-risk-index]')).find(m=>m.textContent==='6969696969').click()");
+  assert.ok((await evaluate("document.activeElement.textContent")).includes("Contact number"));
+  await evaluate("document.querySelector('#report-view mark[data-risk-index]').focus()");
+  await command("Input.dispatchKeyEvent", {type: "keyDown", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13}, session);
+  await command("Input.dispatchKeyEvent", {type: "keyUp", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13}, session);
+  assert.equal(await evaluate("document.activeElement.id"), "risk-signal-0");
+  await evaluate("window.scrollTo(0,0)");
+  record("Screenshot's plain-newline message is flagged inside the evidence map; risk highlights open source cues by click and keyboard.");
   await screenshot("web_scam_desktop.png");
   await command("Emulation.setDeviceMetricsOverride", {width: 390, height: 844, deviceScaleFactor: 1, mobile: true}, session);
   assert.equal(await evaluate("document.documentElement.scrollWidth <= window.innerWidth"), true);
@@ -186,17 +210,61 @@ try {
     catch { await new Promise((done) => setTimeout(done, 100)); }
   }
   assert.equal(exportedScam.metadata.message_risk.status, "suspicious");
-  assert.equal(exportedScam.original_text, scam);
+  assert.ok(exportedScam.review_findings.some(row=>row.kind==='message_rule'));
+  assert.equal(exportedScam.original_text, screenshotMessage);
   record("Reported money/SMS message shows suspicious source evidence in BOTH modes, mobile layout and exported JSON.");
+  await evaluate("document.getElementById('label-filter').value='SOCIAL_ENGINEERING';document.getElementById('label-filter').dispatchEvent(new Event('change',{bubbles:true}))");
+  assert.equal(await evaluate("document.querySelectorAll('.finding-row').length"), 1);
+  await evaluate("document.getElementById('finding-search').value='English message rules';document.getElementById('finding-search').dispatchEvent(new Event('input',{bubbles:true}))");
+  assert.equal(await evaluate("document.querySelectorAll('.finding-row').length"), 1);
+  await evaluate("document.querySelector('.finding-row').click()");
+  assert.ok((await evaluate("document.getElementById('finding-detail').textContent")).includes("money_contact_lure"));
+  await screenshot("web_populated_findings.png");
+  record("Scam Findings row, count, category/source search, seven evidence cards and honest model/rule disagreement all pass.");
+  await setText("Congratulations! You have won a free cash prize. Call now to claim your reward.");
+  await analyze();
+  assert.equal(await evaluate("state.result.document.metadata.message_classifier.label"), "spam");
+  assert.ok(await evaluate("state.result.document.review_findings.some(row=>row.kind==='message_model')"));
+  await evaluate("Array.from(document.querySelectorAll('.finding-row')).find(row=>row.textContent.includes('SMS spam predicted')).click()");
+  assert.ok((await evaluate("document.getElementById('finding-detail').textContent")).includes("margin"));
+  assert.equal(await evaluate("document.getElementById('risk-alert').dataset.status"), "suspicious");
+  record("Trained TF-IDF/SVM prediction appears in Findings with model features and margin, independently of rule matches.");
+  await evaluate(`(() => {
+    window.qaLegacyFetch = window.fetch;
+    const legacy = structuredClone(state.result);
+    delete legacy.document.review_findings;
+    window.fetch = (url,...args) => url === '/api/analyze' ? Promise.resolve(new Response(JSON.stringify(legacy),{status:200,headers:{'Content-Type':'application/json'}})) : window.qaLegacyFetch(url,...args);
+  })()`);
+  await click("analyze-button");
+  await waitFor("!state.busy && !document.getElementById('notice').hidden");
+  assert.equal(await evaluate("state.result"), null);
+  assert.ok((await evaluate("document.getElementById('notice').textContent")).includes("old Findings format"));
+  assert.equal(await evaluate("document.getElementById('download-button').disabled"), true);
+  await evaluate("window.fetch=window.qaLegacyFetch;delete window.qaLegacyFetch;");
+  await analyze();
+  record("Stale pre-upgrade backend responses show an explicit restart error instead of a misleading empty Findings list.");
   await setText("Your bank account was credited with INR 1000. No action is required.");
   assert.equal(await evaluate("document.getElementById('message-risk').hidden"), true);
+  assert.equal(await evaluate("document.getElementById('map-risk').hidden"), true);
   await analyze();
   assert.equal(await evaluate("state.result.document.metadata.message_risk.status"), "no_pattern_detected");
+  assert.equal(await evaluate("document.querySelectorAll('#report-view mark[data-risk-index]').length"), 0);
   assert.ok((await evaluate("document.getElementById('risk-summary').textContent")).includes("does not establish"));
+  assert.equal(await evaluate("document.querySelectorAll('.finding-row').length"), 0);
   await setText("Beware of this fake message: " + scam);
   await analyze();
   assert.equal(await evaluate("state.result.document.metadata.message_risk.status"), "review_context");
+  assert.equal(await evaluate("document.getElementById('map-risk-title').textContent"), "Review the message context");
+  assert.ok(await evaluate("document.querySelectorAll('#report-view mark[data-risk-index]').length") > 0);
   record("Benign notification and quoted scam warning have distinct risk states; input edits clear prior risk.");
+  await setText("\ufeff\ud83d\udee1 Claim a cash prize in your bank account. Visit hxxps://claim[.]example[.]com/reward.\r\n");
+  await analyze();
+  assert.equal(await evaluate("state.result.document.metadata.message_risk.status"), "suspicious");
+  assert.equal(await evaluate("document.getElementById('report-view').textContent === state.result.document.original_text"), true);
+  assert.ok(await evaluate("document.querySelectorAll('#report-view mark.tone-ioc').length") > 0);
+  assert.ok(await evaluate("document.querySelectorAll('#report-view mark[data-risk-index]').length") > 0);
+  assert.equal(await evaluate("Array.from(document.querySelectorAll('#report-view mark[data-risk-index]')).every(m=>{const s=state.result.document.metadata.message_risk.signals[Number(m.dataset.riskIndex)];return Array.from(state.result.document.original_text).slice(s.original_start,s.original_end).join('').includes(m.textContent)})"), true);
+  record("Overlapping IOC/risk evidence and Unicode source text remain valid without changing extraction counts.");
   // Simulate the teammate's missing-artifact status at the HTTP boundary.
   // Inference and the subsequent retry still use the real server and models.
   await evaluate(`(async () => {
@@ -247,6 +315,7 @@ try {
   assert.equal(await evaluate("document.getElementById('notice').classList.contains('error')"), true);
   assert.equal(await evaluate("state.result"), null);
   assert.equal(await evaluate("document.getElementById('message-risk').hidden"), true);
+  assert.equal(await evaluate("document.getElementById('map-risk').hidden"), true);
   assert.equal(await evaluate("document.getElementById('download-button').disabled"), true);
   await command("Network.emulateNetworkConditions", {offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1}, session);
   record("Network failure exits the busy state and displays an error.");

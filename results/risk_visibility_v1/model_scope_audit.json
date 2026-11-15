@@ -1,0 +1,25 @@
+{
+  "cti_models": {
+    "cti_entities": {
+      "source": "results/ner_v2_entities.json",
+      "dev_exact_span_f1": 0.2596,
+      "task": "span_extraction",
+      "sms_scam_accuracy": null
+    },
+    "cti_actions": {
+      "source": "results/action_features_v1/action_boundaries_dev.json",
+      "dev_exact_span_f1": 0.1551,
+      "task": "span_extraction",
+      "sms_scam_accuracy": null
+    }
+  },
+  "sms_scam_check": {
+    "method": "english_rules",
+    "measured_classifier_accuracy": null,
+    "trained_sms_classifier_present": false
+  },
+  "notes": [
+    "Passing software tests is not a measurement of model accuracy.",
+    "No training or held-out test evaluation was performed."
+  ]
+}

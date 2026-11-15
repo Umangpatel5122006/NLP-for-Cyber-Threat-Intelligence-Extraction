@@ -129,5 +129,6 @@ class MessageRisk(BaseModule):
     name = "message_risk"
 
     def process(self, doc):
+        doc.invalidate_findings()
         doc.metadata["message_risk"] = assess_message(doc.original_text)
         return doc

@@ -1,0 +1,156 @@
+{
+  "task": "sms_ham_spam",
+  "profile": "word_char_svm",
+  "split": "dev",
+  "rows": 796,
+  "groups": 725,
+  "metrics": {
+    "precision": 1.0,
+    "recall": 0.9626168224299065,
+    "f1": 0.9809523809523809,
+    "tn": 689,
+    "fp": 0,
+    "fn": 4,
+    "tp": 103
+  },
+  "test_evaluated": false,
+  "selection": {
+    "selected": "word_char_svm",
+    "selection_rule": "max pooled training CV spam F1, precision then fixed profile order",
+    "candidates": [
+      {
+        "profile": "word_logreg",
+        "pooled_train_cv": {
+          "precision": 0.9155963302752294,
+          "recall": 0.9362101313320825,
+          "f1": 0.9257884972170687,
+          "tn": 3402,
+          "fp": 46,
+          "fn": 34,
+          "tp": 499
+        },
+        "folds": [
+          {
+            "precision": 0.9135135135135135,
+            "recall": 0.949438202247191,
+            "f1": 0.931129476584022,
+            "tn": 1133,
+            "fp": 16,
+            "fn": 9,
+            "tp": 169
+          },
+          {
+            "precision": 0.9226519337016574,
+            "recall": 0.9382022471910112,
+            "f1": 0.9303621169916435,
+            "tn": 1135,
+            "fp": 14,
+            "fn": 11,
+            "tp": 167
+          },
+          {
+            "precision": 0.9106145251396648,
+            "recall": 0.9209039548022598,
+            "f1": 0.9157303370786517,
+            "tn": 1134,
+            "fp": 16,
+            "fn": 14,
+            "tp": 163
+          }
+        ]
+      },
+      {
+        "profile": "word_char_logreg",
+        "pooled_train_cv": {
+          "precision": 0.9576107899807321,
+          "recall": 0.9324577861163227,
+          "f1": 0.9448669201520913,
+          "tn": 3426,
+          "fp": 22,
+          "fn": 36,
+          "tp": 497
+        },
+        "folds": [
+          {
+            "precision": 0.9649122807017544,
+            "recall": 0.9269662921348315,
+            "f1": 0.9455587392550143,
+            "tn": 1143,
+            "fp": 6,
+            "fn": 13,
+            "tp": 165
+          },
+          {
+            "precision": 0.9655172413793104,
+            "recall": 0.9438202247191011,
+            "f1": 0.9545454545454546,
+            "tn": 1143,
+            "fp": 6,
+            "fn": 10,
+            "tp": 168
+          },
+          {
+            "precision": 0.9425287356321839,
+            "recall": 0.9265536723163842,
+            "f1": 0.9344729344729344,
+            "tn": 1140,
+            "fp": 10,
+            "fn": 13,
+            "tp": 164
+          }
+        ]
+      },
+      {
+        "profile": "word_char_svm",
+        "pooled_train_cv": {
+          "precision": 0.9900596421471173,
+          "recall": 0.9343339587242027,
+          "f1": 0.9613899613899614,
+          "tn": 3443,
+          "fp": 5,
+          "fn": 35,
+          "tp": 498
+        },
+        "folds": [
+          {
+            "precision": 0.9880239520958084,
+            "recall": 0.9269662921348315,
+            "f1": 0.9565217391304348,
+            "tn": 1147,
+            "fp": 2,
+            "fn": 13,
+            "tp": 165
+          },
+          {
+            "precision": 0.9882352941176471,
+            "recall": 0.9438202247191011,
+            "f1": 0.9655172413793104,
+            "tn": 1147,
+            "fp": 2,
+            "fn": 10,
+            "tp": 168
+          },
+          {
+            "precision": 0.9939759036144579,
+            "recall": 0.9322033898305084,
+            "f1": 0.9620991253644315,
+            "tn": 1149,
+            "fp": 1,
+            "fn": 12,
+            "tp": 165
+          }
+        ]
+      }
+    ],
+    "dev_used_for_selection": false,
+    "test_evaluated": false,
+    "threshold": 0.0,
+    "train_rows": 3981,
+    "train_groups": 3649,
+    "dataset_sha256": "7d039a24a6083ed9ef0f806ebad56bbb976e3aeb8de05669173bfdc4996c239d",
+    "split_sha256": "917af65aec4dc153bd09959a4219d5df9bd66462a104c2dba4d4a44590b91c67"
+  },
+  "limitations": "UCI SMS ham/spam, not universal scam/attack accuracy. Template-grouped dev, not final test.",
+  "artifact_sha256": "29e05300ac835d169b1ef9d4650dc219e350e11a817b65efe7afb96c61d8a2e3",
+  "reload_predictions_identical": true
+}

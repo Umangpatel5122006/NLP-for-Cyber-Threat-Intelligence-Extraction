@@ -25,11 +25,23 @@ evidence/components and JSON export. It uses browser HTML/CSS/JavaScript with
 the existing Python pipeline; no npm installation is needed. Both modes include
 English scam-pattern checks with a visible risk result and source excerpts.
 Zero extracted IOCs/entities does not establish that a message is safe.
+The evidence map now repeats the risk verdict and highlights its source cues.
+The Findings list now combines extraction, message-rule detections and positive
+SMS-model predictions through `review_findings`, retaining source evidence.
+The trained word/character TF-IDF + linear SVM scores **0.9810 dev spam F1**
+on a template-grouped UCI SMS partition (4 missed spam, 0 false positives).
+This is not universal scam accuracy: it misses the supplied money/SMS message,
+which the rule layer flags. The UI preserves and explains that disagreement.
+Current CTI dev exact-span F1 remains 0.2596 (entities) and 0.1551 (actions).
+See [the integrated checkpoint](checkpoints/INTEGRATED_FINDINGS_AND_SMS_MODEL.md)
+and [SMS data provenance](docs/SMS_DATASET.md).
 
 On a fresh clone, model binaries are absent because `models/` is ignored.
 After installing pinned dependencies or preparing WSL, run
 `python scripts/start_workbench.py --train-models` to train missing/incompatible
-classical artifacts on train/dev and start the app. `--check` checks readiness
+NER and SMS artifacts on train/dev and start the app. The SMS path downloads
+the pinned official corpus. `--train-message-model` explicitly prepares just
+the SMS model when unavailable. `--check` checks readiness
 without starting or training. NER setup failures now have visible instructions
 and a retry button; unavailable modes remain selectable for inspection.
 
@@ -39,7 +51,7 @@ For IOC-only use on native Windows:
 .\.venv\Scripts\python.exe -m cti.web --ioc-only
 ```
 
-Press Ctrl+C to stop. See [the current fix checkpoint](checkpoints/MESSAGE_RISK_AND_MODE_RECOVERY.md)
+Press Ctrl+C to stop. See [the current fix checkpoint](checkpoints/INTEGRATED_FINDINGS_AND_SMS_MODEL.md)
 for message-risk behavior, setup recovery and validation; the earlier
 [browser checkpoint](checkpoints/BROWSER_WORKBENCH.md) preserves the initial API/UI work.
 
@@ -74,17 +86,17 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** all **174 tests pass** in an isolated Ubuntu-24.04 WSL
+**Current validation:** all **193 tests pass** in an isolated Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
 saved-NER, original-offset, merger, API, action-feature, scam-pattern and launcher tests;
-see `results/message_risk_validation.txt` and
+see `results/integrated_findings_validation.txt` and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
-were changed. Native Windows also passes the 21 API, 10 message-risk and
-5 launcher tests. Actual Chrome checks cover real NER/IOC inference, scam
+were changed. Native Windows also passes the current 21 API, 6 combined-review
+and 8 launcher tests. Twenty actual Chrome check groups cover real NER/IOC inference, scam
 warnings, JSON export, mobile layout and missing-model recovery.
-The latest [fix checkpoint](checkpoints/MESSAGE_RISK_AND_MODE_RECOVERY.md)
-records the reported message/menu fixes.
+The latest [fix checkpoint](checkpoints/INTEGRATED_FINDINGS_AND_SMS_MODEL.md)
+records the Findings contract, trained SMS classifier and remaining limits.
 The [boundary-feature checkpoint](checkpoints/ACTION_BOUNDARY_FEATURES.md)
 records the selected action profile and active-model upgrade. The earlier
 [action checkpoint](checkpoints/ACTION_EXPERIMENT.md) records the negative

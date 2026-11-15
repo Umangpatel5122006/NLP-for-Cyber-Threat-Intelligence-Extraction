@@ -4,9 +4,10 @@ const $ = (id) => document.getElementById(id);
 const labels = {
   THREAT_ACTOR: "Threat actor", MALWARE_TOOL: "Malware / tool", INFRASTRUCTURE: "Infrastructure",
   ACTION: "Action", IP: "IP address", DOMAIN: "Domain", URL: "URL", EMAIL: "Email", HASH: "Hash", CVE: "CVE",
+  SOCIAL_ENGINEERING: "Message pattern", SMS_SPAM: "SMS spam prediction",
 };
 const iocLabels = new Set(["IP", "DOMAIN", "URL", "EMAIL", "HASH", "CVE"]);
-const sourceNames = {ner_entities: "Entity CRF", ner_action: "Action CRF", ioc_finder: "IOC finder", ioc_regex: "IOC regex"};
+const sourceNames = {ner_entities: "Entity CRF", ner_action: "Action CRF", ioc_finder: "IOC finder", ioc_regex: "IOC regex", message_risk: "English message rules", message_classifier: "Classical SMS classifier"};
 const overlapNames = {action_overlap: "Action overlap", label_conflict: "Label conflict", contained_overlap: "Contained overlap", crossing_overlap: "Crossing overlap"};
 const state = {result: null, selected: null, modes: [], busy: false, refreshing: false, maxCharacters: 100000, rawInput: null};
 
@@ -17,6 +18,7 @@ function element(tag, className, text) {
   return node;
 }
 function tone(label) {
+  if (["SOCIAL_ENGINEERING", "SMS_SPAM"].includes(label)) return "tone-risk";
   if (iocLabels.has(label)) return "tone-ioc";
   return {THREAT_ACTOR: "tone-actor", MALWARE_TOOL: "tone-tool", ACTION: "tone-action"}[label] || "tone-infra";
 }
@@ -65,6 +67,7 @@ function resetResults() {
   state.selected = null;
   $("message-risk").hidden = true;
   $("risk-alert").hidden = true;
+  $("map-risk").hidden = true;
   $("risk-signals").replaceChildren();
   $("report-view").hidden = true;
   $("report-view").replaceChildren();
@@ -145,24 +148,44 @@ async function refreshStatus() {
     updateControls();
   }
 }
+function reviewFindings() {
+  return state.result?.document.review_findings || state.result?.document.findings || [];
+}
 function visibleFindings() {
   if (!state.result) return [];
   const search = $("finding-search").value.trim().toLowerCase();
   const label = $("label-filter").value;
-  return state.result.document.findings.filter((finding) =>
+  return reviewFindings().filter((finding) =>
     ($("show-components").checked || finding.role === "primary") && (!label || finding.label === label) &&
-    (!search || [finding.text, finding.original_text, finding.canonical_value || "", ...finding.sources, ...finding.sources.map((source) => sourceNames[source] || source)].join(" ").toLowerCase().includes(search)));
+    (!search || [finding.title || "", finding.description || "", finding.text, finding.original_text, finding.canonical_value || "", ...finding.sources, ...finding.sources.map((source) => sourceNames[source] || source)].join(" ").toLowerCase().includes(search)));
 }
 function selectFinding(id, reveal = false) {
   if (!state.result) return;
   if (reveal) {
     $("finding-search").value = "";
     $("label-filter").value = "";
-    const finding = state.result.document.findings.find((item) => item.id === id);
+    const finding = reviewFindings().find((item) => item.id === id);
     if (finding?.role === "component") $("show-components").checked = true;
   }
   state.selected = id;
   renderResults();
+}
+function riskSignals() {
+  const doc = state.result?.document, risk = doc?.metadata.message_risk;
+  if (!risk || !["suspicious", "review_context"].includes(risk.status)) return [];
+  const original = Array.from(doc.original_text);
+  return (risk.signals || []).map((signal, index) => ({...signal, index})).filter((signal) =>
+    Number.isInteger(signal.original_start) && Number.isInteger(signal.original_end) &&
+    signal.original_start >= 0 && signal.original_end <= original.length && signal.original_start < signal.original_end &&
+    original.slice(signal.original_start, signal.original_end).join("") === signal.original_text);
+}
+function revealRiskSignal(index) {
+  const row = reviewFindings().find((item) => item.kind === "message_rule");
+  if (row) selectFinding(row.id, true);
+  const signal = $("risk-signal-" + index);
+  if (!signal) return;
+  signal.scrollIntoView({block: "center"});
+  signal.focus({preventScroll: true});
 }
 function renderReport(findings) {
   const original = Array.from(state.result.document.original_text);
@@ -172,7 +195,12 @@ function renderReport(findings) {
     return events.get(index);
   };
   at(0); at(original.length);
-  for (const finding of findings) {
+  const spans = [...findings.filter((finding) => !finding.kind || finding.kind === "extraction"), ...riskSignals().map((signal) => ({
+    id: "risk-" + signal.index, label: "MESSAGE_RISK", text: signal.original_text,
+    original_start: signal.original_start, original_end: signal.original_end,
+    start: signal.original_start, end: signal.original_end, risk_signal: signal,
+  }))];
+  for (const finding of spans) {
     at(finding.original_start).add.push(finding);
     at(finding.original_end).remove.push(finding.id);
   }
@@ -186,18 +214,22 @@ function renderReport(findings) {
     const text = original.slice(position, positions[i + 1]).join("");
     if (!active.size) { fragment.append(document.createTextNode(text)); continue; }
     const matches = Array.from(active.values()).sort((a, b) =>
+      Number(Boolean(a.risk_signal)) - Number(Boolean(b.risk_signal)) ||
       Number(a.label === "ACTION") - Number(b.label === "ACTION") ||
       (a.end - a.start) - (b.end - b.start) || a.id.localeCompare(b.id));
     const target = active.get(state.selected) || matches[0];
-    const mark = element("mark", tone(target.label), text);
+    const mark = element("mark", target.risk_signal ? "tone-risk" : tone(target.label), text);
     mark.tabIndex = 0;
     mark.setAttribute("role", "button");
-    mark.setAttribute("aria-label", (labels[target.label] || target.label) + ": " + target.text + ". View source evidence.");
-    mark.title = matches.map((finding) => (labels[finding.label] || finding.label) + ": " + finding.text).join("\n");
+    const caption = (finding) => finding.risk_signal ? "Scam-pattern cue (" + finding.risk_signal.label + ")" : labels[finding.label] || finding.label;
+    mark.setAttribute("aria-label", caption(target) + ": " + target.text + ". View source evidence.");
+    mark.title = matches.map((finding) => caption(finding) + ": " + finding.text).join("\n");
+    if (target.risk_signal) mark.dataset.riskIndex = target.risk_signal.index;
     mark.classList.toggle("selected", active.has(state.selected));
-    mark.addEventListener("click", () => selectFinding(target.id));
+    const activate = target.risk_signal ? () => revealRiskSignal(target.risk_signal.index) : () => selectFinding(target.id);
+    mark.addEventListener("click", activate);
     mark.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") { event.preventDefault(); selectFinding(target.id); }
+      if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(); }
     });
     fragment.append(mark);
   }
@@ -212,8 +244,9 @@ function detailSection(title, content) {
 }
 function renderDetails() {
   const doc = state.result.document;
-  const finding = doc.findings.find((item) => item.id === state.selected);
+  const finding = reviewFindings().find((item) => item.id === state.selected);
   if (!finding) { emptyDetail(); return; }
+  if (finding.kind && finding.kind !== "extraction") { renderMessageDetail(finding); return; }
   const detail = $("finding-detail"), header = element("div", "detail-heading");
   header.append(badge(finding.label), element("span", "detail-id", finding.id));
   detail.replaceChildren(header, element("h3", "detail-title", finding.text), element("div", "detail-caption", "Original characters " + finding.original_start + "–" + finding.original_end + " · end excluded"));
@@ -247,6 +280,26 @@ function renderDetails() {
   }
   if (related.length) detail.append(detailSection("RELATED EVIDENCE", links));
 }
+function renderMessageDetail(finding) {
+  const detail = $("finding-detail"), header = element("div", "detail-heading");
+  header.append(badge(finding.label), element("span", "detail-id", finding.kind === "message_rule" ? "Rule finding" : "Model prediction"));
+  detail.replaceChildren(header, element("h3", "detail-title", finding.title), element("p", "", finding.description), element("div", "detail-caption", "Original characters " + finding.original_start + "\u2013" + finding.original_end + " \u00b7 end excluded"));
+  detail.append(detailSection("ORIGINAL EVIDENCE", element("pre", "detail-excerpt", finding.original_text)));
+  const evidence = element("div");
+  for (const item of finding.evidence) {
+    const card = element("div", "source-card");
+    card.append(element("strong", "", item.label === "SOCIAL_ENGINEERING" ? item.explanation : sourceNames[item.source]), element("pre", "detail-excerpt", item.original_text));
+    evidence.append(card);
+  }
+  detail.append(detailSection("SOURCE EVIDENCE", evidence));
+  if (finding.matched_rules) detail.append(detailSection("MATCHED RULES", element("p", "", finding.matched_rules.join(", "))));
+  if (finding.kind === "message_model") {
+    detail.append(detailSection("MODEL DECISION", element("p", "", finding.profile + " \u00b7 margin " + finding.decision_margin.toFixed(4) + " \u00b7 threshold 0. Margin is not a probability.")));
+    const features = element("ul");
+    for (const item of finding.supporting_features) features.append(element("li", "", item.feature + ": " + item.contribution));
+    detail.append(detailSection("SPAM-SUPPORTING TF-IDF FEATURES", features));
+  }
+}
 function renderResults() {
   const findings = visibleFindings();
   if (!findings.some((finding) => finding.id === state.selected)) state.selected = findings[0]?.id || null;
@@ -257,52 +310,72 @@ function renderResults() {
     row.dataset.finding = finding.id;
     row.setAttribute("aria-pressed", String(finding.id === state.selected));
     const main = element("span", "finding-main");
-    main.append(element("span", "finding-text", finding.text), element("span", "finding-meta", finding.evidence.length + (finding.evidence.length === 1 ? " source observation" : " source observations") + (finding.role === "component" ? " · Host component" : "")));
+    main.append(element("span", "finding-text", finding.kind && finding.kind !== "extraction" ? finding.title : finding.text), element("span", "finding-meta", finding.evidence.length + (finding.evidence.length === 1 ? " source observation" : " source observations") + (finding.role === "component" ? " · Host component" : "") + (finding.kind === "message_rule" ? " · English rules" : finding.kind === "message_model" ? " · Classical prediction" : "")));
     row.append(badge(finding.label), main, element("span", "row-arrow", "›"));
     row.addEventListener("click", () => selectFinding(finding.id));
     fragment.append(row);
   }
   if (!findings.length) {
     const empty = element("div", "list-empty");
-    empty.append(element("p", "", state.result.document.findings.length ? "No findings match these filters." : "No entities or technical indicators were extracted."), element("small", "", "Check the separate message risk result. Missing findings do not establish safety."));
+    empty.append(element("p", "", reviewFindings().length ? "No findings match these filters." : "No detections requiring review."), element("small", "", "Missing detections do not establish safety. Check model coverage and message assessment."));
     fragment.append(empty);
   }
   list.replaceChildren(fragment);
-  $("result-summary").textContent = findings.length + " shown · " + state.result.document.findings.length + " total findings";
+  $("result-summary").textContent = findings.length + " shown · " + reviewFindings().length + " total review findings";
   renderReport(findings);
   renderDetails();
 }
 function renderMessageRisk(risk) {
+  const model = state.result.document.metadata.message_classifier;
+  const assessment = state.result.document.metadata.message_assessment || risk;
+  $("model-verdict").textContent = model?.status === "ok" ? "Classical SMS model: " + (model.label === "spam" ? "spam predicted" : "ham predicted") : "Classical SMS model: " + (model?.status === "not_applicable" ? "outside its scope" : "unavailable");
+  $("model-details").textContent = model?.status === "ok" ? model.profile + " \u00b7 decision margin " + model.decision_margin.toFixed(4) + ". This score is not a threat probability." : model?.reason || model?.message || "Train with python -m cti.train_message --download in the chosen server runtime.";
+  $("model-disagreement").textContent = assessment?.disagreement ? "The classifier predicts ham, but message rules flag suspicious cues. The suspicious finding is retained for review." : "Ham/spam is a separate prediction from scam-pattern rules and CTI entity extraction.";
   $("message-risk").hidden = false;
-  $("message-risk").dataset.status = risk?.status || "unavailable";
-  $("risk-status").textContent = {suspicious: "Suspicious message patterns detected", review_context: "Review the message context", no_pattern_detected: "No supported scam pattern detected"}[risk?.status] || "Message risk check unavailable";
-  $("risk-summary").textContent = risk?.summary || "Restart the local server to load the message risk check. Extracted findings alone do not establish safety.";
+  $("message-risk").dataset.status = assessment?.status || "unavailable";
+  $("risk-status").textContent = {suspicious: "Suspicious message detected for review", review_context: "Review the message context", no_pattern_detected: "No supported message-risk detection"}[assessment?.status] || "Message risk check unavailable";
+  $("risk-summary").textContent = assessment?.summary || "Restart the local server to load the message risk check. Extracted findings alone do not establish safety.";
   $("risk-alert").hidden = false;
-  $("risk-alert").dataset.status = risk?.status || "unavailable";
+  $("risk-alert").dataset.status = assessment?.status || "unavailable";
   $("risk-headline").textContent = $("risk-status").textContent;
   $("risk-alert-summary").textContent = $("risk-summary").textContent;
+  $("map-risk").hidden = false;
+  $("map-risk").dataset.status = assessment?.status || "unavailable";
+  $("map-risk-title").textContent = $("risk-status").textContent;
+  $("map-risk-note").textContent = risk?.status === "suspicious"
+    ? "This message is flagged by English scam-pattern rules. Orange highlights show the cues, even when no entities or technical IOCs are extracted."
+    : risk?.status === "review_context"
+      ? "Highlighted cues appear in warning or example context. Review the wording before interpreting the message."
+      : $("risk-summary").textContent;
   $("risk-limitations").textContent = risk?.limitations || "English rule patterns only. No safety verdict is available.";
-  $("risk-signals").replaceChildren(...(risk?.signals || []).map((signal) => {
+  $("risk-signals").replaceChildren(...(risk?.signals || []).map((signal, index) => {
     const item = element("li", "risk-signal");
+    item.id = "risk-signal-" + index;
+    item.tabIndex = -1;
     item.append(element("strong", "", signal.label + ": "), element("q", "risk-excerpt", signal.original_text), element("small", "", signal.explanation + " Original characters " + signal.original_start + "\u2013" + signal.original_end + "."));
     return item;
   }));
 }
 function showAnalysis(result) {
+  if (!Array.isArray(result?.document?.review_findings)) {
+    throw new Error("The running server uses the old Findings format. Stop it with Ctrl+C, run python scripts/start_workbench.py, then reload this page.");
+  }
   state.result = result;
-  const doc = result.document, primary = doc.findings.filter((finding) => finding.role === "primary");
+  const doc = result.document, rows = reviewFindings(), primary = rows.filter((finding) => finding.role === "primary");
+  const extractions = doc.findings.filter((finding) => finding.role === "primary");
   renderMessageRisk(doc.metadata.message_risk);
   $("stat-findings").textContent = primary.length;
-  $("stat-iocs").textContent = primary.filter((finding) => iocLabels.has(finding.label)).length;
-  $("stat-actions").textContent = primary.filter((finding) => finding.label === "ACTION").length;
-  $("stat-entities").textContent = primary.filter((finding) => !iocLabels.has(finding.label) && finding.label !== "ACTION").length;
-  $("finding-count").textContent = doc.findings.length;
-  $("label-filter").replaceChildren(new Option("All labels", ""), ...Array.from(new Set(doc.findings.map((finding) => finding.label))).sort().map((label) => new Option(labels[label] || label, label)));
+  $("stat-iocs").textContent = extractions.filter((finding) => iocLabels.has(finding.label)).length;
+  $("stat-actions").textContent = extractions.filter((finding) => finding.label === "ACTION").length;
+  $("stat-entities").textContent = extractions.filter((finding) => !iocLabels.has(finding.label) && finding.label !== "ACTION").length;
+  $("finding-count").textContent = rows.length;
+  $("label-filter").replaceChildren(new Option("All labels", ""), ...Array.from(new Set(rows.map((finding) => finding.label))).sort().map((label) => new Option(labels[label] || label, label)));
   for (const id of ["download-button", "finding-search", "label-filter", "show-components"]) $(id).disabled = false;
   $("finding-search").value = "";
   $("show-components").checked = false;
   $("analysis-timing").textContent = (result.analysis.elapsed_ms / 1000).toFixed(2) + "s · " + (doc.metadata.language || "unknown").toUpperCase();
-  $("map-note").textContent = doc.entities.length + " detector observations · Source-covering highlights · Select a finding to inspect";
+  const cueCount = riskSignals().length;
+  $("map-note").textContent = doc.entities.length + " extraction observations · " + cueCount + " message-risk cues · Select a highlight to inspect its evidence";
   const unsupported = Object.values(doc.metadata.ner || {}).some((layer) => layer.status === "unsupported_language");
   if (unsupported) notice("Entity and action models support English. IOC findings are shown for this report.");
   else notice();

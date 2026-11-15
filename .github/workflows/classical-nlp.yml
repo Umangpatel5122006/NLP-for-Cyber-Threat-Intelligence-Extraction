@@ -58,6 +58,10 @@ jobs:
           .venv/bin/python -m cti.train_relevance \
             --output models/ci-relevance.joblib \
             --report results/ci-relevance-dev.json
+      - name: Train and reload the classical SMS classifier on train/dev only
+        run: |
+          .venv/bin/python -m cti.train_message --download \
+            --output models/message_spam.joblib --results-dir results/ci-message
       - name: Train and reload classical entity/action taggers
         run: |
           .venv/bin/python -m cti.train_ner --results-dir results/ci-ner
@@ -102,6 +106,10 @@ jobs:
               assert result["document"]["findings"]
               assert result["document"]["original_text"] == "APT29 contacted 10.1.2[.]3."
               Path(f"results/ci-ner/web-{mode}.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+          assert engine.status()["message_classifier"]["ready"]
+          result = engine.analyze({"mode": "ioc", "text": "Claim 15 lakhs rupees in your bank account. SMS 9123456789."})
+          assert result["document"]["review_findings"]
+          assert result["document"]["metadata"]["message_assessment"]["status"] == "suspicious"
           PY
       - name: Upload validation evidence
         if: always()
@@ -115,3 +123,4 @@ jobs:
             results/ci-relevance-dev.json
             results/ci-relevance-dev.predictions.csv
             results/ci-ner/
+            results/ci-message/

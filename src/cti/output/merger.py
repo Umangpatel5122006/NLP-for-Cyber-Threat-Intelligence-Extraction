@@ -217,7 +217,15 @@ class ResultMerger(BaseModule):
             "component_finding_count": sum(finding.role == "component" for finding in findings),
             "absorbed_infrastructure_count": absorbed, "overlap_count": len(overlaps),
         }
+        from cti.output.review import build_review_findings, message_assessment
+        review = build_review_findings(doc, findings)
+        assessment = message_assessment(doc)
         # All validation and derived work succeed before changing document output.
         doc.findings[:], doc.overlaps[:] = findings, overlaps
         doc.metadata["merge"] = details
+        doc.review_findings[:] = review
+        doc.metadata["message_assessment"] = assessment
+        doc.metadata["review"] = {"schema_version": 1, "finding_count": len(doc.review_findings),
+                                  "extraction_count": len(doc.findings),
+                                  "message_count": sum(row["kind"] != "extraction" for row in doc.review_findings)}
         return doc

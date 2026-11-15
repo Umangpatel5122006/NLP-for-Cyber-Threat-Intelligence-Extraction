@@ -44,6 +44,10 @@ def _load_pipeline(mode):
         if "model_path" in params:
             params["model_path"] = str(ROOT / params["model_path"])
         modules.append(create(step["module"], **params))
+    # The basic IOC config stays usable without any statistical NLP imports.
+    # Workbench modes additionally expose the optional short-message model.
+    if not any(module.name == "message_classifier" for module in modules):
+        modules.insert(len(modules) - 1, create("message_classifier", model_path=str(ROOT / "models/message_spam.joblib")))
     return Pipeline(modules)
 
 
@@ -96,7 +100,17 @@ class ReviewEngine:
                             "mode_disabled": ["Restart the server without --ioc-only, or run " + SETUP_COMMAND + "."],
                         }.get(error.code, ["Check the server terminal and docs/WSL_SETUP.md, then refresh the connection."])
                 modes.append(details)
+            message_model = {"ready": False, "message": "No pipeline is ready."}
+            for pipeline in self._pipelines.values():
+                for module in pipeline.modules:
+                    if module.name == "message_classifier":
+                        message_model = module.readiness(retry=True)
+                        break
+                if message_model.get("ready"):
+                    break
         return {"schema_version": 1, "modes": modes, "max_characters": MAX_CHARACTERS,
+                "review_schema_version": 1,
+                "message_classifier": message_model,
                 "message_risk": {"method": "english_rules", "available_in": list(MODES)}}
 
     def analyze(self, payload):

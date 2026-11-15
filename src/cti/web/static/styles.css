@@ -112,6 +112,25 @@
 {
   white-space:pre-wrap
 }
+.message-model
+{
+  background:#f2f5f6;
+  border:1px solid var(--line);
+  padding:12px 16px;
+  margin:14px 0;
+  border-radius:6px;
+  overflow-wrap:anywhere
+}
+.type-badge.tone-risk
+{
+  background:#fff0e4;
+  color:#9e4624
+}
+.finding-detail
+{
+  max-height:600px;
+  overflow:auto
+}
 *
 {
   box-sizing:border-box
@@ -790,6 +809,42 @@ mark.tone-infra
 {
   background:#e7ecef;
   border-color:#b9c8d0
+}
+mark.tone-risk
+{
+  background:#ffe3ce;
+  border-color:#bd582c
+}
+.swatch.risk
+{
+  background:#bd582c
+}
+.map-risk
+{
+  padding:14px 20px;
+  border-bottom:1px solid var(--line);
+  background:#f8faf9;
+  font-size:12px;
+  overflow-wrap:anywhere
+}
+.map-risk p
+{
+  margin:5px 0
+}
+.map-risk[data-status="suspicious"]
+{
+  background:#fff1e7;
+  border-left:4px solid #bd582c
+}
+.map-risk[data-status="review_context"]
+{
+  background:#fff8e8
+}
+.risk-signal:focus
+{
+  outline:2px solid #bd582c;
+  outline-offset:4px;
+  background:#fff1e7
 }
 mark.selected
 {
