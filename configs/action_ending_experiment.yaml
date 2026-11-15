@@ -1,0 +1,25 @@
+# Frozen before fitting; keep annotations and relevant-only training unchanged.
+version: 1
+folds: 3
+seed: 42
+parameters:
+  c1: 1.0
+  c2: 1.0
+  min_freq: 0
+  max_iterations: 200
+  all_possible_transitions: true
+  feature_config:
+    use_action_morphology: true
+    use_action_lexicon: true
+candidates:
+  - {id: ending_cues, learned_edges: false}
+  - {id: ending_edges, learned_edges: true}
+selection:
+  minimum_f1_gain: 0.005
+  minimum_fold_wins: 2
+  maximum_exact_recall_loss: 0.01
+  maximum_background_increase: 0.05
+confirmation:
+  minimum_f1_gain: 0.002
+  maximum_exact_recall_loss: 0.01
+  maximum_background_increase: 0.05

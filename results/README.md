@@ -42,6 +42,10 @@ decisions and the independent audit are versioned.
 The [train-only action error audit](action_error_audit_v1/README.md) records
 boundary/miss diagnostics, annotation consistency and exact BIO reproduction.
 Source/context review CSVs remain ignored; model weights and labels are unchanged.
+The [classical action-ending comparison](action_ending_v1/README.md) records a
+training-CV selection followed by a failed dev confirmation and release hold.
+The default artifacts remain unchanged; the experimental model and detailed
+predictions remain ignored.
 
 Removing previously tracked generated files from Git's index keeps their local
 copies. The cleanup applies to future commits; it does not rewrite existing

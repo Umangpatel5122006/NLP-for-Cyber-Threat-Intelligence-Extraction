@@ -1,14 +1,23 @@
 # Project progress, in order
 
-Latest local checkpoint: [train-only action error audit](ACTION_ERROR_AUDIT.md).
+Latest local checkpoint: [action-ending feature comparison](ACTION_ENDING_EXPERIMENT.md).
+Six candidate fold fits and one selected full-train fit completed. Learned stem-
+pair edges pass training-CV selection (exact F1 0.1323 to 0.1377, three fold wins)
+but fail dev confirmation (0.1551 to 0.1380, lower recall and more background
+findings). The candidate is held; default models/app/training labels are unchanged.
+All 310 WSL tests and the independent cache/count/selection audit pass. Only the
+train-selected winner was scored on dev; the official test remains reserved.
+Explicit end/unit sequence labels are a possible next experiment, not completed work.
+
+Previous local checkpoint: [train-only action error audit](ACTION_ERROR_AUDIT.md).
 Frozen OOF predictions show 559 exact actions, 1,702 partial overlaps and 2,192
 gold actions with no overlap. Boundary pairs more often contain extra tokens;
 correct endings are less frequent than correct starts. All training BIO regenerates
 exactly, but 21 identical-token groups have conflicting action tags. Local CSVs
 provide all 43 conflict records with context and 48 deterministic error examples.
 All 299 WSL tests pass; inputs/model hashes are verified. No fitting, label/split
-changes or dev/test evaluation occurred. Review conflicts and predeclare a
-classical boundary-feature comparison next; neither is a completed model upgrade.
+changes or dev/test evaluation occurred. Conflicts remain unresolved; the
+subsequent ending-feature comparison is recorded above.
 
 Previous local checkpoint: [action background training](ACTION_BACKGROUND_EXPERIMENT.md).
 All six capped/all-background candidate fold fits completed. Both policies reduce

@@ -61,6 +61,9 @@ A [train-only error audit](checkpoints/ACTION_ERROR_AUDIT.md) now separates miss
 actions from boundary errors and provides local review CSVs. BIO regeneration
 matches the saved training data; 21 repeated-token groups have conflicting action
 labels. No automatic label correction or model change was made.
+A subsequent [classical ending-feature comparison](checkpoints/ACTION_ENDING_EXPERIMENT.md)
+passes training-CV selection but fails dev confirmation (exact F1 0.1551 to
+0.1380). That candidate is held; the current model remains active.
 See [the current robustness checkpoint](checkpoints/MESSAGE_ROBUSTNESS.md),
 [the integrated checkpoint](checkpoints/INTEGRATED_FINDINGS_AND_SMS_MODEL.md)
 and [SMS data provenance](docs/SMS_DATASET.md).
@@ -135,10 +138,10 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** all **299 tests pass** in an isolated Ubuntu-24.04 WSL
+**Current validation:** all **310 tests pass** in an isolated Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
 saved-NER, original-offset, merger, API, action-feature, scam-pattern and launcher tests;
-see `results/action_error_audit_tests.txt` (local generated log) and
+see `results/action_ending_tests.txt` (local generated log) and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
 were changed. A focused native Windows run passes 82 API/language/Indic-rule/

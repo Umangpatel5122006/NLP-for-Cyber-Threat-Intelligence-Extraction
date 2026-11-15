@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "selected": "ending_edges",
+  "training_sentences": 8635,
+  "training_reports": 70,
+  "report_disjoint_folds": 3,
+  "independent_strict_counts_match": true,
+  "fit_uid_hashes_verified": true,
+  "active_artifacts_and_configs_unchanged": true,
+  "dev_evaluated": true,
+  "test_evaluated": false,
+  "oof_sha256_lf": {
+    "models/action_ending_v1/baseline_oof.json": "44532129dbae6b932cfa47e0ca8c37f40be59cf545fbc8a9665f80ccff574d0f",
+    "models/action_ending_v1/ending_cues_oof.json": "057ac173a1cd3a59337dda28b8015bf6508e9fd860f4fa2b7ae0a6d3cdf815d6",
+    "models/action_ending_v1/ending_edges_oof.json": "2cb261e16b1aa723d91130bc1ab8b75d3dc1876f349a0366d8fd40b193cc0521"
+  },
+  "audit_script_sha256_lf": "e29f7326160b544495d15df53b99873e7b339d94f4dcc01be4a41d5bf336513c",
+  "shared_counter_sha256_lf": "834c4375859e7b1217d20f10dabba699568b3493d43ad0e6722711846dd7ce50",
+  "scope": "Independent cache/count/selection audit; no independent CRF refit."
+}

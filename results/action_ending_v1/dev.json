@@ -1,0 +1,33 @@
+{
+  "baseline": {
+    "tp": 104,
+    "gold_spans": 608,
+    "predicted_spans": 733,
+    "precision": 0.14188267394270124,
+    "recall": 0.17105263157894737,
+    "f1": 0.15510812826249068,
+    "background_predicted_spans": 323,
+    "relevant_sentences_skipped": 0,
+    "relevant_sentences": 434,
+    "relevant_sentence_skip_rate": 0.0
+  },
+  "candidate": {
+    "tp": 94,
+    "gold_spans": 608,
+    "predicted_spans": 754,
+    "precision": 0.1246684350132626,
+    "recall": 0.15460526315789475,
+    "f1": 0.13803230543318648,
+    "background_predicted_spans": 343,
+    "relevant_sentences_skipped": 0,
+    "relevant_sentences": 434,
+    "relevant_sentence_skip_rate": 0.0
+  },
+  "checks": {
+    "f1_gain": false,
+    "exact_recall": false,
+    "background_budget": false
+  },
+  "reload_predictions_identical": true,
+  "processed_dev_sha256_lf": "834416e91bce25d8a9d7420e07704936d4e6f89fac22326cdbc8c6114760daa5"
+}
