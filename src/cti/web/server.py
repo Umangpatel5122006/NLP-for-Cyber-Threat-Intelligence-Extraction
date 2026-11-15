@@ -14,6 +14,7 @@ import yaml
 
 from cti.core.pipeline import Pipeline
 from cti.core.registry import create
+from cti.extractors.message_risk import RULE_VERSION
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -111,7 +112,7 @@ class ReviewEngine:
         return {"schema_version": 1, "modes": modes, "max_characters": MAX_CHARACTERS,
                 "review_schema_version": 1,
                 "message_classifier": message_model,
-                "message_risk": {"method": "english_rules", "available_in": list(MODES)}}
+                "message_risk": {"method": "english_rules", "rule_version": RULE_VERSION, "available_in": list(MODES)}}
 
     def analyze(self, payload):
         if not isinstance(payload, dict) or set(payload) != {"text", "mode"}:

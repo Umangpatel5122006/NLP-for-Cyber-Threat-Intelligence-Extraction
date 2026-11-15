@@ -187,6 +187,17 @@ class ReviewHTTPTests(unittest.TestCase):
         self.assertEqual(doc["metadata"]["message_assessment"]["status"], "suspicious")
         self.assertEqual(doc["original_text"], USER_MESSAGE)
 
+    def test_shortened_or_absent_phone_preserves_suspicious_api_finding(self):
+        for target in ("696969696", "1234", ""):
+            with self.subTest(target=target):
+                text = USER_MESSAGE.replace("6969696969", target)
+                status, _, body = self.request("/api/analyze", "POST", {"mode": "ioc", "text": text})
+                self.assertEqual(status, 200)
+                doc = json.loads(body)["document"]
+                self.assertEqual(doc["metadata"]["message_risk"]["rule_version"], 2)
+                self.assertEqual(doc["metadata"]["message_assessment"]["status"], "suspicious")
+                self.assertTrue(any(r["kind"] == "message_rule" for r in doc["review_findings"]))
+
     def test_unknown_paths_and_traversal_do_not_serve_repository_files(self):
         for path in ("/AGENTS.md", "/../AGENTS.md", "/%2e%2e/AGENTS.md", "/api/example?file=data/raw"):
             with self.subTest(path=path):

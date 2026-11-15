@@ -221,6 +221,40 @@ try {
   assert.ok((await evaluate("document.getElementById('finding-detail').textContent")).includes("money_contact_lure"));
   await screenshot("web_populated_findings.png");
   record("Scam Findings row, count, category/source search, seven evidence cards and honest model/rule disagreement all pass.");
+  const noNumber = scam.replaceAll("\\", "").replace("6969696969", "").trim();
+  const mutations = [
+    scam.replace("6969696969", "696969696"),
+    scam.replace("6969696969", "6969"),
+    scam.replace("6969696969", "69xx696"),
+    noNumber,
+    noNumber.replace(/\d/g, ""),
+    "An unknown sender is giving INR 1500000 to everyone. To credit it in your bank account. Please reply to receive it.",
+    "The government is giving 15 lakhs rupees to every citizen. Kindly SMS 6969.",
+  ];
+  for (const mode of ["ioc", "ner"]) {
+    await evaluate("document.getElementById('analysis-mode').value=" + JSON.stringify(mode) + ";document.getElementById('analysis-mode').dispatchEvent(new Event('change',{bubbles:true}))");
+    for (const text of mutations) {
+      await setText(text);
+      await analyze();
+      assert.equal(await evaluate("state.result.document.metadata.message_risk.status"), "suspicious");
+      assert.equal(await evaluate("state.result.document.metadata.message_risk.rule_version"), 2);
+      assert.equal(await evaluate("state.result.document.metadata.message_assessment.status"), "suspicious");
+      assert.ok(await evaluate("state.result.document.review_findings.some(row=>row.kind==='message_rule')"));
+      assert.ok(await evaluate("document.querySelectorAll('.finding-row').length") >= 1);
+      assert.equal(await evaluate("document.getElementById('report-view').textContent"), text);
+    }
+  }
+  await setText(noNumber);
+  await analyze();
+  assert.equal(await evaluate("state.result.document.metadata.message_risk.signals.some(s=>s.kind==='phone')"), false);
+  await evaluate("document.querySelector('.finding-row').click()");
+  await screenshot("web_numberless_findings.png");
+  await command("Emulation.setDeviceMetricsOverride", {width: 390, height: 844, deviceScaleFactor: 1, mobile: true}, session);
+  assert.equal(await evaluate("document.documentElement.scrollWidth <= window.innerWidth"), true);
+  await screenshot("web_numberless_mobile.png");
+  await command("Emulation.setDeviceMetricsOverride", {width: 1440, height: 1120, deviceScaleFactor: 1, mobile: false}, session);
+  record("Seven amount/name/number/request mutations stay suspicious in BOTH modes, with populated Findings and no invented phone evidence.");
+  assert.ok((await evaluate("document.getElementById('risk-method').textContent")).includes("rules v2"));
   await setText("Congratulations! You have won a free cash prize. Call now to claim your reward.");
   await analyze();
   assert.equal(await evaluate("state.result.document.metadata.message_classifier.label"), "spam");
@@ -243,6 +277,19 @@ try {
   await evaluate("window.fetch=window.qaLegacyFetch;delete window.qaLegacyFetch;");
   await analyze();
   record("Stale pre-upgrade backend responses show an explicit restart error instead of a misleading empty Findings list.");
+  await evaluate(`(() => {
+    window.qaOldRulesFetch = window.fetch;
+    const oldRules = structuredClone(state.result);
+    oldRules.document.metadata.message_risk.rule_version = 1;
+    window.fetch = (url,...args) => url === '/api/analyze' ? Promise.resolve(new Response(JSON.stringify(oldRules),{status:200,headers:{'Content-Type':'application/json'}})) : window.qaOldRulesFetch(url,...args);
+  })()`);
+  await click("analyze-button");
+  await waitFor("!state.busy && !document.getElementById('notice').hidden");
+  assert.equal(await evaluate("state.result"), null);
+  assert.ok((await evaluate("document.getElementById('notice').textContent")).includes("outdated message rules"));
+  await evaluate("window.fetch=window.qaOldRulesFetch;delete window.qaOldRulesFetch;");
+  await analyze();
+  record("A cached v1 rule backend is rejected with restart guidance; the visible method confirms rules v2.");
   await setText("Your bank account was credited with INR 1000. No action is required.");
   assert.equal(await evaluate("document.getElementById('message-risk').hidden"), true);
   assert.equal(await evaluate("document.getElementById('map-risk').hidden"), true);

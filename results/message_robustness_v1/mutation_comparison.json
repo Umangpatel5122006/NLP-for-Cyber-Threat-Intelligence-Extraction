@@ -1,0 +1,249 @@
+{
+  "baseline_commit": "8a03fa8",
+  "baseline_rule_sha256": "619d246afeecc7d5fdfbb933a198052abf6367fb960c46dfeac880daba5cb0e5",
+  "current_rule_version": 2,
+  "cases": [
+    {
+      "case": "full_number",
+      "mode": "ioc",
+      "before_rule_status": "suspicious",
+      "after_rule_status": "suspicious",
+      "combined_status": "suspicious",
+      "model_label": "ham",
+      "review_findings": 1,
+      "signals": 7
+    },
+    {
+      "case": "full_number",
+      "mode": "ner",
+      "before_rule_status": "suspicious",
+      "after_rule_status": "suspicious",
+      "combined_status": "suspicious",
+      "model_label": "ham",
+      "review_findings": 1,
+      "signals": 7
+    },
+    {
+      "case": "one_digit_removed",
+      "mode": "ioc",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "suspicious",
+      "combined_status": "suspicious",
+      "model_label": "ham",
+      "review_findings": 1,
+      "signals": 6
+    },
+    {
+      "case": "one_digit_removed",
+      "mode": "ner",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "suspicious",
+      "combined_status": "suspicious",
+      "model_label": "ham",
+      "review_findings": 1,
+      "signals": 6
+    },
+    {
+      "case": "short_code_only",
+      "mode": "ioc",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "suspicious",
+      "combined_status": "suspicious",
+      "model_label": "ham",
+      "review_findings": 1,
+      "signals": 6
+    },
+    {
+      "case": "short_code_only",
+      "mode": "ner",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "suspicious",
+      "combined_status": "suspicious",
+      "model_label": "ham",
+      "review_findings": 1,
+      "signals": 6
+    },
+    {
+      "case": "masked_number",
+      "mode": "ioc",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "suspicious",
+      "combined_status": "suspicious",
+      "model_label": "ham",
+      "review_findings": 1,
+      "signals": 6
+    },
+    {
+      "case": "masked_number",
+      "mode": "ner",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "suspicious",
+      "combined_status": "suspicious",
+      "model_label": "ham",
+      "review_findings": 1,
+      "signals": 6
+    },
+    {
+      "case": "number_removed",
+      "mode": "ioc",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "suspicious",
+      "combined_status": "suspicious",
+      "model_label": "ham",
+      "review_findings": 1,
+      "signals": 6
+    },
+    {
+      "case": "number_removed",
+      "mode": "ner",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "suspicious",
+      "combined_status": "suspicious",
+      "model_label": "ham",
+      "review_findings": 1,
+      "signals": 6
+    },
+    {
+      "case": "all_digits_removed",
+      "mode": "ioc",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "suspicious",
+      "combined_status": "suspicious",
+      "model_label": "ham",
+      "review_findings": 1,
+      "signals": 6
+    },
+    {
+      "case": "all_digits_removed",
+      "mode": "ner",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "suspicious",
+      "combined_status": "suspicious",
+      "model_label": "ham",
+      "review_findings": 1,
+      "signals": 6
+    },
+    {
+      "case": "rephrased_currency",
+      "mode": "ioc",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "suspicious",
+      "combined_status": "suspicious",
+      "model_label": "spam",
+      "review_findings": 2,
+      "signals": 6
+    },
+    {
+      "case": "rephrased_currency",
+      "mode": "ner",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "suspicious",
+      "combined_status": "suspicious",
+      "model_label": "spam",
+      "review_findings": 3,
+      "signals": 6
+    },
+    {
+      "case": "bank_words_removed",
+      "mode": "ioc",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "suspicious",
+      "combined_status": "suspicious",
+      "model_label": "ham",
+      "review_findings": 1,
+      "signals": 4
+    },
+    {
+      "case": "bank_words_removed",
+      "mode": "ner",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "suspicious",
+      "combined_status": "suspicious",
+      "model_label": "ham",
+      "review_findings": 1,
+      "signals": 4
+    },
+    {
+      "case": "completed_notice",
+      "mode": "ioc",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "no_pattern_detected",
+      "combined_status": "suspicious",
+      "model_label": "spam",
+      "review_findings": 1,
+      "signals": 0
+    },
+    {
+      "case": "completed_notice",
+      "mode": "ner",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "no_pattern_detected",
+      "combined_status": "suspicious",
+      "model_label": "spam",
+      "review_findings": 2,
+      "signals": 0
+    },
+    {
+      "case": "passive_sms",
+      "mode": "ioc",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "no_pattern_detected",
+      "combined_status": "no_pattern_detected",
+      "model_label": "ham",
+      "review_findings": 0,
+      "signals": 0
+    },
+    {
+      "case": "passive_sms",
+      "mode": "ner",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "no_pattern_detected",
+      "combined_status": "no_pattern_detected",
+      "model_label": "ham",
+      "review_findings": 1,
+      "signals": 0
+    },
+    {
+      "case": "own_app_otp",
+      "mode": "ioc",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "no_pattern_detected",
+      "combined_status": "no_pattern_detected",
+      "model_label": "ham",
+      "review_findings": 0,
+      "signals": 0
+    },
+    {
+      "case": "own_app_otp",
+      "mode": "ner",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "no_pattern_detected",
+      "combined_status": "no_pattern_detected",
+      "model_label": "ham",
+      "review_findings": 0,
+      "signals": 0
+    },
+    {
+      "case": "warning_context",
+      "mode": "ioc",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "review_context",
+      "combined_status": "review_context",
+      "model_label": "ham",
+      "review_findings": 1,
+      "signals": 8
+    },
+    {
+      "case": "warning_context",
+      "mode": "ner",
+      "before_rule_status": "no_pattern_detected",
+      "after_rule_status": "review_context",
+      "combined_status": "review_context",
+      "model_label": "ham",
+      "review_findings": 1,
+      "signals": 8
+    }
+  ],
+  "note": "Curated regression examples, not a statistical scam-accuracy benchmark.",
+  "current_rule_sha256": "21703b61813104c7dafca60d2da2b9f4ae69bd3503d5ab609a5993440f6cdfdd"
+}

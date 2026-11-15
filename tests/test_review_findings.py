@@ -38,6 +38,18 @@ class ReviewFindingsTests(unittest.TestCase):
         self.assertTrue(doc.metadata["message_assessment"]["disagreement"])
         self.assertEqual(doc.review_findings[0]["kind"], "message_rule")
 
+    def test_number_mutations_keep_combined_findings_without_fabricated_phone_evidence(self):
+        for target in ("696969696", "1234", "69xx69", ""):
+            with self.subTest(target=target):
+                text = USER_MESSAGE.replace("6969696969", target)
+                doc = Pipeline.from_config("configs/config.yaml").run(text)
+                doc.metadata["message_classifier"] = {"status": "ok", "label": "ham"}
+                ResultMerger().process(doc)
+                self.assertEqual(doc.metadata["message_assessment"]["status"], "suspicious")
+                self.assertEqual(doc.review_findings[0]["kind"], "message_rule")
+                self.assertNotIn("phone", {e["kind"] for e in doc.review_findings[0]["evidence"]})
+                self.assertEqual(doc.findings, [])
+
     def test_positive_model_creates_review_row_without_risk_rules(self):
         doc = Document("A synthetic message for review.")
         doc.metadata["message_classifier"] = {"status": "ok", "label": "spam", "decision_margin": 0.8,

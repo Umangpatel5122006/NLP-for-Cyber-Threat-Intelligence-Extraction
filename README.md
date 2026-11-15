@@ -32,8 +32,13 @@ The trained word/character TF-IDF + linear SVM scores **0.9810 dev spam F1**
 on a template-grouped UCI SMS partition (4 missed spam, 0 false positives).
 This is not universal scam accuracy: it misses the supplied money/SMS message,
 which the rule layer flags. The UI preserves and explains that disagreement.
+Rules v2 no longer require a complete phone number: shortening, masking or
+removing the target preserves supported financial-offer/request detections.
+The current robustness check covers 768 generated combinations and both real
+API modes. Restart the server and verify the **English rules v2** label.
 Current CTI dev exact-span F1 remains 0.2596 (entities) and 0.1551 (actions).
-See [the integrated checkpoint](checkpoints/INTEGRATED_FINDINGS_AND_SMS_MODEL.md)
+See [the current robustness checkpoint](checkpoints/MESSAGE_ROBUSTNESS.md),
+[the integrated checkpoint](checkpoints/INTEGRATED_FINDINGS_AND_SMS_MODEL.md)
 and [SMS data provenance](docs/SMS_DATASET.md).
 
 On a fresh clone, model binaries are absent because `models/` is ignored.
@@ -51,13 +56,19 @@ For IOC-only use on native Windows:
 .\.venv\Scripts\python.exe -m cti.web --ioc-only
 ```
 
-Press Ctrl+C to stop. See [the current fix checkpoint](checkpoints/INTEGRATED_FINDINGS_AND_SMS_MODEL.md)
+Press Ctrl+C to stop. See [the current fix checkpoint](checkpoints/MESSAGE_ROBUSTNESS.md)
 for message-risk behavior, setup recovery and validation; the earlier
 [browser checkpoint](checkpoints/BROWSER_WORKBENCH.md) preserves the initial API/UI work.
 
 ---
 
 ## Setup and Baseline Checks
+
+Generated logs, screenshots, API/demo outputs, per-row predictions and feature
+caches stay local through `.gitignore`. Compact experiment reports and the
+frozen baseline required by the audit script remain versioned. Required data,
+split IDs, code, configuration and checkpoint notes are retained. See
+[the output tracking policy](results/README.md).
 
 The core dependency snapshot targets **Windows x64 with Python 3.11**. Run
 these commands from the repository root; activating the environment is optional:
@@ -86,17 +97,17 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** all **193 tests pass** in an isolated Ubuntu-24.04 WSL
+**Current validation:** all **202 tests pass** in an isolated Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
 saved-NER, original-offset, merger, API, action-feature, scam-pattern and launcher tests;
-see `results/integrated_findings_validation.txt` and
+see `results/message_robustness_validation.txt` and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
-were changed. Native Windows also passes the current 21 API, 6 combined-review
-and 8 launcher tests. Twenty actual Chrome check groups cover real NER/IOC inference, scam
+were changed. Current native Windows subsets pass 22 API, 17 rule and 7 review
+tests. Twenty-two actual Chrome check groups cover real NER/IOC inference, scam
 warnings, JSON export, mobile layout and missing-model recovery.
-The latest [fix checkpoint](checkpoints/INTEGRATED_FINDINGS_AND_SMS_MODEL.md)
-records the Findings contract, trained SMS classifier and remaining limits.
+The latest [fix checkpoint](checkpoints/MESSAGE_ROBUSTNESS.md)
+records phone-independent request matching, mutation checks and remaining limits.
 The [boundary-feature checkpoint](checkpoints/ACTION_BOUNDARY_FEATURES.md)
 records the selected action profile and active-model upgrade. The earlier
 [action checkpoint](checkpoints/ACTION_EXPERIMENT.md) records the negative

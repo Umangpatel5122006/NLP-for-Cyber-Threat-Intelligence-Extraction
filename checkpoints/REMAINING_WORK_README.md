@@ -33,7 +33,7 @@ evidence mapping covers cleaner/defanger changes. Consolidated findings now keep
 per-source evidence, actual host components and explicit overlap information.
 The local browser workbench now reuses this pipeline through an API, with report
 input/upload, original highlights, filters, evidence details and JSON export.
-All 193 tests pass in WSL. The action boundary profile passed train-only
+All 202 tests pass in WSL. The action boundary profile passed train-only
 selection and improved dev exact F1 from 0.1379 to 0.1551; it is now the default
 with the prior model backed up. Chrome checks pass with this artifact. See
 [ACTION_BOUNDARY_FEATURES.md](ACTION_BOUNDARY_FEATURES.md). The prior negative
@@ -47,6 +47,10 @@ A separate TF-IDF/linear SVM SMS classifier now has grouped dev spam F1 0.9810.
 Combined `review_findings` populate the previously empty message Findings section.
 The supplied example is a classifier miss caught by rules; disagreement remains
 visible. See [INTEGRATED_FINDINGS_AND_SMS_MODEL.md](INTEGRATED_FINDINGS_AND_SMS_MODEL.md).
+Rules v2 now preserve financial/request detections when contact targets are
+shortened, masked or removed. The same frozen SMS dev review-alert metrics are
+retained. See [MESSAGE_ROBUSTNESS.md](MESSAGE_ROBUSTNESS.md) for 768 generated
+regression combinations, 24 real API cases, 22 Chrome groups and known limits.
 Next: background false-positive reduction and remaining classical extraction tasks;
 the official test split stays reserved.
 

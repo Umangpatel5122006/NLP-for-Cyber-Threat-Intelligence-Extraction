@@ -1,0 +1,37 @@
+{
+  "rule_version": 2,
+  "baseline_commit": "8a03fa8",
+  "current_rule_sha256": "21703b61813104c7dafca60d2da2b9f4ae69bd3503d5ab609a5993440f6cdfdd",
+  "dev_rows": 796,
+  "review_alert_definition": "positive SMS model OR suspicious/contextual rule evidence",
+  "before_review_alert_metrics": {
+    "precision": 1.0,
+    "recall": 0.9626168224299065,
+    "f1": 0.9809523809523809,
+    "tn": 689,
+    "fp": 0,
+    "fn": 4,
+    "tp": 103
+  },
+  "after_review_alert_metrics": {
+    "precision": 1.0,
+    "recall": 0.9626168224299065,
+    "f1": 0.9809523809523809,
+    "tn": 689,
+    "fp": 0,
+    "fn": 4,
+    "tp": 103
+  },
+  "added_rule_detections": 17,
+  "all_added_rule_detections_are_dev_spam": true,
+  "curated_api_checks": 24,
+  "validation": {
+    "wsl_test_methods": 202,
+    "browser_check_groups": 22,
+    "generated_positive_regression_combinations": 768
+  },
+  "model_weights_changed": false,
+  "test_evaluated": false,
+  "limitations": "Curated and generated checks are regression coverage, not universal scam accuracy. Existing classifier domain misses remain.",
+  "detailed_outputs": "Generated local artifacts; see results/README.md and checkpoints/MESSAGE_ROBUSTNESS.md."
+}

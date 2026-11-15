@@ -326,6 +326,7 @@ function renderResults() {
   renderDetails();
 }
 function renderMessageRisk(risk) {
+  $("risk-method").textContent = "Classical model + English rules v" + risk.rule_version;
   const model = state.result.document.metadata.message_classifier;
   const assessment = state.result.document.metadata.message_assessment || risk;
   $("model-verdict").textContent = model?.status === "ok" ? "Classical SMS model: " + (model.label === "spam" ? "spam predicted" : "ham predicted") : "Classical SMS model: " + (model?.status === "not_applicable" ? "outside its scope" : "unavailable");
@@ -359,6 +360,9 @@ function renderMessageRisk(risk) {
 function showAnalysis(result) {
   if (!Array.isArray(result?.document?.review_findings)) {
     throw new Error("The running server uses the old Findings format. Stop it with Ctrl+C, run python scripts/start_workbench.py, then reload this page.");
+  }
+  if (result.document.metadata?.message_risk?.rule_version !== 2) {
+    throw new Error("The running server has outdated message rules. Stop it with Ctrl+C, run python scripts/start_workbench.py, then reload this page. No model retraining is needed for this rule update.");
   }
   state.result = result;
   const doc = result.document, rows = reviewFindings(), primary = rows.filter((finding) => finding.role === "primary");
