@@ -43,9 +43,13 @@ class Defanger(BaseModule):
     def process(self, doc: Document) -> Document:
         if not isinstance(doc.text, str):
             raise TypeError("Document.text must be a string.")
-        doc.metadata.setdefault("text_before_defang", doc.text)   # keep the original
-        text = doc.text
-        for pattern, replacement in _RULES:
-            text = pattern.sub(replacement, text)
-        doc.text = text
+        before_defang = doc.text
+
+        def transform(text):
+            for pattern, replacement in _RULES:
+                text = text.sub(pattern, replacement)
+            return text
+
+        doc.transform_text(transform)
+        doc.metadata.setdefault("text_before_defang", before_defang)
         return doc

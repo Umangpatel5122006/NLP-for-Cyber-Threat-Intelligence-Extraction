@@ -13,7 +13,6 @@ So the cleaner removes only the junk and leaves anything that Indian scripts dep
 
 
 import re
-import unicodedata
 
 from cti.core.base import BaseModule, Document
 from cti.core.registry import register
@@ -33,8 +32,5 @@ class TextCleaner(BaseModule):
     def process(self, doc: Document) -> Document:
         if not isinstance(doc.text, str):
             raise TypeError("Document.text must be a string.")
-        text = unicodedata.normalize("NFC", doc.text)
-        text = _INVISIBLE.sub("", text)
-        text = _SPACES.sub(" ", text).strip()
-        doc.text = text
+        doc.transform_text(lambda text: text.normalize_nfc().sub(_INVISIBLE, "").sub(_SPACES, " ").strip())
         return doc

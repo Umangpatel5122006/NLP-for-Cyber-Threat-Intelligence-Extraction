@@ -1,0 +1,204 @@
+test_cluster_bootstrap_produces_valid_intervals (test_eval_metrics.CVAndBootstrapTests.test_cluster_bootstrap_produces_valid_intervals) ... ok
+test_cv_rejects_test_split_reports (test_eval_metrics.CVAndBootstrapTests.test_cv_rejects_test_split_reports) ... ok
+test_report_grouped_splits_respect_boundaries (test_eval_metrics.CVAndBootstrapTests.test_report_grouped_splits_respect_boundaries) ... ok
+test_boundary_error_fails_exact_but_passes_relaxed (test_eval_metrics.EvalMetricsTests.test_boundary_error_fails_exact_but_passes_relaxed) ... ok
+test_completely_missed_and_completely_spurious (test_eval_metrics.EvalMetricsTests.test_completely_missed_and_completely_spurious) ... ok
+test_empty_evaluation_bundle_has_zero_scores (test_eval_metrics.EvalMetricsTests.test_empty_evaluation_bundle_has_zero_scores) ... ok
+test_empty_token_scores_have_the_same_schema (test_eval_metrics.EvalMetricsTests.test_empty_token_scores_have_the_same_schema) ... ok
+test_entity_prediction_on_background_is_a_false_positive (test_eval_metrics.EvalMetricsTests.test_entity_prediction_on_background_is_a_false_positive) ... ok
+test_evaluate_predictions_bundle (test_eval_metrics.EvalMetricsTests.test_evaluate_predictions_bundle) ... ok
+test_exact_match_scores_perfect_f1 (test_eval_metrics.EvalMetricsTests.test_exact_match_scores_perfect_f1) ... ok
+test_exact_scoring_rejects_unknown_mode (test_eval_metrics.EvalMetricsTests.test_exact_scoring_rejects_unknown_mode) ... ok
+test_extract_spans_extracts_correct_half_open_intervals (test_eval_metrics.EvalMetricsTests.test_extract_spans_extracts_correct_half_open_intervals) ... ok
+test_metrics_reject_misaligned_sequences (test_eval_metrics.EvalMetricsTests.test_metrics_reject_misaligned_sequences) ... ok
+test_missing_all_entities_gets_no_credit_for_background_tokens (test_eval_metrics.EvalMetricsTests.test_missing_all_entities_gets_no_credit_for_background_tokens) ... ok
+test_one_prediction_cannot_recall_two_gold_spans (test_eval_metrics.EvalMetricsTests.test_one_prediction_cannot_recall_two_gold_spans) ... ok
+test_predicted_only_entity_types_are_scored (test_eval_metrics.EvalMetricsTests.test_predicted_only_entity_types_are_scored) ... ok
+test_relaxed_matching_agrees_with_exhaustive_pairing (test_eval_metrics.EvalMetricsTests.test_relaxed_matching_agrees_with_exhaustive_pairing) ... ok
+test_relaxed_matching_does_not_cross_sentence_boundaries (test_eval_metrics.EvalMetricsTests.test_relaxed_matching_does_not_cross_sentence_boundaries) ... ok
+test_relaxed_matching_recovers_multiple_distinct_pairs (test_eval_metrics.EvalMetricsTests.test_relaxed_matching_recovers_multiple_distinct_pairs) ... ok
+test_strict_per_label_counts_follow_strict_iob2 (test_eval_metrics.EvalMetricsTests.test_strict_per_label_counts_follow_strict_iob2) ... ok
+test_token_level_evaluation (test_eval_metrics.EvalMetricsTests.test_token_level_evaluation) ... ok
+test_two_predictions_cannot_both_match_one_gold_span (test_eval_metrics.EvalMetricsTests.test_two_predictions_cannot_both_match_one_gold_span) ... ok
+test_type_confusion_identified_correctly (test_eval_metrics.EvalMetricsTests.test_type_confusion_identified_correctly) ... ok
+test_report_exports_corrected_scores_and_metrics_version (test_eval_metrics.EvaluationReportTests.test_report_exports_corrected_scores_and_metrics_version) ... ok
+test_report_rejects_truncated_sentence_metadata (test_eval_metrics.EvaluationReportTests.test_report_rejects_truncated_sentence_metadata) ... ok
+test_reports_handle_a_diagnostic_subset_without_entities (test_eval_metrics.EvaluationReportTests.test_reports_handle_a_diagnostic_subset_without_entities) ... ok
+test_active_ner_choices_are_classical (test_model_policy.ClassicalModelPolicyTests.test_active_ner_choices_are_classical) ... ok
+test_comparison_defaults_contain_no_neural_models_or_epoch_option (test_model_policy.ClassicalModelPolicyTests.test_comparison_defaults_contain_no_neural_models_or_epoch_option) ... ok
+test_comparison_scripts_reject_neural_choices_before_reading_data (test_model_policy.ClassicalModelPolicyTests.test_comparison_scripts_reject_neural_choices_before_reading_data) ... ok
+test_historical_imports_fail_before_loading_neural_dependencies (test_model_policy.ClassicalModelPolicyTests.test_historical_imports_fail_before_loading_neural_dependencies) ... ok
+test_registry_rejects_excluded_models (test_model_policy.ClassicalModelPolicyTests.test_registry_rejects_excluded_models) ... ok
+test_crf_preserves_empty_sentence_positions (test_models_preprocessing.ModelContractTests.test_crf_preserves_empty_sentence_positions) ... ok
+test_load_bio_validates_records (test_models_preprocessing.ModelContractTests.test_load_bio_validates_records) ... ok
+test_sklearn_sequence_taggers_follow_bio_interface (test_models_preprocessing.ModelContractTests.test_sklearn_sequence_taggers_follow_bio_interface) ... ok
+test_training_data_checks_alignment_and_bio_transitions (test_models_preprocessing.ModelContractTests.test_training_data_checks_alignment_and_bio_transitions) ... ok
+test_cleaning_and_defanging_preserve_original_before_defang (test_models_preprocessing.PreprocessingTests.test_cleaning_and_defanging_preserve_original_before_defang) ... ok
+test_language_detection_handles_punctuation_and_unicode_letters (test_models_preprocessing.PreprocessingTests.test_language_detection_handles_punctuation_and_unicode_letters) ... ok
+test_splitter_handles_abbreviations_and_keeps_offsets (test_models_preprocessing.PreprocessingTests.test_splitter_handles_abbreviations_and_keeps_offsets) ... ok
+test_tokenizer_offsets_and_bio_span_alignment (test_models_preprocessing.PreprocessingTests.test_tokenizer_offsets_and_bio_span_alignment) ... ok
+test_load_bio_allows_test_with_env_var (test_models_preprocessing.SplitLockTests.test_load_bio_allows_test_with_env_var) ... ok
+test_load_bio_refuses_test_without_env_var (test_models_preprocessing.SplitLockTests.test_load_bio_refuses_test_without_env_var) ... ok
+test_load_smah_allows_test_with_env_var (test_models_preprocessing.SplitLockTests.test_load_smah_allows_test_with_env_var) ... ok
+test_load_smah_default_omits_test_without_env_var (test_models_preprocessing.SplitLockTests.test_load_smah_default_omits_test_without_env_var) ... ok
+test_load_smah_refuses_test_split_without_env_var (test_models_preprocessing.SplitLockTests.test_load_smah_refuses_test_split_without_env_var) ... ok
+test_all_classical_taggers_preserve_predictions_after_reload (test_ner.NERArtifactTests.test_all_classical_taggers_preserve_predictions_after_reload) ... ok
+test_layer_corruption_and_environment_drift_are_rejected (test_ner.NERArtifactTests.test_layer_corruption_and_environment_drift_are_rejected) ... ok
+test_manifest_version_and_neural_model_names_are_rejected (test_ner.NERArtifactTests.test_manifest_version_and_neural_model_names_are_rejected) ... ok
+test_unfitted_and_wrong_layer_models_cannot_be_saved (test_ner.NERArtifactTests.test_unfitted_and_wrong_layer_models_cannot_be_saved) ... ok
+test_loader_joins_by_uid_instead_of_raw_row_order (test_ner.NERDataAndTrainingTests.test_loader_joins_by_uid_instead_of_raw_row_order) ... ok
+test_missing_duplicate_and_invalid_bio_records_are_rejected (test_ner.NERDataAndTrainingTests.test_missing_duplicate_and_invalid_bio_records_are_rejected) ... ok
+test_neural_configs_and_split_leakage_are_rejected (test_ner.NERDataAndTrainingTests.test_neural_configs_and_split_leakage_are_rejected) ... ok
+test_train_dev_cli_pipeline_writes_versioned_results_and_reload_evidence (test_ner.NERDataAndTrainingTests.test_train_dev_cli_pipeline_writes_versioned_results_and_reload_evidence) ... [Entity(text='APT29', label='TEST', start=0, end=5, source='dummy', confidence=1.0, original_start=None, original_end=None, original_text=None)]
+
+ At first, they attacked North Korea-related research institutes in South Korea before attacking a South Korean energy corporation in 2014.
+   they -> B-THREAT_ACTOR
+   attacked -> B-ACTION
+   North -> I-ACTION
+   Korea -> I-ACTION
+   - -> I-ACTION
+   related -> I-ACTION
+   research -> I-ACTION
+   institutes -> I-ACTION
+   in -> I-ACTION
+   South -> I-ACTION
+   Korea -> I-ACTION
+   attacking -> B-ACTION
+   a -> I-ACTION
+   South -> I-ACTION
+   Korean -> I-ACTION
+   energy -> I-ACTION
+   corporation -> I-ACTION
+
+ [1] The group usually employs spear phishing attacks against the national defense sector, defense industries, the press, the diplomatic sector, national organizations, and academic fields to steal internal information and technology from organizations.
+   employs -> B-ACTION
+   spear -> I-ACTION
+   phishing -> I-ACTION
+   attacks -> I-ACTION
+   against -> I-ACTION
+   the -> I-ACTION
+   national -> I-ACTION
+   defense -> I-ACTION
+   sector -> I-ACTION
+   , -> I-ACTION
+   defense -> I-ACTION
+   industries -> I-ACTION
+   , -> I-ACTION
+   the -> I-ACTION
+   press -> I-ACTION
+   , -> I-ACTION
+   the -> I-ACTION
+   diplomatic -> I-ACTION
+   sector -> I-ACTION
+   , -> I-ACTION
+   national -> I-ACTION
+   organizations -> I-ACTION
+   , -> I-ACTION
+   and -> I-ACTION
+   academic -> I-ACTION
+   fields -> I-ACTION
+   to -> B-ACTION
+   steal -> I-ACTION
+   internal -> I-ACTION
+   information -> I-ACTION
+   and -> I-ACTION
+   technology -> I-ACTION
+   from -> I-ACTION
+   organizations -> I-ACTION
+
+ Even until recently, the Kimsuky group was still mainly employing spear phishing attacks to gain initial access.
+   employing -> B-ACTION
+   spear -> I-ACTION
+   phishing -> I-ACTION
+   attacks -> I-ACTION
+   to -> I-ACTION
+   gain -> I-ACTION
+   initial -> I-ACTION
+   access -> I-ACTION
+'APT29 used Mimikatz and contacted 185.22.10.5'
+train 8635 sentences, 70 reports
+dev 1238 sentences, 10 reports
+https://evil.example.com/a, 185.22.10.5, admin@evil.com
+CVE -> CVE-2021-44228
+IP -> 185.22.10.5
+HASH -> d41d8cd98f00b204e9800998ecf8427e
+CVE -> CVE-2021-44228 (16, 30)
+IP -> 185.22.10.5 (42, 53)
+URL -> https://evil.example.com/a.php (58, 88)
+DOMAIN -> evil.example.com (66, 82)
+EMAIL -> admin@evil.com (97, 111)
+DOMAIN -> evil.com (103, 111)
+HASH -> d41d8cd98f00b204e9800998ecf8427e (119, 151)
+en <- APT29 used Mimikatz
+hi <- यह हमला बहुत खतरनाक है
+mr <- हा हल्ला खूप धोकादायक आहे
+gu <- આ હુમલો ખતરનાક છે
+{'start': 0, 'end': 37, 'text': 'APT29 used Mimikatz on host 10.0.0.1.'}
+{'start': 38, 'end': 91, 'text': 'It then contacted evil.example.com, e.g. a C2 server.'}
+{'start': 92, 'end': 114, 'text': 'The malware persisted.'}
+2 Hindi sentences
+('APT29', 0, 5)
+('used', 6, 10)
+('Cobalt', 11, 17)
+('Strike', 18, 24)
+(',', 24, 25)
+('then', 26, 30)
+('contacted', 31, 40)
+('evil.example.com', 41, 57)
+('(', 58, 59)
+('185.22.10.5', 59, 70)
+(')', 70, 71)
+('.', 71, 72)
+[('यह', 0, 2), ('हमला', 3, 7), ('बहुत', 8, 12), ('खतरनाक', 13, 19), ('है', 20, 22), ('।', 22, 23)]
+Training crf_tagger/entities: 2 train sentences; dev=2
+entities: all-dev exact F1=1.0000; reload identical; saved /tmp/tmpyjl858zw/models/ner_entities.joblib
+ok
+test_unknown_hyperparameters_are_not_silently_ignored (test_ner.NERDataAndTrainingTests.test_unknown_hyperparameters_are_not_silently_ignored) ... ok
+test_both_layers_emit_evidence_spans_and_keep_iocs (test_ner.NERPipelineTests.test_both_layers_emit_evidence_spans_and_keep_iocs) ... ok
+test_invalid_prediction_lengths_and_labels_do_not_append_partial_results (test_ner.NERPipelineTests.test_invalid_prediction_lengths_and_labels_do_not_append_partial_results) ... ok
+test_optional_relevance_gate_requires_predictions_and_keeps_other_entities (test_ner.NERPipelineTests.test_optional_relevance_gate_requires_predictions_and_keeps_other_entities) ... ok
+test_relevance_rerun_removes_stale_own_findings_only (test_ner.NERPipelineTests.test_relevance_rerun_removes_stale_own_findings_only) ... ok
+test_repeated_inference_deduplicates_own_findings (test_ner.NERPipelineTests.test_repeated_inference_deduplicates_own_findings) ... ok
+test_sentence_and_token_offsets_are_validated (test_ner.NERPipelineTests.test_sentence_and_token_offsets_are_validated) ... ok
+test_unsupported_languages_and_empty_documents (test_ner.NERPipelineTests.test_unsupported_languages_and_empty_documents) ... ok
+test_cli_preserves_file_bytes_as_unicode_including_crlf_and_bom (test_offsets.OffsetMappingTests.test_cli_preserves_file_bytes_as_unicode_including_crlf_and_bom) ... ok
+test_composition_and_uncomposed_mark_keep_distinct_sources (test_offsets.OffsetMappingTests.test_composition_and_uncomposed_mark_keep_distinct_sources) ... ok
+test_defang_rules_compose_back_to_the_input_report (test_offsets.OffsetMappingTests.test_defang_rules_compose_back_to_the_input_report) ... ok
+test_empty_and_fully_removed_text_keep_the_supplied_report (test_offsets.OffsetMappingTests.test_empty_and_fully_removed_text_keep_the_supplied_report) ... ok
+test_identity_positions_and_non_bmp_characters_use_code_points (test_offsets.OffsetMappingTests.test_identity_positions_and_non_bmp_characters_use_code_points) ... ok
+test_indic_joiners_are_preserved (test_offsets.OffsetMappingTests.test_indic_joiners_are_preserved) ... ok
+test_pipeline_entities_and_sentences_include_original_evidence (test_offsets.OffsetMappingTests.test_pipeline_entities_and_sentences_include_original_evidence) ... ok
+test_pipeline_rejects_modules_that_discard_the_original_report (test_offsets.OffsetMappingTests.test_pipeline_rejects_modules_that_discard_the_original_report) ... ok
+test_projection_validates_all_evidence_before_mutation (test_offsets.OffsetMappingTests.test_projection_validates_all_evidence_before_mutation) ... ok
+test_repeated_equal_indicators_map_to_distinct_original_occurrences (test_offsets.OffsetMappingTests.test_repeated_equal_indicators_map_to_distinct_original_occurrences) ... ok
+test_span_validation_rejects_invalid_and_empty_ranges (test_offsets.OffsetMappingTests.test_span_validation_rejects_invalid_and_empty_ranges) ... ok
+test_text_changes_after_analysis_are_rejected_without_mutation (test_offsets.OffsetMappingTests.test_text_changes_after_analysis_are_rejected_without_mutation) ... ok
+test_unchanged_transforms_are_idempotent_after_analysis (test_offsets.OffsetMappingTests.test_unchanged_transforms_are_idempotent_after_analysis) ... ok
+test_unicode_composition_tracks_multiple_input_characters (test_offsets.OffsetMappingTests.test_unicode_composition_tracks_multiple_input_characters) ... ok
+test_unicode_expansion_can_share_one_original_character (test_offsets.OffsetMappingTests.test_unicode_expansion_can_share_one_original_character) ... ok
+test_unicode_reordering_uses_a_covering_span (test_offsets.OffsetMappingTests.test_unicode_reordering_uses_a_covering_span) ... ok
+test_untracked_changes_are_rejected (test_offsets.OffsetMappingTests.test_untracked_changes_are_rejected) ... ok
+test_whitespace_and_deleted_characters_keep_their_original_evidence (test_offsets.OffsetMappingTests.test_whitespace_and_deleted_characters_keep_their_original_evidence) ... ok
+test_configured_pipeline_extracts_iocs_with_valid_offsets (test_pipeline.PipelineTests.test_configured_pipeline_extracts_iocs_with_valid_offsets) ... ok
+test_pipeline_starts_without_unselected_nlp_libraries (test_pipeline.PipelineTests.test_pipeline_starts_without_unselected_nlp_libraries) ... ok
+test_classifier_learns_relevance_and_handles_empty_predictions (test_relevance.RelevanceClassifierTests.test_classifier_learns_relevance_and_handles_empty_predictions) ... ok
+test_corrupt_artifact_and_unknown_versions_are_rejected (test_relevance.RelevanceClassifierTests.test_corrupt_artifact_and_unknown_versions_are_rejected) ... ok
+test_fit_and_predict_share_normalization (test_relevance.RelevanceClassifierTests.test_fit_and_predict_share_normalization) ... ok
+test_invalid_metadata_does_not_write_an_artifact (test_relevance.RelevanceClassifierTests.test_invalid_metadata_does_not_write_an_artifact) ... ok
+test_invalid_thresholds_are_rejected (test_relevance.RelevanceClassifierTests.test_invalid_thresholds_are_rejected) ... ok
+test_invalid_training_inputs_are_rejected (test_relevance.RelevanceClassifierTests.test_invalid_training_inputs_are_rejected) ... ok
+test_prediction_does_not_learn_development_vocabulary (test_relevance.RelevanceClassifierTests.test_prediction_does_not_learn_development_vocabulary) ... ok
+test_save_reload_preserves_scores_parameters_and_metadata (test_relevance.RelevanceClassifierTests.test_save_reload_preserves_scores_parameters_and_metadata) ... ok
+test_threshold_override_does_not_mutate_saved_default (test_relevance.RelevanceClassifierTests.test_threshold_override_does_not_mutate_saved_default) ... ok
+test_unfitted_models_cannot_predict_or_save (test_relevance.RelevanceClassifierTests.test_unfitted_models_cannot_predict_or_save) ... ok
+test_empty_documents_and_missing_upstream_steps (test_relevance.RelevancePipelineTests.test_empty_documents_and_missing_upstream_steps) ... ok
+test_non_english_sentences_are_explicitly_unsupported (test_relevance.RelevancePipelineTests.test_non_english_sentences_are_explicitly_unsupported) ... ok
+test_pipeline_does_not_require_spacy_or_neural_models (test_relevance.RelevancePipelineTests.test_pipeline_does_not_require_spacy_or_neural_models) ... ok
+test_pipeline_scores_sentences_and_retains_iocs_in_negative_sentences (test_relevance.RelevancePipelineTests.test_pipeline_scores_sentences_and_retains_iocs_in_negative_sentences) ... ok
+test_pipeline_threshold_can_override_artifact_threshold (test_relevance.RelevancePipelineTests.test_pipeline_threshold_can_override_artifact_threshold) ... ok
+test_training_uses_only_train_and_evaluates_only_dev (test_relevance.RelevanceTrainingTests.test_training_uses_only_train_and_evaluates_only_dev) ... ok
+
+----------------------------------------------------------------------
+Ran 96 tests in 5.492s
+
+OK

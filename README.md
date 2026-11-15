@@ -38,12 +38,14 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** all **78 tests pass** in an isolated Ubuntu-24.04 WSL
+**Current validation:** all **96 tests pass** in an isolated Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
-16 new saved-NER tests; see `results/ner_validation.txt` and
+16 saved-NER tests and 18 original-offset tests; see `results/offset_validation.txt` and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
-were changed. The latest [NER checkpoint](checkpoints/NER_INTEGRATION.md) records
+were changed. The 18 offset tests also pass in Windows Python 3.11.
+The latest [offset checkpoint](checkpoints/OFFSET_MAPPING.md) records original
+evidence projection; the [NER checkpoint](checkpoints/NER_INTEGRATION.md) records
 real training, dev results and document inference.
 
 **Evaluation correction:** new reports use metrics version 2, which excludes
@@ -57,10 +59,11 @@ The [Classical NLP tests workflow](.github/workflows/classical-nlp.yml)
 checks the complete classical suite on Ubuntu/Python 3.11 after a push or pull
 request and can also be run manually in Actions. It checks tokenizer startup,
 excludes neural packages, and records test/train-dev validation artifacts.
-The preceding committed scope step passed all 62 tests and relevance persistence
-in [GitHub Actions](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43631773684).
-This step adds real entity/action training and inference to CI; the updated
-workflow has been checked locally and awaits a remote run after commit/push.
+The committed NER step passed all 78 tests, relevance persistence, real
+entity/action training and inference in
+[GitHub Actions](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43639592315).
+This step adds original-evidence assertions to CI; the updated workflow has been
+checked locally and awaits a remote run after commit/push.
 
 ---
 
@@ -148,9 +151,14 @@ both models produce identical full-dev predictions after reload.
 `configs/ner_training.yaml` selects training settings; `configs/config_ner.yaml`
 selects document modules. Artifacts and manifests are saved under ignored
 `models/ner_{entities,action}.*`. The sample output retains both IOC and NER
-evidence. NER confidence is `null`, and offsets refer to normalized
-`document.text`. Mapping to the original report is the next integration step
-before frontend highlighting. See [the NER checkpoint](checkpoints/NER_INTEGRATION.md)
+evidence. NER confidence is `null`. Existing offsets refer to normalized
+`document.text`; new `original_start`, `original_end` and `original_text` fields
+project every entity and sentence back to the supplied report. The document
+also retains the complete `original_text`. Positions count Unicode code points
+and use half-open intervals; source evidence uses covering spans when Unicode
+composition or replacements prevent a one-to-one mapping. See
+[the offset checkpoint](checkpoints/OFFSET_MAPPING.md) for the JSON contract and
+[the NER checkpoint](checkpoints/NER_INTEGRATION.md)
 for review commands and limitations.
 
 ---

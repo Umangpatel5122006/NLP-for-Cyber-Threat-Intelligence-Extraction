@@ -40,8 +40,8 @@ class IOCFinder(BaseModule):
                         continue
                     seen.add(span)
                     doc.entities.append(
-                        Entity(text=m.group(), label=label, start=m.start(),
-                               end=m.end(), source=self.name, confidence=1.0)
+                        doc.project_entity(Entity(text=m.group(), label=label, start=m.start(),
+                                                  end=m.end(), source=self.name, confidence=1.0))
                     )
         doc.entities.sort(key=lambda e: e.start)
         return doc

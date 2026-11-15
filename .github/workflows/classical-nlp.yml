@@ -66,6 +66,10 @@ jobs:
           assert set(result["metadata"]["ner"]) == {"entities", "action"}
           assert all(item["status"] == "ok" for item in result["metadata"]["ner"].values())
           assert all(result["text"][e["start"]:e["end"]] == e["text"] for e in result["entities"])
+          evidence = result["entities"] + result["metadata"]["sentences"]
+          assert all(result["original_text"][e["original_start"]:e["original_end"]] == e["original_text"] for e in evidence)
+          assert result["metadata"]["offsets"]["unit"] == "unicode_code_points"
+          assert any("[.]" in e["original_text"] for e in result["entities"])
           PY
       - name: Upload validation evidence
         if: always()

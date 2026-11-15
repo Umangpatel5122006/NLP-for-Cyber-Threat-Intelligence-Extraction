@@ -2,6 +2,12 @@
 
 Date: 2026-11-15 (Asia/Calcutta)
 
+Follow-up: this step was committed as `a77f5a8` and its
+[GitHub Actions run](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43639592315)
+passed all 78 tests, real training/reload checks and inference. Original-report
+mapping is implemented in the next [offset checkpoint](OFFSET_MAPPING.md).
+The original implementation record below is preserved.
+
 ## What is ready
 
 `python -m cti.train_ner` trains the entity and action layers, writes versioned

@@ -24,8 +24,8 @@ class IOCRegex(BaseModule):
         for label, pattern in PATTERNS.items():
             for m in pattern.finditer(doc.text):
                 doc.entities.append(
-                    Entity(text=m.group(), label=label, start=m.start(),
-                           end=m.end(), source=self.name, confidence=1.0)
+                    doc.project_entity(Entity(text=m.group(), label=label, start=m.start(),
+                                              end=m.end(), source=self.name, confidence=1.0))
                 )
         doc.entities.sort(key=lambda e: e.start)
         return doc

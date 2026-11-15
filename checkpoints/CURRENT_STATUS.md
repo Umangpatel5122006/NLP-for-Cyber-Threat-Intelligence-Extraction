@@ -1,6 +1,7 @@
 # Project progress, in order
 
-Latest checkpoint: [saved classical NER and document inference](NER_INTEGRATION.md).
+Latest checkpoint: [original-report evidence offsets](OFFSET_MAPPING.md).
+The [saved classical NER and document inference](NER_INTEGRATION.md) step is committed.
 The preceding [classical-only methods and CI](CLASSICAL_SCOPE.md) step is committed.
 The [saved sentence relevance module](RELEVANCE_MODULE.md) is committed.
 The earlier [evaluation correctness fixes](EVALUATION_FIXES.md) are committed.
@@ -13,18 +14,20 @@ Dev sentence F1 is 0.6793 at threshold 0.5. Entity and action CRFs now also have
 saved artifacts, full-dev reload checks and live document modules. New metrics
 version 2 all-dev exact F1 is 0.2596 (entities) and 0.1379 (actions), using the
 existing processed BIO labels. The official test split is still reserved.
-All 78 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
+All 96 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
 native imports remain blocked by Application Control without policy changes.
 Deep learning is excluded. Allowed NER choices are CRF, MEMM, and token Logistic
 Regression; historical neural experiments are guarded against execution.
-The committed scope step passed 62 tests and relevance persistence in GitHub
-Actions. This step extends CI to NER training/inference; that update awaits a
-remote run after commit/push. See the latest checkpoint for evidence and
+The committed NER step passed 78 tests, relevance persistence, both real CRF
+training/reload runs and inference in GitHub Actions. The current original-span
+assertions await a remote run after commit/push. See the latest checkpoint for evidence and
 [WSL_SETUP.md](../docs/WSL_SETUP.md) for working local commands.
 
-Next: map normalized positions back to the original report, then define an
-IOC/NER merge policy before frontend highlighting. Current NER offsets refer to
-normalized `document.text`, and confidence is explicitly unavailable (`null`).
+Original-report mapping is implemented for cleaning/defanging. The document
+preserves `original_text`, and entities/sentences include original evidence
+spans alongside normalized offsets. All 18 offset tests also pass on Windows.
+Next: define an IOC/NER merge policy before frontend highlighting. NER confidence
+remains explicitly unavailable (`null`).
 
 ## 1. Project goal and structure
 
@@ -68,7 +71,12 @@ The configured preprocessing modules are implemented as swappable pipeline compo
 
 Relevant modules are in [src/cti/preprocessing/](/E:/STUDY/college-projects/NLP-for-Cyber-Threat-Intelligence-Extraction/src/cti/preprocessing). Their tests cover basic cleaning, defanging, language, sentence-splitting, and tokenization behavior.
 
-**Important boundary detail:** defanging changes the text. Pipeline positions after defanging refer to the changed text, not the original text; there is no general offset-mapping mechanism yet. The dataset’s BIO tags, however, are built from the original annotated sentences, not from text run through the pipeline.
+**Boundary detail:** defanging changes the text. Pipeline `start`/`end` positions
+refer to normalized text; `original_start`/`original_end` now project evidence
+through cleaner/defanger changes to the supplied report. See the latest offset
+checkpoint for covering-span and Unicode units. The dataset's BIO tags are
+still built from the original annotated sentences, not from text run through
+the document pipeline.
 
 Language identification is currently a heuristic, not a full language-identification model. English is the training language today; multilingual support will need further validation on Hindi, Marathi, and Gujarati data.
 

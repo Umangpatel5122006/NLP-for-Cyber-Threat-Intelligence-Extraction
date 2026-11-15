@@ -1,0 +1,6 @@
+Original-report offset audit; no held-out test evaluation.
+train: normalized text unchanged for all 8635 sentences compared with the previous normalization operations.
+dev: normalized text unchanged for all 1238 sentences compared with the previous normalization operations.
+Unicode NFC: all 1120 individual code points changed by normalization have valid source provenance.
+Unicode composition/reordering: 3000 seeded mixed-character samples match standard NFD ordering, previous normalized output and valid source bounds.
+Real saved-CRF demo: normalized findings/confidence unchanged, all original entity/sentence spans match input, model binaries unchanged.

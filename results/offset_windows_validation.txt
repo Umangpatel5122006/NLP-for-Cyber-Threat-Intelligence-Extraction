@@ -1,0 +1,23 @@
+test_cli_preserves_file_bytes_as_unicode_including_crlf_and_bom (test_offsets.OffsetMappingTests.test_cli_preserves_file_bytes_as_unicode_including_crlf_and_bom) ... ok
+test_composition_and_uncomposed_mark_keep_distinct_sources (test_offsets.OffsetMappingTests.test_composition_and_uncomposed_mark_keep_distinct_sources) ... ok
+test_defang_rules_compose_back_to_the_input_report (test_offsets.OffsetMappingTests.test_defang_rules_compose_back_to_the_input_report) ... ok
+test_empty_and_fully_removed_text_keep_the_supplied_report (test_offsets.OffsetMappingTests.test_empty_and_fully_removed_text_keep_the_supplied_report) ... ok
+test_identity_positions_and_non_bmp_characters_use_code_points (test_offsets.OffsetMappingTests.test_identity_positions_and_non_bmp_characters_use_code_points) ... ok
+test_indic_joiners_are_preserved (test_offsets.OffsetMappingTests.test_indic_joiners_are_preserved) ... ok
+test_pipeline_entities_and_sentences_include_original_evidence (test_offsets.OffsetMappingTests.test_pipeline_entities_and_sentences_include_original_evidence) ... ok
+test_pipeline_rejects_modules_that_discard_the_original_report (test_offsets.OffsetMappingTests.test_pipeline_rejects_modules_that_discard_the_original_report) ... ok
+test_projection_validates_all_evidence_before_mutation (test_offsets.OffsetMappingTests.test_projection_validates_all_evidence_before_mutation) ... ok
+test_repeated_equal_indicators_map_to_distinct_original_occurrences (test_offsets.OffsetMappingTests.test_repeated_equal_indicators_map_to_distinct_original_occurrences) ... ok
+test_span_validation_rejects_invalid_and_empty_ranges (test_offsets.OffsetMappingTests.test_span_validation_rejects_invalid_and_empty_ranges) ... ok
+test_text_changes_after_analysis_are_rejected_without_mutation (test_offsets.OffsetMappingTests.test_text_changes_after_analysis_are_rejected_without_mutation) ... ok
+test_unchanged_transforms_are_idempotent_after_analysis (test_offsets.OffsetMappingTests.test_unchanged_transforms_are_idempotent_after_analysis) ... ok
+test_unicode_composition_tracks_multiple_input_characters (test_offsets.OffsetMappingTests.test_unicode_composition_tracks_multiple_input_characters) ... ok
+test_unicode_expansion_can_share_one_original_character (test_offsets.OffsetMappingTests.test_unicode_expansion_can_share_one_original_character) ... ok
+test_unicode_reordering_uses_a_covering_span (test_offsets.OffsetMappingTests.test_unicode_reordering_uses_a_covering_span) ... ok
+test_untracked_changes_are_rejected (test_offsets.OffsetMappingTests.test_untracked_changes_are_rejected) ... ok
+test_whitespace_and_deleted_characters_keep_their_original_evidence (test_offsets.OffsetMappingTests.test_whitespace_and_deleted_characters_keep_their_original_evidence) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 1.828s
+
+OK

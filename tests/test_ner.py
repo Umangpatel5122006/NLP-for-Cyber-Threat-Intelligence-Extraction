@@ -110,7 +110,8 @@ class NERPipelineTests(unittest.TestCase):
         return Pipeline.from_config(path)
 
     def test_both_layers_emit_evidence_spans_and_keep_iocs(self):
-        document = self.pipeline().run("  APT29   used Mimikatz. It contacted 10.1.2[.]3. ")
+        raw = "  APT29   used Mimikatz. It contacted 10.1.2[.]3. "
+        document = self.pipeline().run(raw)
         findings = {(entity.label, entity.text) for entity in document.entities}
         self.assertIn(("THREAT_ACTOR", "APT29"), findings)
         self.assertIn(("MALWARE_TOOL", "Mimikatz"), findings)
@@ -118,9 +119,12 @@ class NERPipelineTests(unittest.TestCase):
         self.assertIn(("IP", "10.1.2.3"), findings)
         for entity in document.entities:
             self.assertEqual(document.text[entity.start:entity.end], entity.text)
+            self.assertEqual(raw[entity.original_start:entity.original_end], entity.original_text)
             if entity.source.startswith("ner_"):
                 self.assertIsNone(entity.confidence)
         self.assertEqual(document.metadata["ner"]["entities"]["offset_space"], "document_text")
+        action = next(e for e in document.entities if e.label == "ACTION")
+        self.assertEqual(action.original_text, "used Mimikatz")
 
     def test_repeated_inference_deduplicates_own_findings(self):
         document = self.pipeline().run(TEXTS[0])

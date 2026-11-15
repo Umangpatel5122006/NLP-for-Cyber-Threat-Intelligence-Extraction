@@ -1,7 +1,6 @@
 """The runner reads config.yaml, looks each module up in the registry,
  builds them, and runs a report through them in order. 
- After this, adding a new module only means writing a file and adding one line to the config. 
- The runner never changes again.
+ Modules preserve the supplied report and track text changes before extraction.
 """
 
 import importlib
@@ -45,4 +44,7 @@ class Pipeline:
         doc = Document(text=text)  # wrap the text in a Document
         for module in self.modules:
             doc = module.process(doc)   # each worker adds its findings
-        return doc
+            doc.validate_text_tracking()
+            if doc.original_text != text:
+                raise ValueError("Pipeline modules must preserve the original report text.")
+        return doc.attach_original_offsets()

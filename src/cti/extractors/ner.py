@@ -24,6 +24,7 @@ class _NERModule(BaseModule):
 
     def _store(self, doc, details, findings=()):
         # A rerun refreshes this module's output without deleting IOC/other-layer evidence.
+        findings = [doc.project_entity(finding) for finding in findings]
         remaining = [entity for entity in doc.entities if entity.source != self.name]
         seen = {(entity.start, entity.end, entity.label, entity.source) for entity in remaining}
         for finding in findings:
