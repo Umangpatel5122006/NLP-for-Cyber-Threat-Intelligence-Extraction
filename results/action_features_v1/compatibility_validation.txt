@@ -1,3 +1,0 @@
-Both pre-existing artifacts load after the optional-profile persistence extension.
-Fresh ReviewEngine output equals the existing merge-report document exactly.
-Both active model hashes remain unchanged during candidate evaluation.

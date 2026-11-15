@@ -19,12 +19,45 @@ dist/
 
 # Models & Weights (root directory only)
 /models/
+*.joblib
+*.pkl
+*.pickle
 
-# Results & Intermediate temporary outputs
-results/*.tmp
+# Generated results stay local by default. Keep only compact curated reports.
+# Re-allow directories so the file exceptions below can be discovered.
+/results/**
+!/results/**/
+!/results/**/README.md
+!/results/**/summary.json
+!/results/**/selection.json
+!/results/**/cv.json
+!/results/**/paired_cv_bootstrap.json
+!/results/**/baseline_diagnostics.json
+!/results/**/baseline_dev.json
+!/results/**/action_boundaries_dev.json
+!/results/**/promotion.json
+!/results/**/dev.json
+!/results/**/integrity_audit.json
+!/results/**/model_scope_audit.json
+!/results/**/mutation_comparison.json
+!/results/relevance_v1_dev.json
+!/results/ner_v2_action.json
+!/results/ner_v2_entities.json
+!/results/ner_v2_*.md
+!/results/ner_v2_*.csv
+!/results/crf_baseline_m2_*.md
+!/results/crf_baseline_m2_*.csv
+!/results/gazetteer_leak_check.md
+!/results/crf_tuning/stage*.csv
+# This historical prediction baseline is read by scripts/audit_action_experiment.py.
+!/results/ner_v2_action.predictions.json
 
 # Testing & Coverage
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.ipynb_checkpoints/
 .coverage
 htmlcov/
 
@@ -33,3 +66,18 @@ htmlcov/
 .idea/
 *.swp
 *.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local environment and secret files; example templates can be versioned.
+.env
+.env.*
+!.env.example
+!.env.template
+*.log
+
+# Frontend dependency/build caches, if a Node workspace is added later.
+node_modules/
+.next/
+.turbo/

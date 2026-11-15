@@ -1,5 +1,0 @@
-Fresh workbench: both modes and SMS classifier ready.
-Review schema version: 1.
-SMS artifact hash: 29e05300ac835d169b1ef9d4650dc219e350e11a817b65efe7afb96c61d8a2e3
-Model runtime/source/hash checks passed.
-Official CTI and reserved SMS test splits were not evaluated.

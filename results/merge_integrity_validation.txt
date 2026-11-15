@@ -1,5 +1,0 @@
-Consolidated finding integrity checks; synthetic reports and existing models only.
-merge_demo.json: 5 observations -> 4 findings; every distinct observation preserved, all source spans/references/counts consistent.
-merge_report_demo.json: 13 observations -> 9 findings; every distinct observation preserved, all source spans/references/counts consistent.
-Existing saved-model sample: raw entities, normalized/original text, spans and per-source confidence unchanged.
-Both CRF model binaries unchanged; no retraining or held-out test evaluation performed.
