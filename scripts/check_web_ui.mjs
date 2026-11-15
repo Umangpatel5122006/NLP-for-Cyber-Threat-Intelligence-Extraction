@@ -5,8 +5,8 @@ import {mkdir, readFile, writeFile} from "node:fs/promises";
 import {resolve} from "node:path";
 import assert from "node:assert/strict";
 
-const [browserPath, baseURL = "http://127.0.0.1:8765", outputDirectory = "results"] = process.argv.slice(2);
-if (!browserPath) throw new Error("Usage: node scripts/check_web_ui.mjs <browser-executable> [local-url] [output-directory]");
+const [browserPath, baseURL = "http://127.0.0.1:8765", outputDirectory = "results", previewProtocol] = process.argv.slice(2);
+if (!browserPath) throw new Error("Usage: node scripts/check_web_ui.mjs <browser-executable> [local-url] [output-directory] [preview-training-protocol]");
 if (!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(baseURL)) throw new Error("Use a loopback review server URL.");
 await mkdir(outputDirectory, {recursive: true});
 const browser = spawn(browserPath, [
@@ -49,6 +49,7 @@ function command(method, params = {}, sessionId) {
 }
 let session;
 const checks = [];
+const modelObservations = [];
 const record = (message) => { checks.push(message); console.log(message); };
 async function evaluate(expression) {
   const result = await command("Runtime.evaluate", {expression, awaitPromise: true, returnByValue: true}, session);
@@ -296,14 +297,28 @@ try {
   await analyze();
   assert.equal(await evaluate("state.result.document.metadata.message_risk.status"), "no_pattern_detected");
   assert.equal(await evaluate("document.querySelectorAll('#report-view mark[data-risk-index]').length"), 0);
-  assert.ok((await evaluate("document.getElementById('risk-summary').textContent")).includes("does not establish"));
-  assert.equal(await evaluate("document.querySelectorAll('.finding-row').length"), 0);
+  if (previewProtocol) {
+    // Preview QA checks rendering against the real response. Keep the default
+    // accuracy regression above/below intact; record preview false alarms.
+    const metadata = await evaluate("state.result.document.metadata");
+    assert.equal(metadata.message_classifier.training_protocol, previewProtocol);
+    assert.ok((await evaluate("document.getElementById('model-details').textContent")).includes(previewProtocol));
+    assert.equal(await evaluate("document.getElementById('risk-summary').textContent"), metadata.message_assessment.summary);
+    const spam = metadata.message_classifier.label === "spam";
+    assert.equal(await evaluate("document.querySelectorAll('.finding-row').length"), spam ? 1 : 0);
+    assert.equal(metadata.message_assessment.status, spam ? "suspicious" : "no_pattern_detected");
+    modelObservations.push({case: "benign_credit_notification", expected: "ham", predicted: metadata.message_classifier.label,
+      false_alarm: spam, artifact_sha256: metadata.message_classifier.artifact_sha256});
+  } else {
+    assert.ok((await evaluate("document.getElementById('risk-summary').textContent")).includes("does not establish"));
+    assert.equal(await evaluate("document.querySelectorAll('.finding-row').length"), 0);
+  }
   await setText("Beware of this fake message: " + scam);
   await analyze();
   assert.equal(await evaluate("state.result.document.metadata.message_risk.status"), "review_context");
   assert.equal(await evaluate("document.getElementById('map-risk-title').textContent"), "Review the message context");
   assert.ok(await evaluate("document.querySelectorAll('#report-view mark[data-risk-index]').length") > 0);
-  record("Benign notification and quoted scam warning have distinct risk states; input edits clear prior risk.");
+  record(previewProtocol ? "Preview notification verdict matches the API and records false alarms; warning context and input clearing pass." : "Benign notification and quoted scam warning have distinct risk states; input edits clear prior risk.");
   await setText("\ufeff\ud83d\udee1 Claim a cash prize in your bank account. Visit hxxps://claim[.]example[.]com/reward.\r\n");
   await analyze();
   assert.equal(await evaluate("state.result.document.metadata.message_risk.status"), "suspicious");
@@ -369,7 +384,7 @@ try {
   assert.deepEqual(failures.filter((message) => !message.includes("ERR_INTERNET_DISCONNECTED")), []);
   await writeFile(resolve(outputDirectory, "web_browser_validation.json"), JSON.stringify({
     passed: true, analysis_reference: {mode: summary.mode, action_artifact_sha256: summary.actionArtifact, finding_count: summary.findings},
-    checks, browser_console_errors: failures,
+    checks, browser_console_errors: failures, preview_protocol: previewProtocol || null, model_observations: modelObservations,
   }, null, 2) + "\n");
 } finally {
   try { await command("Browser.close"); } catch { browser.kill(); }

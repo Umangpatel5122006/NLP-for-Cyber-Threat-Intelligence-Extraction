@@ -1,0 +1,28 @@
+{
+  "all_12_fold_metrics_reproduced": true,
+  "source_hashes_verified": true,
+  "dev_predictions_reloaded_and_rescored": true,
+  "selection_train_only": true,
+  "default_artifact_unchanged": true,
+  "deployment_hold_enforced": true,
+  "challenge_not_used_for_fit_or_cv_selection": true,
+  "test_evaluated": false,
+  "reported_message_candidate_probes": [
+    {
+      "variant": "original",
+      "label": "ham",
+      "decision_margin": -0.08674109565827781
+    },
+    {
+      "variant": "shortened_target",
+      "label": "ham",
+      "decision_margin": -0.07687148160236146
+    },
+    {
+      "variant": "missing_target",
+      "label": "ham",
+      "decision_margin": -0.06985722190027088
+    }
+  ],
+  "audit_source_sha256": "67e06696c8ebcb828a63b001834d663d89dd1df46e45639e87642d1e8cdcfe70"
+}

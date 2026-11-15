@@ -1,6 +1,18 @@
 # Project progress, in order
 
-Latest checkpoint: [phone-independent message robustness](MESSAGE_ROBUSTNESS.md).
+Latest local checkpoint: [learned SMS data expansion](LEARNED_MESSAGE_EXPANSION.md).
+The candidate learns from 255 additional overlap-audited training messages and
+raises supplement dev spam F1 from 0.6400 to 0.9538 (UCI 0.9810 to 0.9761).
+It is **held**, with default artifacts unchanged: authored diagnostic false
+alarms rise from 2 to 6 and the exact reported wording still predicts ham.
+Rules v2 continue flagging the reported variants. A separate preview is available;
+217 WSL tests and both default/preview browser functional checks pass. Preview
+QA records its false alarm rather than counting it as correct classification.
+No held-out test was evaluated and no new remote CI run is claimed. Broader
+independently labeled scam and legitimate financial/delivery data are needed
+before another comparison; see [data needs](../docs/SMS_DOMAIN_DATA.md).
+
+Previous checkpoint: [phone-independent message robustness](MESSAGE_ROBUSTNESS.md).
 The [unified Findings and trained classical SMS model](INTEGRATED_FINDINGS_AND_SMS_MODEL.md) step is committed as `8a03fa8`.
 The earlier visibility work is recorded in [RISK_VISIBILITY_AND_MODEL_SCOPE.md](RISK_VISIBILITY_AND_MODEL_SCOPE.md).
 The [scam-message patterns and NER-mode recovery](MESSAGE_RISK_AND_MODE_RECOVERY.md) step is committed.
@@ -22,7 +34,7 @@ Dev sentence F1 is 0.6793 at threshold 0.5. Entity and action CRFs now also have
 saved artifacts, full-dev reload checks and live document modules. New metrics
 version 2 all-dev exact F1 is 0.2596 (entities) and 0.1551 (actions), using the
 existing processed BIO labels. The official test split is still reserved.
-All 202 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
+All 217 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
 native imports remain blocked by Application Control without policy changes.
 Deep learning is excluded. Allowed NER choices are CRF, MEMM, and token Logistic
 Regression; historical neural experiments are guarded against execution.
@@ -83,8 +95,9 @@ the previous artifact backed up. Restart the review server to load it.
 Entity inference and the frontend schema remain compatible. The full Chrome
 check passed using the promoted artifact.
 
-Next: obtain broader labeled scam-domain examples and independently evaluate
-the SMS/hybrid assessment. Continue CTI background false-positive reduction
+Next: expand legitimate/scam data coverage beyond the small source-audited
+supplement; address false alarms and independently evaluate the SMS/hybrid
+assessment. Continue CTI background false-positive reduction
 as a separate train-only relevance/action-gating experiment.
 More spurious spans remain a tradeoff of the new
 model; final-test performance is not yet known.

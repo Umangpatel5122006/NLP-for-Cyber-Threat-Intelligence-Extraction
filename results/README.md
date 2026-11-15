@@ -19,6 +19,8 @@ Files mentioned in checkpoint notes may be local validation artifacts rather
 than files present in a fresh clone. Reproduce them using the commands in the
 corresponding checkpoint. Current compact robustness evidence is in
 `message_robustness_v1/summary.json` and `mutation_comparison.json`.
+The learned expansion's compact selection, dev comparison, release hold and
+independent audit are in [message_generalization_v1/](message_generalization_v1/README.md).
 
 Removing previously tracked generated files from Git's index keeps their local
 copies. The cleanup applies to future commits; it does not rewrite existing

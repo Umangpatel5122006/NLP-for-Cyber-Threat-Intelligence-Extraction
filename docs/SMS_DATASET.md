@@ -1,5 +1,10 @@
 # SMS corpus provenance and evaluation scope
 
+This document describes the unchanged UCI baseline. The separate
+[supplement audit](SMS_DOMAIN_DATA.md) and
+[learned comparison](../checkpoints/LEARNED_MESSAGE_EXPANSION.md) record an
+expanded-data candidate and why it has not replaced the default.
+
 Source: [UCI SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms%2Bspam%2Bcollection).
 Citation: Almeida, T. & Hidalgo, J. (2011). SMS Spam Collection [Dataset].
 UCI Machine Learning Repository. https://doi.org/10.24432/C5CC84.

@@ -91,6 +91,26 @@ class LauncherTests(unittest.TestCase):
                 launcher.main(["--ioc-only"])
             self.assertEqual(run.call_args.args[0], ["wsl", "-m", "cti.web", "--port", "8765", "--ioc-only"])
 
+    def test_candidate_preview_path_is_forwarded_to_check_and_server(self):
+        available = status(ner=True); available["message_classifier"] = {"ready": True}
+        with patch.object(launcher, "candidates", return_value=[("working", ["working"])]), \
+             patch.object(launcher, "readiness", return_value=available) as check, \
+             patch.object(launcher.subprocess, "call", return_value=0) as run, contextlib.redirect_stdout(io.StringIO()):
+            with self.assertRaises(SystemExit):
+                launcher.main(["--message-model", "models/candidate.joblib", "--port", "8766"])
+            check.assert_called_once_with(["working"], False, "models/candidate.joblib")
+            self.assertEqual(run.call_args.args[0][-2:], ["--message-model", "models/candidate.joblib"])
+
+    def test_unavailable_explicit_candidate_does_not_start_a_fallback_server(self):
+        unavailable = status(ner=True); unavailable["message_classifier"] = {"ready": False}
+        with patch.object(launcher, "candidates", return_value=[("working", ["working"])]), \
+             patch.object(launcher, "readiness", return_value=unavailable), \
+             patch.object(launcher.subprocess, "call") as run, contextlib.redirect_stdout(io.StringIO()):
+            with self.assertRaises(SystemExit) as raised:
+                launcher.main(["--message-model", "models/missing.joblib"])
+            self.assertEqual(raised.exception.code, 2)
+            run.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

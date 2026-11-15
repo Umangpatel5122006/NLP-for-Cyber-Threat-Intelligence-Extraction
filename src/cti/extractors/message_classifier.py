@@ -27,8 +27,8 @@ class MessageSpamClassifier(BaseModule):
         if identity != self._identity or retry and self.artifact is None:
             self._identity, self.artifact, self._failure = identity, None, None
             try:
-                from cti.models.message_classifier import MessageClassifier
-                self.artifact = MessageClassifier.load(self.path)
+                from cti.models.message_v2 import load_message_classifier
+                self.artifact = load_message_classifier(self.path)
             except (ImportError, OSError):
                 self._failure = "runtime_unavailable"
             except Exception:
@@ -37,6 +37,7 @@ class MessageSpamClassifier(BaseModule):
             return {"ready": False, "code": self._failure, "message": "SMS classifier cannot load in this runtime. Rules remain available.",
                     "setup": "Use the prepared WSL runtime or retrain with python -m cti.train_message --download."}
         return {"ready": True, "profile": self.artifact.manifest["profile"],
+                "training_protocol": self.artifact.manifest["metadata"].get("training_protocol", "uci_sms_v1"),
                 "artifact_sha256": self.artifact.manifest["artifact_sha256"], "max_characters": self.max_characters,
                 "dev_metrics": self.artifact.manifest["metadata"].get("dev_metrics", {})}
 
@@ -55,6 +56,8 @@ class MessageSpamClassifier(BaseModule):
             else:
                 try:
                     result = self.artifact.predict_one(doc.original_text)
+                    result["training_protocol"] = self.artifact.manifest["metadata"].get("training_protocol", "uci_sms_v1")
+                    result["training_sources"] = self.artifact.manifest["metadata"].get("training_sources", ["uci"])
                 except Exception:
                     result = {"status": "unavailable", "code": "prediction_failed",
                               "message": "SMS prediction failed for this input. Rule/IOC evidence remains available."}

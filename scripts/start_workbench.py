@@ -32,10 +32,10 @@ def candidates():
         ]
 
 
-def readiness(command, ioc_only=False):
+def readiness(command, ioc_only=False, message_model=None):
     try:
         result = subprocess.run(
-            [*command, "-m", "cti.web", "--check", *(["--ioc-only"] if ioc_only else [])],
+            [*command, "-m", "cti.web", "--check", *(["--ioc-only"] if ioc_only else []), *(["--message-model", str(message_model)] if message_model else [])],
             cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=90,
         )
         return json.loads(result.stdout)
@@ -54,16 +54,28 @@ def main(argv=None):
     parser.add_argument("--train-models", action="store_true", help="Train on train/dev only if no compatible saved NER models are found.")
     parser.add_argument("--train-message-model", action="store_true", help="Download the pinned SMS corpus and train the classical SMS model when unavailable.")
     parser.add_argument("--check", action="store_true", help="Check setup without starting a server or training.")
+    parser.add_argument("--message-model", type=Path, help="Preview a trusted candidate artifact; does not modify default model files.")
     args = parser.parse_args(argv)
+    preview_path = None
+    if args.message_model:
+        try:
+            preview_path = (ROOT / args.message_model).resolve().relative_to(ROOT).as_posix()
+        except ValueError:
+            parser.error("The portable launcher requires a candidate inside this project; use python -m cti.web directly for other paths.")
+    if args.message_model and (args.train_models or args.train_message_model):
+        parser.error("Train candidates with cti.experiment_message, then preview without training flags.")
     if not 0 < args.port < 65536:
         parser.error("--port must be between 1 and 65535")
     required = "ioc" if args.ioc_only else "ner"
     checked, chosen, fallback = [], None, None
     for name, command in candidates():
         print(f"Checking {name}...", flush=True)
-        status = readiness(command, args.ioc_only)
+        status = readiness(command, args.ioc_only, preview_path) if preview_path else readiness(command, args.ioc_only)
         checked.append((name, command, status))
         if ready(status, required):
+            if args.message_model and not status.get("message_classifier", {}).get("ready"):
+                print(status.get("message_classifier", {}).get("message", "The requested preview model is unavailable."), flush=True)
+                continue
             if args.ioc_only and status.get("message_classifier") and not status["message_classifier"].get("ready"):
                 fallback = fallback or (name, command, status)
                 if (args.train_models or args.train_message_model) and not args.check:
@@ -128,7 +140,7 @@ def main(argv=None):
         return
     try:
         raise SystemExit(subprocess.call(
-            [*command, "-m", "cti.web", "--port", str(args.port), *(["--ioc-only"] if args.ioc_only else [])], cwd=ROOT,
+            [*command, "-m", "cti.web", "--port", str(args.port), *(["--ioc-only"] if args.ioc_only else []), *(["--message-model", preview_path] if preview_path else [])], cwd=ROOT,
         ))
     except KeyboardInterrupt:
         pass

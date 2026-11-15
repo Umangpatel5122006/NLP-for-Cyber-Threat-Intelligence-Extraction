@@ -297,7 +297,7 @@ function renderMessageDetail(finding) {
     detail.append(detailSection("MODEL DECISION", element("p", "", finding.profile + " \u00b7 margin " + finding.decision_margin.toFixed(4) + " \u00b7 threshold 0. Margin is not a probability.")));
     const features = element("ul");
     for (const item of finding.supporting_features) features.append(element("li", "", item.feature + ": " + item.contribution));
-    detail.append(detailSection("SPAM-SUPPORTING TF-IDF FEATURES", features));
+    detail.append(detailSection("SPAM-SUPPORTING LINEAR FEATURES", features));
   }
 }
 function renderResults() {
@@ -330,7 +330,7 @@ function renderMessageRisk(risk) {
   const model = state.result.document.metadata.message_classifier;
   const assessment = state.result.document.metadata.message_assessment || risk;
   $("model-verdict").textContent = model?.status === "ok" ? "Classical SMS model: " + (model.label === "spam" ? "spam predicted" : "ham predicted") : "Classical SMS model: " + (model?.status === "not_applicable" ? "outside its scope" : "unavailable");
-  $("model-details").textContent = model?.status === "ok" ? model.profile + " \u00b7 decision margin " + model.decision_margin.toFixed(4) + ". This score is not a threat probability." : model?.reason || model?.message || "Train with python -m cti.train_message --download in the chosen server runtime.";
+  $("model-details").textContent = model?.status === "ok" ? model.profile + " \u00b7 " + (model.training_protocol || "uci_sms_v1") + " \u00b7 decision margin " + model.decision_margin.toFixed(4) + ". This score is not a threat probability." : model?.reason || model?.message || "Train with python -m cti.train_message --download in the chosen server runtime.";
   $("model-disagreement").textContent = assessment?.disagreement ? "The classifier predicts ham, but message rules flag suspicious cues. The suspicious finding is retained for review." : "Ham/spam is a separate prediction from scam-pattern rules and CTI entity extraction.";
   $("message-risk").hidden = false;
   $("message-risk").dataset.status = assessment?.status || "unavailable";

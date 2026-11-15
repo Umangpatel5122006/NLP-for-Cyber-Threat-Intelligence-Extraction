@@ -41,6 +41,16 @@ See [the current robustness checkpoint](checkpoints/MESSAGE_ROBUSTNESS.md),
 [the integrated checkpoint](checkpoints/INTEGRATED_FINDINGS_AND_SMS_MODEL.md)
 and [SMS data provenance](docs/SMS_DATASET.md).
 
+A [learned expansion candidate](checkpoints/LEARNED_MESSAGE_EXPANSION.md) now
+adds source-audited labeled SMS data. Supplemental dev spam F1 improves from
+0.6400 to 0.9538, while UCI dev F1 changes from 0.9810 to 0.9761. The candidate
+is **held** because diagnostic false alarms increase; the default stays unchanged.
+It still misses the exact reported money/SMS wording without the rule layer.
+Preview it independently with
+`python scripts/start_workbench.py --port 8766 --message-model models/message_generalization_v1/candidate.joblib`.
+See [supplement provenance and data needs](docs/SMS_DOMAIN_DATA.md) before
+collecting more examples. Both SMS holdouts and the CTI test remain reserved.
+
 On a fresh clone, model binaries are absent because `models/` is ignored.
 After installing pinned dependencies or preparing WSL, run
 `python scripts/start_workbench.py --train-models` to train missing/incompatible
@@ -97,16 +107,18 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** all **202 tests pass** in an isolated Ubuntu-24.04 WSL
+**Current validation:** all **217 tests pass** in an isolated Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
 saved-NER, original-offset, merger, API, action-feature, scam-pattern and launcher tests;
-see `results/message_robustness_validation.txt` and
+see `results/message_expansion_validation.txt` (local generated log) and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
 were changed. Current native Windows subsets pass 22 API, 17 rule and 7 review
 tests. Twenty-two actual Chrome check groups cover real NER/IOC inference, scam
 warnings, JSON export, mobile layout and missing-model recovery.
-The latest [fix checkpoint](checkpoints/MESSAGE_ROBUSTNESS.md)
+The latest [learned comparison checkpoint](checkpoints/LEARNED_MESSAGE_EXPANSION.md)
+records the candidate, independent audit and release hold. The earlier
+[fix checkpoint](checkpoints/MESSAGE_ROBUSTNESS.md)
 records phone-independent request matching, mutation checks and remaining limits.
 The [boundary-feature checkpoint](checkpoints/ACTION_BOUNDARY_FEATURES.md)
 records the selected action profile and active-model upgrade. The earlier

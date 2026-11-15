@@ -36,26 +36,30 @@ class ReviewError(Exception):
         self.status, self.code, self.message = status, code, message
 
 
-def _load_pipeline(mode):
+def _load_pipeline(mode, message_model_path=None):
     name = "config_ner.yaml" if mode == "ner" else "config.yaml"
     config = yaml.safe_load((ROOT / "configs" / name).read_text(encoding="utf-8"))
     modules = []
     for step in config["pipeline"]:
         params = dict(step.get("params", {}))
+        if step["module"] == "message_classifier" and message_model_path is not None:
+            params["model_path"] = str(ROOT / message_model_path)
         if "model_path" in params:
             params["model_path"] = str(ROOT / params["model_path"])
         modules.append(create(step["module"], **params))
     # The basic IOC config stays usable without any statistical NLP imports.
     # Workbench modes additionally expose the optional short-message model.
     if not any(module.name == "message_classifier" for module in modules):
-        modules.insert(len(modules) - 1, create("message_classifier", model_path=str(ROOT / "models/message_spam.joblib")))
+        modules.insert(len(modules) - 1, create("message_classifier", model_path=str(ROOT / (message_model_path or "models/message_spam.joblib"))))
     return Pipeline(modules)
 
 
 class ReviewEngine:
-    def __init__(self, ioc_only=False, loader=None):
+    def __init__(self, ioc_only=False, loader=None, message_model_path=None):
         self.ioc_only = ioc_only
         self.loader = _load_pipeline if loader is None else loader
+        if loader is None and message_model_path is not None:
+            self.loader = lambda mode: _load_pipeline(mode, message_model_path)
         self._pipelines, self._failures = {}, {}
         self._lock = threading.RLock()
 
@@ -247,8 +251,9 @@ def main(argv=None):
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--ioc-only", action="store_true", help="Skip loading saved entity/action models.")
     parser.add_argument("--check", action="store_true", help="Print readiness JSON and exit; require NER unless --ioc-only is set.")
+    parser.add_argument("--message-model", type=Path, help="Preview a trusted local SMS candidate without replacing the default model.")
     args = parser.parse_args(argv)
-    engine = ReviewEngine(ioc_only=args.ioc_only)
+    engine = ReviewEngine(ioc_only=args.ioc_only, message_model_path=args.message_model)
     if args.check:
         status = engine.status()
         print(json.dumps(status), flush=True)
