@@ -5,10 +5,10 @@ import {mkdir, readFile, writeFile} from "node:fs/promises";
 import {resolve} from "node:path";
 import assert from "node:assert/strict";
 
-const [browserPath, baseURL = "http://127.0.0.1:8765"] = process.argv.slice(2);
-if (!browserPath) throw new Error("Usage: node scripts/check_web_ui.mjs <browser-executable> [local-url]");
+const [browserPath, baseURL = "http://127.0.0.1:8765", outputDirectory = "results"] = process.argv.slice(2);
+if (!browserPath) throw new Error("Usage: node scripts/check_web_ui.mjs <browser-executable> [local-url] [output-directory]");
 if (!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(baseURL)) throw new Error("Use a loopback review server URL.");
-await mkdir("results", {recursive: true});
+await mkdir(outputDirectory, {recursive: true});
 const browser = spawn(browserPath, [
   "--headless=new", "--remote-debugging-pipe", "--no-first-run", "--no-default-browser-check",
   "--disable-background-networking", "--user-data-dir=" + resolve("models/web-qa-profile"), "about:blank",
@@ -75,7 +75,7 @@ async function screenshot(name) {
     format: "png", captureBeyondViewport: true,
     clip: {x: 0, y: 0, width: size.width, height: size.height, scale: 1},
   }, session);
-  await writeFile("results/" + name, Buffer.from(capture.data, "base64"));
+  await writeFile(resolve(outputDirectory, name), Buffer.from(capture.data, "base64"));
 }
 try {
   const target = await command("Target.createTarget", {url: "about:blank"});
@@ -91,7 +91,7 @@ try {
   await click("example-button");
   await waitFor("!state.busy && document.getElementById('report-input').value.includes('APT29')");
   await analyze();
-  const summary = await evaluate("({mode:state.result.analysis.mode,findings:state.result.document.findings.length,primary:document.getElementById('stat-findings').textContent,map:document.getElementById('report-view').textContent,original:state.result.document.original_text,rows:document.querySelectorAll('.finding-row').length})");
+  const summary = await evaluate("({mode:state.result.analysis.mode,actionArtifact:state.result.document.metadata.ner?.action?.artifact_sha256,findings:state.result.document.findings.length,primary:document.getElementById('stat-findings').textContent,map:document.getElementById('report-view').textContent,original:state.result.document.original_text,rows:document.querySelectorAll('.finding-row').length})");
   assert.equal(summary.map, summary.original);
   assert.equal(summary.rows, Number(summary.primary));
   assert.equal(summary.mode, "ner");
@@ -179,7 +179,10 @@ try {
   await command("Network.emulateNetworkConditions", {offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1}, session);
   record("Network failure exits the busy state and displays an error.");
   assert.deepEqual(failures.filter((message) => !message.includes("ERR_INTERNET_DISCONNECTED")), []);
-  await writeFile("results/web_browser_validation.json", JSON.stringify({passed: true, checks, browser_console_errors: failures}, null, 2) + "\n");
+  await writeFile(resolve(outputDirectory, "web_browser_validation.json"), JSON.stringify({
+    passed: true, analysis_reference: {mode: summary.mode, action_artifact_sha256: summary.actionArtifact, finding_count: summary.findings},
+    checks, browser_console_errors: failures,
+  }, null, 2) + "\n");
 } finally {
   try { await command("Browser.close"); } catch { browser.kill(); }
   for (const item of pending.values()) clearTimeout(item.timer);

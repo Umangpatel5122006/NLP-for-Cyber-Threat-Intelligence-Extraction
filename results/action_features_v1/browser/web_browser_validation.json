@@ -1,0 +1,25 @@
+{
+  "passed": true,
+  "analysis_reference": {
+    "mode": "ner",
+    "action_artifact_sha256": "1732d7e0a1d4c5be1433dff1daf31c2893e0702b43b70142840d871e4d45da15",
+    "finding_count": 9
+  },
+  "checks": [
+    "Initial workspace, server readiness and empty-input controls passed.",
+    "Real CRF example, primary/component counts and exact original-text map passed.",
+    "Report highlight clicks and keyboard selection open the correct source evidence.",
+    "Component toggle, evidence panel, search empty state and label filtering passed.",
+    "Method dialog opens and closes.",
+    "Browser JSON download preserves the full original document and finding evidence.",
+    "Input edits clear stale results; markup is literal text and emoji offsets preserve the report.",
+    "Actual browser file upload retains UTF-8 BOM, CRLF and non-BMP characters.",
+    "Switching to IOC mode clears stale results and runs the real IOC pipeline.",
+    "Unsupported-language NER status is visible while IOC evidence remains available.",
+    "390px mobile layout has no horizontal page overflow.",
+    "Network failure exits the busy state and displays an error."
+  ],
+  "browser_console_errors": [
+    "Failed to load resource: net::ERR_INTERNET_DISCONNECTED"
+  ]
+}

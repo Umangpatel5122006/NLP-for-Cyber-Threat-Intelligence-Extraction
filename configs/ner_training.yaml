@@ -1,5 +1,4 @@
-# Existing entity CV choice; ACTION remains an explicit classical baseline.
-# This is integration/persistence configuration, not a new tuning search.
+# Existing entity settings; ACTION profile selected by train-only grouped CV.
 train_relevant_only: true
 layers:
   entities:
@@ -20,3 +19,6 @@ layers:
       min_freq: 0
       max_iterations: 200
       all_possible_transitions: true
+      feature_config:
+        use_action_morphology: true
+        use_action_lexicon: true

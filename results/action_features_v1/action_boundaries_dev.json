@@ -1,0 +1,456 @@
+{
+  "metrics_version": "2",
+  "model_name": "crf_tagger",
+  "layer": "action",
+  "total_sentences": 1238,
+  "headline_all_sentences": {
+    "exact_default": {
+      "mode": "default",
+      "precision": 0.1419,
+      "recall": 0.1711,
+      "f1": 0.1551,
+      "per_label": {
+        "ACTION": {
+          "precision": 0.1419,
+          "recall": 0.1711,
+          "f1": 0.1551,
+          "support": 608,
+          "predicted": 733,
+          "true_positives": 104
+        }
+      }
+    },
+    "exact_strict": {
+      "mode": "strict",
+      "precision": 0.1419,
+      "recall": 0.1711,
+      "f1": 0.1551,
+      "per_label": {
+        "ACTION": {
+          "precision": 0.1419,
+          "recall": 0.1711,
+          "f1": 0.1551,
+          "support": 608,
+          "predicted": 733,
+          "true_positives": 104
+        }
+      }
+    },
+    "relaxed": {
+      "precision": 0.4543,
+      "recall": 0.5477,
+      "f1": 0.4966,
+      "per_label": {
+        "ACTION": {
+          "precision": 0.4543,
+          "recall": 0.5477,
+          "f1": 0.4966,
+          "support": 608,
+          "predicted": 733,
+          "true_positives": 333
+        }
+      }
+    },
+    "token_level": {
+      "micro_precision": 0.3918,
+      "micro_recall": 0.4598,
+      "micro_f1": 0.4231,
+      "macro_precision": 0.3918,
+      "macro_recall": 0.4598,
+      "macro_f1": 0.4231,
+      "per_label": {
+        "ACTION": {
+          "precision": 0.3918,
+          "recall": 0.4598,
+          "f1": 0.4231,
+          "support": 4093
+        }
+      }
+    },
+    "error_taxonomy": {
+      "counts": {
+        "exact_match": 104,
+        "boundary_error": 229,
+        "wrong_type": 0,
+        "missed": 275,
+        "spurious": 400
+      },
+      "total_gold": 608,
+      "total_predicted": 733,
+      "per_label": {
+        "ACTION": {
+          "missed": 275,
+          "boundary_error": 229,
+          "spurious": 400,
+          "exact_match": 104
+        }
+      },
+      "type_confusion_pairs": {}
+    }
+  },
+  "per_source": {
+    "aptnotes": {
+      "sentence_count": 155,
+      "exact_p": 0.1649,
+      "exact_r": 0.2712,
+      "exact_f1": 0.2051,
+      "relaxed_p": 0.4536,
+      "relaxed_r": 0.7458,
+      "relaxed_f1": 0.5641,
+      "token_macro_f1": 0.5486,
+      "per_label": {
+        "ACTION": {
+          "precision": 0.1649,
+          "recall": 0.2712,
+          "f1": 0.2051,
+          "support": 59,
+          "predicted": 97,
+          "true_positives": 16
+        }
+      }
+    },
+    "crowdstrike": {
+      "sentence_count": 437,
+      "exact_p": 0.0759,
+      "exact_r": 0.1465,
+      "exact_f1": 0.1,
+      "relaxed_p": 0.3168,
+      "relaxed_r": 0.6115,
+      "relaxed_f1": 0.4174,
+      "token_macro_f1": 0.3564,
+      "per_label": {
+        "ACTION": {
+          "precision": 0.0759,
+          "recall": 0.1465,
+          "f1": 0.1,
+          "support": 157,
+          "predicted": 303,
+          "true_positives": 23
+        }
+      }
+    },
+    "mandiant": {
+      "sentence_count": 226,
+      "exact_p": 0.0804,
+      "exact_r": 0.1364,
+      "exact_f1": 0.1011,
+      "relaxed_p": 0.3839,
+      "relaxed_r": 0.6515,
+      "relaxed_f1": 0.4831,
+      "token_macro_f1": 0.3875,
+      "per_label": {
+        "ACTION": {
+          "precision": 0.0804,
+          "recall": 0.1364,
+          "f1": 0.1011,
+          "support": 66,
+          "predicted": 112,
+          "true_positives": 9
+        }
+      }
+    },
+    "mitre": {
+      "sentence_count": 280,
+      "exact_p": 0.2617,
+      "exact_r": 0.1667,
+      "exact_f1": 0.2037,
+      "relaxed_p": 0.7047,
+      "relaxed_r": 0.4487,
+      "relaxed_f1": 0.5483,
+      "token_macro_f1": 0.449,
+      "per_label": {
+        "ACTION": {
+          "precision": 0.2617,
+          "recall": 0.1667,
+          "f1": 0.2037,
+          "support": 234,
+          "predicted": 149,
+          "true_positives": 39
+        }
+      }
+    },
+    "sentinel": {
+      "sentence_count": 140,
+      "exact_p": 0.2361,
+      "exact_r": 0.1848,
+      "exact_f1": 0.2073,
+      "relaxed_p": 0.625,
+      "relaxed_r": 0.4891,
+      "relaxed_f1": 0.5488,
+      "token_macro_f1": 0.4769,
+      "per_label": {
+        "ACTION": {
+          "precision": 0.2361,
+          "recall": 0.1848,
+          "f1": 0.2073,
+          "support": 92,
+          "predicted": 72,
+          "true_positives": 17
+        }
+      }
+    }
+  },
+  "diagnostic_relevant_only": {
+    "relevant_sentences": 434,
+    "evaluation": {
+      "exact_default": {
+        "mode": "default",
+        "precision": 0.2537,
+        "recall": 0.1711,
+        "f1": 0.2043,
+        "per_label": {
+          "ACTION": {
+            "precision": 0.2537,
+            "recall": 0.1711,
+            "f1": 0.2043,
+            "support": 608,
+            "predicted": 410,
+            "true_positives": 104
+          }
+        }
+      },
+      "exact_strict": {
+        "mode": "strict",
+        "precision": 0.2537,
+        "recall": 0.1711,
+        "f1": 0.2043,
+        "per_label": {
+          "ACTION": {
+            "precision": 0.2537,
+            "recall": 0.1711,
+            "f1": 0.2043,
+            "support": 608,
+            "predicted": 410,
+            "true_positives": 104
+          }
+        }
+      },
+      "relaxed": {
+        "precision": 0.8122,
+        "recall": 0.5477,
+        "f1": 0.6542,
+        "per_label": {
+          "ACTION": {
+            "precision": 0.8122,
+            "recall": 0.5477,
+            "f1": 0.6542,
+            "support": 608,
+            "predicted": 410,
+            "true_positives": 333
+          }
+        }
+      },
+      "token_level": {
+        "micro_precision": 0.661,
+        "micro_recall": 0.4598,
+        "micro_f1": 0.5424,
+        "macro_precision": 0.661,
+        "macro_recall": 0.4598,
+        "macro_f1": 0.5424,
+        "per_label": {
+          "ACTION": {
+            "precision": 0.661,
+            "recall": 0.4598,
+            "f1": 0.5424,
+            "support": 4093
+          }
+        }
+      },
+      "error_taxonomy": {
+        "counts": {
+          "exact_match": 104,
+          "boundary_error": 229,
+          "wrong_type": 0,
+          "missed": 275,
+          "spurious": 77
+        },
+        "total_gold": 608,
+        "total_predicted": 410,
+        "per_label": {
+          "ACTION": {
+            "missed": 275,
+            "boundary_error": 229,
+            "spurious": 77,
+            "exact_match": 104
+          }
+        },
+        "type_confusion_pairs": {}
+      }
+    }
+  },
+  "artifact": {
+    "artifact_version": 1,
+    "kind": "classical_bio_ner",
+    "model_name": "crf_tagger",
+    "layer": "action",
+    "language": "en",
+    "labels": [
+      "ACTION"
+    ],
+    "parameters": {
+      "algorithm": "lbfgs",
+      "c1": 1.0,
+      "c2": 1.0,
+      "max_iterations": 200,
+      "min_freq": 0,
+      "all_possible_transitions": true,
+      "feature_config": {
+        "use_action_morphology": true,
+        "use_action_lexicon": true
+      }
+    },
+    "environment": {
+      "python_major_minor": "3.12",
+      "packages": {
+        "spacy": "3.8.16",
+        "scikit-learn": "1.9.1",
+        "sklearn-crfsuite": "0.5.0",
+        "python-crfsuite": "0.9.12",
+        "joblib": "1.6.0"
+      },
+      "dependency_sha256": {
+        "src/cti/models/base.py": "78b31d5a0275748e06d61aa0b5e6d9dc6a36d397fad6b825076cb3ee105284e9",
+        "src/cti/models/crf.py": "cf24edf1cf2fe2421433c84e9165ed7a3c6b446bd512242031b32cb6066f66fc",
+        "src/cti/models/memm.py": "b9203a9767bfa2fa8f1d8c7e519b8ba7e3519e9dd7161809357753f7a13ab12d",
+        "src/cti/preprocessing/tokenizer.py": "9bf2b706af8270b3f94ffe9a01be9f00bb53e29a0794b9b41356cba72f2630ab",
+        "configs/labels.yaml": "c97c18862be8a70eadab268bb1ca6914007ebd864e2d573ebf3fae0e3af5b0ac",
+        "data/external/gazetteer.json": "299138401b1c6b494b64038941ae1d1c94a5d3267c2a83eb4a0b5c20d6643221",
+        "src/cti/models/action_crf.py": "e5af0259851b3371dcc98f93cc8885ba8a5353fdf9bb438faaddb5218f1df7ce"
+      }
+    },
+    "metadata": {
+      "created_at_utc": "2026-11-15T07:49:37.457489+00:00",
+      "selection": {
+        "metrics_version": "2",
+        "selected": "action_boundaries",
+        "criterion": "train-only pooled exact F1 with minimum gain and fold wins",
+        "minimum_cv_gain": 0.005,
+        "minimum_fold_wins": 2,
+        "train_report_ids": [
+          "02_aptnotes_report",
+          "03_aptnotes_report",
+          "04_aptnotes_report",
+          "05_aptnotes_report",
+          "06_aptnotes_report",
+          "07_aptnotes_report",
+          "08_aptnotes_report",
+          "09_aptnotes_report",
+          "100_mitre_report",
+          "11_aptnotes_report",
+          "12_aptnotes_report",
+          "14_aptnotes_report",
+          "15_aptnotes_report",
+          "18_aptnotes_report",
+          "19_aptnotes_report",
+          "20_aptnotes_report",
+          "22_mandiant_report",
+          "23_mandiant_report",
+          "24_mandiant_report",
+          "26_mandiant_report",
+          "28_mandiant_report",
+          "30_mandiant_report",
+          "31_mandiant_report",
+          "32_mandiant_report",
+          "33_mandiant_report",
+          "34_mandiant_report",
+          "35_mandiant_report",
+          "38_mandiant_report",
+          "39_mandiant_report",
+          "40_crowdstrike_report",
+          "41_crowdstrike_report",
+          "45_crowdstrike_report",
+          "47_crowdstrike_report",
+          "48_crowdstrike_report",
+          "49_crowdstrike_report",
+          "50_crowdstrike_report",
+          "51_crowdstrike_report",
+          "52_SentinelOne_report",
+          "53_SentinelOne_report",
+          "55_SentinelOne_report",
+          "56_SentinelOne_report",
+          "57_SentinelOne_report",
+          "60_SentinelOne_report",
+          "61_SentinelOne_report",
+          "62_SentinelOne_report",
+          "64_SentinelOne_report",
+          "65_SentinelOne_report",
+          "66_SentinelOne_report",
+          "68_SentinelOne_report",
+          "70_SentinelOne_report",
+          "71_SentinelOne_report",
+          "72_SentinelOne_report",
+          "74_mitre_report",
+          "75_mitre_report",
+          "76_mitre_report",
+          "79_mitre_report",
+          "80_mitre_report",
+          "83_mitre_report",
+          "85_mitre_report",
+          "86_mitre_report",
+          "87_mitre_report",
+          "88_mitre_report",
+          "89_mitre_report",
+          "90_mitre_report",
+          "92_mitre_report",
+          "93_mitre_report",
+          "94_mitre_report",
+          "95_mitre_report",
+          "96_mitre_report",
+          "98_mitre_report"
+        ],
+        "dev_labels_used_for_selection": false,
+        "test_split_used": false,
+        "provenance": {
+          "config_sha256_lf": "8232d8789cbe8734b99d82c8ed0eb40557c5f90073a47e60adb8d4aa25f04f97",
+          "processed_train_sha256_lf": "23ccbb27007f86a98b3a6a2874bdd63ed8a6d8f8e61c55c608cb39a4d0e10edf",
+          "raw_dataset_sha256_lf": "c32bd166e893683800121ae9e13197770a345987912dc9dc31f0be19d9693b5a",
+          "source_sha256_lf": {
+            "src/cti/experiment_action.py": "e803851f39a17bf33f4694335dfd0f5fe5ad22aa73acd1eb878a66f6d663e005",
+            "src/cti/models/ner_data.py": "5c62df8c838089657ecc669a6df34776e61fbe2ba39b45dce2c4887d8fa7f502",
+            "src/cti/eval/cv.py": "f7200ee39e19e0a725a42339cc37703d814e4d2303b58877948416eede886d1b",
+            "src/cti/eval/metrics.py": "5eda5b5d7814a59fd1d61d75e47ffa20e363ef086109119ee3280c505f172989",
+            "src/cti/models/action_crf.py": "e5af0259851b3371dcc98f93cc8885ba8a5353fdf9bb438faaddb5218f1df7ce",
+            "src/cti/models/ner_artifact.py": "66e269a921a7931e1c44679e6db3ed934cc1584fbdaad3aa7953781cfc368aa7",
+            "src/cti/core/dataset.py": "5530272d7eaee7bf8ea22b2e167783dedff5ff651fb1b69353a77ec31d58af6b"
+          },
+          "environment": {
+            "python_major_minor": "3.12",
+            "packages": {
+              "spacy": "3.8.16",
+              "scikit-learn": "1.9.1",
+              "sklearn-crfsuite": "0.5.0",
+              "python-crfsuite": "0.9.12",
+              "joblib": "1.6.0"
+            },
+            "dependency_sha256": {
+              "src/cti/models/base.py": "78b31d5a0275748e06d61aa0b5e6d9dc6a36d397fad6b825076cb3ee105284e9",
+              "src/cti/models/crf.py": "cf24edf1cf2fe2421433c84e9165ed7a3c6b446bd512242031b32cb6066f66fc",
+              "src/cti/models/memm.py": "b9203a9767bfa2fa8f1d8c7e519b8ba7e3519e9dd7161809357753f7a13ab12d",
+              "src/cti/preprocessing/tokenizer.py": "9bf2b706af8270b3f94ffe9a01be9f00bb53e29a0794b9b41356cba72f2630ab",
+              "configs/labels.yaml": "c97c18862be8a70eadab268bb1ca6914007ebd864e2d573ebf3fae0e3af5b0ac",
+              "data/external/gazetteer.json": "299138401b1c6b494b64038941ae1d1c94a5d3267c2a83eb4a0b5c20d6643221"
+            }
+          }
+        }
+      },
+      "training_policy": "relevant_only",
+      "training_sentences": 3006,
+      "dev_report_ids": [
+        "10_aptnotes_report",
+        "16_aptnotes_report",
+        "27_mandiant_report",
+        "29_mandiant_report",
+        "46_crowdstrike_report",
+        "54_SentinelOne_report",
+        "69_SentinelOne_report",
+        "78_mitre_report",
+        "81_mitre_report",
+        "97_mitre_report"
+      ],
+      "test_split_used": false,
+      "processed_dev_sha256_lf": "834416e91bce25d8a9d7420e07704936d4e6f89fac22326cdbc8c6114760daa5"
+    },
+    "artifact_sha256": "1732d7e0a1d4c5be1433dff1daf31c2893e0702b43b70142840d871e4d45da15"
+  },
+  "reload_predictions_identical": true
+}

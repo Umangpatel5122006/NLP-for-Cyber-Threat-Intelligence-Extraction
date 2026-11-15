@@ -11,10 +11,11 @@ import yaml
 
 from cti.core.dataset import load_smah
 from cti.eval.cv import get_report_grouped_splits
-from cti.eval.metrics import evaluate_predictions
+from cti.eval.metrics import METRICS_VERSION, evaluate_predictions
 from cti.eval.report import generate_evaluation_summary
 from cti.models.base import validate_training_data
 from cti.models.crf import CRFTagger
+from cti.models.action_crf import create_crf_tagger
 from cti.models.ner_artifact import _environment, load_ner_tagger, save_ner_tagger, sha256_file
 from cti.models.ner_data import load_aligned_ner
 
@@ -23,6 +24,7 @@ ROOT = Path(__file__).resolve().parents[2]
 FEATURE_KEYS = {
     "window", "use_ortho", "use_affixes", "use_ioc_patterns",
     "use_gazetteer", "use_bigrams", "use_triggers",
+    "use_action_morphology", "use_action_lexicon",
 }
 
 
@@ -74,7 +76,7 @@ def read_config(path):
                     raise ValueError("Feature window must be an integer from zero to five.")
             elif type(value) is not bool:
                 raise ValueError("Feature switches must be boolean.")
-        CRFTagger(**params)
+        create_crf_tagger(**params)
     if "baseline" not in identifiers:
         raise ValueError("Include a baseline candidate.")
     return config
@@ -103,7 +105,7 @@ def _fit(candidate, data, indices):
     selected = [i for i in indices if data.relevant[i] and data.tokens[i]]
     if not selected:
         raise ValueError("A fold has no nonempty relevant training sentences.")
-    model = CRFTagger(**candidate["parameters"])
+    model = create_crf_tagger(**candidate["parameters"])
     model.fit([data.tokens[i] for i in selected], [data.tags[i] for i in selected])
     return model
 
@@ -130,6 +132,8 @@ def run_experiment(config_path, raw_dir, splits_dir, processed_dir, model_dir, r
         "source_sha256_lf": {name: sha256_file(ROOT / name) for name in (
             "src/cti/experiment_action.py", "src/cti/models/ner_data.py",
             "src/cti/eval/cv.py", "src/cti/eval/metrics.py",
+            "src/cti/models/action_crf.py", "src/cti/models/ner_artifact.py",
+            "src/cti/core/dataset.py",
         )},
         "environment": _environment(),
     }
@@ -170,9 +174,10 @@ def run_experiment(config_path, raw_dir, splits_dir, processed_dir, model_dir, r
             "id": candidate["id"], "parameters": candidate["parameters"],
             "fold_metrics": metrics, "pooled": evaluate_predictions(train.tags, predictions),
         })
-        _write(results_dir / "cv.json", {"provenance": provenance, "folds": fold_reports, "candidates": reports})
+        _write(results_dir / "cv.json", {"metrics_version": METRICS_VERSION, "provenance": provenance, "folds": fold_reports, "candidates": reports})
     winner = choose_candidate(reports, config["minimum_cv_gain"], config["minimum_fold_wins"])
     selection = {
+        "metrics_version": METRICS_VERSION,
         "selected": winner, "criterion": "train-only pooled exact F1 with minimum gain and fold wins",
         "minimum_cv_gain": config["minimum_cv_gain"], "minimum_fold_wins": config["minimum_fold_wins"],
         "train_report_ids": sorted(set(train.doc_ids)), "dev_labels_used_for_selection": False,

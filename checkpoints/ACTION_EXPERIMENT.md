@@ -2,6 +2,12 @@
 
 Date: 2026-11-15 (Asia/Calcutta)
 
+Follow-up: this comparison was committed as `e7af4ae` and its
+[GitHub Actions run](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43689971420)
+succeeded. The next [boundary-feature experiment](ACTION_BOUNDARY_FEATURES.md)
+retains the useful baseline features and selects an improved action model.
+The original negative-experiment record below is preserved.
+
 ## Decision
 
 **Keep the current action model.** Neither predefined variant improved the

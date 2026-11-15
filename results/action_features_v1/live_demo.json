@@ -1,0 +1,623 @@
+{
+  "document": {
+    "text": "APT29 used Mimikatz to steal credentials. It contacted https://EVIL.example.com/A and 185.22.10.5. Contact Admin@EVIL.example.com. The same address 185.22.10.5 appeared again.",
+    "entities": [
+      {
+        "text": "APT29",
+        "label": "THREAT_ACTOR",
+        "start": 0,
+        "end": 5,
+        "source": "ner_entities",
+        "confidence": null,
+        "original_start": 0,
+        "original_end": 5,
+        "original_text": "APT29"
+      },
+      {
+        "text": "used Mimikatz to steal credentials",
+        "label": "ACTION",
+        "start": 6,
+        "end": 40,
+        "source": "ner_action",
+        "confidence": null,
+        "original_start": 6,
+        "original_end": 40,
+        "original_text": "used Mimikatz to steal credentials"
+      },
+      {
+        "text": "Mimikatz",
+        "label": "MALWARE_TOOL",
+        "start": 11,
+        "end": 19,
+        "source": "ner_entities",
+        "confidence": null,
+        "original_start": 11,
+        "original_end": 19,
+        "original_text": "Mimikatz"
+      },
+      {
+        "text": "https://EVIL.example.com/A",
+        "label": "INFRASTRUCTURE",
+        "start": 55,
+        "end": 81,
+        "source": "ner_entities",
+        "confidence": null,
+        "original_start": 55,
+        "original_end": 85,
+        "original_text": "hxxps://EVIL[.]example[.]com/A"
+      },
+      {
+        "text": "https://EVIL.example.com/A",
+        "label": "URL",
+        "start": 55,
+        "end": 81,
+        "source": "ioc_finder",
+        "confidence": 1.0,
+        "original_start": 55,
+        "original_end": 85,
+        "original_text": "hxxps://EVIL[.]example[.]com/A"
+      },
+      {
+        "text": "EVIL.example.com",
+        "label": "DOMAIN",
+        "start": 63,
+        "end": 79,
+        "source": "ioc_finder",
+        "confidence": 1.0,
+        "original_start": 63,
+        "original_end": 83,
+        "original_text": "EVIL[.]example[.]com"
+      },
+      {
+        "text": "185.22.10.5",
+        "label": "INFRASTRUCTURE",
+        "start": 86,
+        "end": 97,
+        "source": "ner_entities",
+        "confidence": null,
+        "original_start": 90,
+        "original_end": 103,
+        "original_text": "185.22.10[.]5"
+      },
+      {
+        "text": "185.22.10.5",
+        "label": "IP",
+        "start": 86,
+        "end": 97,
+        "source": "ioc_finder",
+        "confidence": 1.0,
+        "original_start": 90,
+        "original_end": 103,
+        "original_text": "185.22.10[.]5"
+      },
+      {
+        "text": "Admin@EVIL.example.com",
+        "label": "EMAIL",
+        "start": 107,
+        "end": 129,
+        "source": "ioc_finder",
+        "confidence": 1.0,
+        "original_start": 113,
+        "original_end": 142,
+        "original_text": "Admin[at]EVIL[.]example[.]com"
+      },
+      {
+        "text": "Admin@EVIL.example.com",
+        "label": "INFRASTRUCTURE",
+        "start": 107,
+        "end": 129,
+        "source": "ner_entities",
+        "confidence": null,
+        "original_start": 113,
+        "original_end": 142,
+        "original_text": "Admin[at]EVIL[.]example[.]com"
+      },
+      {
+        "text": "EVIL.example.com",
+        "label": "DOMAIN",
+        "start": 113,
+        "end": 129,
+        "source": "ioc_finder",
+        "confidence": 1.0,
+        "original_start": 122,
+        "original_end": 142,
+        "original_text": "EVIL[.]example[.]com"
+      },
+      {
+        "text": "185.22.10.5",
+        "label": "INFRASTRUCTURE",
+        "start": 148,
+        "end": 159,
+        "source": "ner_entities",
+        "confidence": null,
+        "original_start": 161,
+        "original_end": 174,
+        "original_text": "185.22.10(.)5"
+      },
+      {
+        "text": "185.22.10.5",
+        "label": "IP",
+        "start": 148,
+        "end": 159,
+        "source": "ioc_finder",
+        "confidence": 1.0,
+        "original_start": 161,
+        "original_end": 174,
+        "original_text": "185.22.10(.)5"
+      }
+    ],
+    "metadata": {
+      "text_before_defang": "APT29 used Mimikatz to steal credentials. It contacted hxxps://EVIL[.]example[.]com/A and 185.22.10[.]5. Contact Admin[at]EVIL[.]example[.]com. The same address 185.22.10(.)5 appeared again.",
+      "language": "en",
+      "script": "latin",
+      "sentences": [
+        {
+          "start": 0,
+          "end": 41,
+          "text": "APT29 used Mimikatz to steal credentials.",
+          "original_start": 0,
+          "original_end": 41,
+          "original_text": "APT29 used Mimikatz to steal credentials."
+        },
+        {
+          "start": 42,
+          "end": 98,
+          "text": "It contacted https://EVIL.example.com/A and 185.22.10.5.",
+          "original_start": 42,
+          "original_end": 104,
+          "original_text": "It contacted hxxps://EVIL[.]example[.]com/A and 185.22.10[.]5."
+        },
+        {
+          "start": 99,
+          "end": 130,
+          "text": "Contact Admin@EVIL.example.com.",
+          "original_start": 105,
+          "original_end": 143,
+          "original_text": "Contact Admin[at]EVIL[.]example[.]com."
+        },
+        {
+          "start": 131,
+          "end": 175,
+          "text": "The same address 185.22.10.5 appeared again.",
+          "original_start": 144,
+          "original_end": 190,
+          "original_text": "The same address 185.22.10(.)5 appeared again."
+        }
+      ],
+      "ner": {
+        "entities": {
+          "status": "ok",
+          "layer": "entities",
+          "model_name": "crf_tagger",
+          "artifact_sha256": "d5195ebe781197a15ebea3e31b15228334c236e05bec2f1b2c91de3a6033cd79",
+          "offset_space": "document_text",
+          "confidence_kind": "unavailable",
+          "use_relevance": false,
+          "sentences_tagged": 4
+        },
+        "action": {
+          "status": "ok",
+          "layer": "action",
+          "model_name": "crf_tagger",
+          "artifact_sha256": "1732d7e0a1d4c5be1433dff1daf31c2893e0702b43b70142840d871e4d45da15",
+          "offset_space": "document_text",
+          "confidence_kind": "unavailable",
+          "use_relevance": false,
+          "sentences_tagged": 4
+        }
+      },
+      "merge": {
+        "schema_version": 1,
+        "policy": "conservative_occurrence_v1",
+        "offset_space": "document_text",
+        "confidence_policy": "per_source_only",
+        "raw_entity_count": 13,
+        "evidence_count": 13,
+        "duplicate_evidence_count": 0,
+        "finding_count": 9,
+        "primary_finding_count": 7,
+        "component_finding_count": 2,
+        "absorbed_infrastructure_count": 4,
+        "overlap_count": 3
+      },
+      "offsets": {
+        "schema_version": 1,
+        "unit": "unicode_code_points",
+        "interval": "half_open",
+        "normalized_text_field": "text",
+        "original_text_field": "original_text",
+        "source_span_policy": "covering"
+      }
+    },
+    "findings": [
+      {
+        "id": "finding-0001",
+        "text": "APT29",
+        "label": "THREAT_ACTOR",
+        "start": 0,
+        "end": 5,
+        "canonical_value": null,
+        "canonical_status": "not_applicable",
+        "original_start": 0,
+        "original_end": 5,
+        "original_text": "APT29",
+        "sources": [
+          "ner_entities"
+        ],
+        "observed_labels": [
+          "THREAT_ACTOR"
+        ],
+        "evidence": [
+          {
+            "text": "APT29",
+            "label": "THREAT_ACTOR",
+            "start": 0,
+            "end": 5,
+            "source": "ner_entities",
+            "confidence": null,
+            "original_start": 0,
+            "original_end": 5,
+            "original_text": "APT29"
+          }
+        ],
+        "role": "primary",
+        "parent_ids": [],
+        "component_ids": []
+      },
+      {
+        "id": "finding-0002",
+        "text": "used Mimikatz to steal credentials",
+        "label": "ACTION",
+        "start": 6,
+        "end": 40,
+        "canonical_value": null,
+        "canonical_status": "not_applicable",
+        "original_start": 6,
+        "original_end": 40,
+        "original_text": "used Mimikatz to steal credentials",
+        "sources": [
+          "ner_action"
+        ],
+        "observed_labels": [
+          "ACTION"
+        ],
+        "evidence": [
+          {
+            "text": "used Mimikatz to steal credentials",
+            "label": "ACTION",
+            "start": 6,
+            "end": 40,
+            "source": "ner_action",
+            "confidence": null,
+            "original_start": 6,
+            "original_end": 40,
+            "original_text": "used Mimikatz to steal credentials"
+          }
+        ],
+        "role": "primary",
+        "parent_ids": [],
+        "component_ids": []
+      },
+      {
+        "id": "finding-0003",
+        "text": "Mimikatz",
+        "label": "MALWARE_TOOL",
+        "start": 11,
+        "end": 19,
+        "canonical_value": null,
+        "canonical_status": "not_applicable",
+        "original_start": 11,
+        "original_end": 19,
+        "original_text": "Mimikatz",
+        "sources": [
+          "ner_entities"
+        ],
+        "observed_labels": [
+          "MALWARE_TOOL"
+        ],
+        "evidence": [
+          {
+            "text": "Mimikatz",
+            "label": "MALWARE_TOOL",
+            "start": 11,
+            "end": 19,
+            "source": "ner_entities",
+            "confidence": null,
+            "original_start": 11,
+            "original_end": 19,
+            "original_text": "Mimikatz"
+          }
+        ],
+        "role": "primary",
+        "parent_ids": [],
+        "component_ids": []
+      },
+      {
+        "id": "finding-0004",
+        "text": "https://EVIL.example.com/A",
+        "label": "URL",
+        "start": 55,
+        "end": 81,
+        "canonical_value": "https://evil.example.com/A",
+        "canonical_status": "available",
+        "original_start": 55,
+        "original_end": 85,
+        "original_text": "hxxps://EVIL[.]example[.]com/A",
+        "sources": [
+          "ioc_finder",
+          "ner_entities"
+        ],
+        "observed_labels": [
+          "INFRASTRUCTURE",
+          "URL"
+        ],
+        "evidence": [
+          {
+            "text": "https://EVIL.example.com/A",
+            "label": "INFRASTRUCTURE",
+            "start": 55,
+            "end": 81,
+            "source": "ner_entities",
+            "confidence": null,
+            "original_start": 55,
+            "original_end": 85,
+            "original_text": "hxxps://EVIL[.]example[.]com/A"
+          },
+          {
+            "text": "https://EVIL.example.com/A",
+            "label": "URL",
+            "start": 55,
+            "end": 81,
+            "source": "ioc_finder",
+            "confidence": 1.0,
+            "original_start": 55,
+            "original_end": 85,
+            "original_text": "hxxps://EVIL[.]example[.]com/A"
+          }
+        ],
+        "role": "primary",
+        "parent_ids": [],
+        "component_ids": [
+          "finding-0005"
+        ]
+      },
+      {
+        "id": "finding-0005",
+        "text": "EVIL.example.com",
+        "label": "DOMAIN",
+        "start": 63,
+        "end": 79,
+        "canonical_value": "evil.example.com",
+        "canonical_status": "available",
+        "original_start": 63,
+        "original_end": 83,
+        "original_text": "EVIL[.]example[.]com",
+        "sources": [
+          "ioc_finder"
+        ],
+        "observed_labels": [
+          "DOMAIN"
+        ],
+        "evidence": [
+          {
+            "text": "EVIL.example.com",
+            "label": "DOMAIN",
+            "start": 63,
+            "end": 79,
+            "source": "ioc_finder",
+            "confidence": 1.0,
+            "original_start": 63,
+            "original_end": 83,
+            "original_text": "EVIL[.]example[.]com"
+          }
+        ],
+        "role": "component",
+        "parent_ids": [
+          "finding-0004"
+        ],
+        "component_ids": []
+      },
+      {
+        "id": "finding-0006",
+        "text": "185.22.10.5",
+        "label": "IP",
+        "start": 86,
+        "end": 97,
+        "canonical_value": "185.22.10.5",
+        "canonical_status": "available",
+        "original_start": 90,
+        "original_end": 103,
+        "original_text": "185.22.10[.]5",
+        "sources": [
+          "ioc_finder",
+          "ner_entities"
+        ],
+        "observed_labels": [
+          "INFRASTRUCTURE",
+          "IP"
+        ],
+        "evidence": [
+          {
+            "text": "185.22.10.5",
+            "label": "INFRASTRUCTURE",
+            "start": 86,
+            "end": 97,
+            "source": "ner_entities",
+            "confidence": null,
+            "original_start": 90,
+            "original_end": 103,
+            "original_text": "185.22.10[.]5"
+          },
+          {
+            "text": "185.22.10.5",
+            "label": "IP",
+            "start": 86,
+            "end": 97,
+            "source": "ioc_finder",
+            "confidence": 1.0,
+            "original_start": 90,
+            "original_end": 103,
+            "original_text": "185.22.10[.]5"
+          }
+        ],
+        "role": "primary",
+        "parent_ids": [],
+        "component_ids": []
+      },
+      {
+        "id": "finding-0007",
+        "text": "Admin@EVIL.example.com",
+        "label": "EMAIL",
+        "start": 107,
+        "end": 129,
+        "canonical_value": "Admin@evil.example.com",
+        "canonical_status": "available",
+        "original_start": 113,
+        "original_end": 142,
+        "original_text": "Admin[at]EVIL[.]example[.]com",
+        "sources": [
+          "ioc_finder",
+          "ner_entities"
+        ],
+        "observed_labels": [
+          "EMAIL",
+          "INFRASTRUCTURE"
+        ],
+        "evidence": [
+          {
+            "text": "Admin@EVIL.example.com",
+            "label": "EMAIL",
+            "start": 107,
+            "end": 129,
+            "source": "ioc_finder",
+            "confidence": 1.0,
+            "original_start": 113,
+            "original_end": 142,
+            "original_text": "Admin[at]EVIL[.]example[.]com"
+          },
+          {
+            "text": "Admin@EVIL.example.com",
+            "label": "INFRASTRUCTURE",
+            "start": 107,
+            "end": 129,
+            "source": "ner_entities",
+            "confidence": null,
+            "original_start": 113,
+            "original_end": 142,
+            "original_text": "Admin[at]EVIL[.]example[.]com"
+          }
+        ],
+        "role": "primary",
+        "parent_ids": [],
+        "component_ids": [
+          "finding-0008"
+        ]
+      },
+      {
+        "id": "finding-0008",
+        "text": "EVIL.example.com",
+        "label": "DOMAIN",
+        "start": 113,
+        "end": 129,
+        "canonical_value": "evil.example.com",
+        "canonical_status": "available",
+        "original_start": 122,
+        "original_end": 142,
+        "original_text": "EVIL[.]example[.]com",
+        "sources": [
+          "ioc_finder"
+        ],
+        "observed_labels": [
+          "DOMAIN"
+        ],
+        "evidence": [
+          {
+            "text": "EVIL.example.com",
+            "label": "DOMAIN",
+            "start": 113,
+            "end": 129,
+            "source": "ioc_finder",
+            "confidence": 1.0,
+            "original_start": 122,
+            "original_end": 142,
+            "original_text": "EVIL[.]example[.]com"
+          }
+        ],
+        "role": "component",
+        "parent_ids": [
+          "finding-0007"
+        ],
+        "component_ids": []
+      },
+      {
+        "id": "finding-0009",
+        "text": "185.22.10.5",
+        "label": "IP",
+        "start": 148,
+        "end": 159,
+        "canonical_value": "185.22.10.5",
+        "canonical_status": "available",
+        "original_start": 161,
+        "original_end": 174,
+        "original_text": "185.22.10(.)5",
+        "sources": [
+          "ioc_finder",
+          "ner_entities"
+        ],
+        "observed_labels": [
+          "INFRASTRUCTURE",
+          "IP"
+        ],
+        "evidence": [
+          {
+            "text": "185.22.10.5",
+            "label": "INFRASTRUCTURE",
+            "start": 148,
+            "end": 159,
+            "source": "ner_entities",
+            "confidence": null,
+            "original_start": 161,
+            "original_end": 174,
+            "original_text": "185.22.10(.)5"
+          },
+          {
+            "text": "185.22.10.5",
+            "label": "IP",
+            "start": 148,
+            "end": 159,
+            "source": "ioc_finder",
+            "confidence": 1.0,
+            "original_start": 161,
+            "original_end": 174,
+            "original_text": "185.22.10(.)5"
+          }
+        ],
+        "role": "primary",
+        "parent_ids": [],
+        "component_ids": []
+      }
+    ],
+    "overlaps": [
+      {
+        "left_id": "finding-0002",
+        "right_id": "finding-0003",
+        "kind": "action_overlap"
+      },
+      {
+        "left_id": "finding-0004",
+        "right_id": "finding-0005",
+        "kind": "ioc_host_component"
+      },
+      {
+        "left_id": "finding-0007",
+        "right_id": "finding-0008",
+        "kind": "ioc_host_component"
+      }
+    ],
+    "original_text": "APT29 used Mimikatz to steal credentials.\nIt contacted hxxps://EVIL[.]example[.]com/A and 185.22.10[.]5.\nContact Admin[at]EVIL[.]example[.]com.\nThe same address 185.22.10(.)5 appeared again.\n"
+  },
+  "analysis": {
+    "mode": "ner",
+    "elapsed_ms": 94
+  }
+}

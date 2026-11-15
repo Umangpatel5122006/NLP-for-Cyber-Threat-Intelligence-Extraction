@@ -1,0 +1,32 @@
+# Fixed follow-up: retain the baseline's context/dictionary features.
+folds: 3
+seed: 42
+minimum_cv_gain: 0.005
+minimum_fold_wins: 2
+candidates:
+  - id: baseline
+    parameters:
+      c1: 1.0
+      c2: 1.0
+      min_freq: 0
+      max_iterations: 200
+      all_possible_transitions: true
+  - id: action_morphology
+    parameters:
+      c1: 1.0
+      c2: 1.0
+      min_freq: 0
+      max_iterations: 200
+      all_possible_transitions: true
+      feature_config:
+        use_action_morphology: true
+  - id: action_boundaries
+    parameters:
+      c1: 1.0
+      c2: 1.0
+      min_freq: 0
+      max_iterations: 200
+      all_possible_transitions: true
+      feature_config:
+        use_action_morphology: true
+        use_action_lexicon: true

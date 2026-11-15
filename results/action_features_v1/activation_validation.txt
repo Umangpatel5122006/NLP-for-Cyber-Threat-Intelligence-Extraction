@@ -1,0 +1,3 @@
+Active action artifact reproduces all 1238 selected-model dev predictions.
+Fresh ReviewEngine loads the promoted action profile and the unchanged entity model.
+Real report inference retains valid original evidence spans and the promoted artifact identity.

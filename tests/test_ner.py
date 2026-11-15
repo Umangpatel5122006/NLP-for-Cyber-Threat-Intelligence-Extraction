@@ -251,7 +251,7 @@ class NERDataAndTrainingTests(unittest.TestCase):
         self.assertEqual(reports["entities"]["metrics_version"], "2")
         self.assertTrue(reports["entities"]["reload_predictions_identical"])
         self.assertFalse(reports["entities"]["artifact"]["metadata"]["test_split_used"])
-        self.assertTrue((self.root / "results/ner_v2_entities.predictions.json").is_file())
+        self.assertTrue((self.root / "results/ner_current_entities.predictions.json").is_file())
         artifact = load_ner_tagger(self.root / "models/ner_entities.joblib")
         self.assertEqual(artifact.manifest["metadata"]["train_report_ids"], ["synthetic-train"])
 

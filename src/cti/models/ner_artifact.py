@@ -40,13 +40,22 @@ def layer_labels(layer):
     return sorted(layers[layer])
 
 
-def _environment():
+def _profile_dependencies(feature_config):
+    config = feature_config or {}
+    flags = ("use_action_morphology", "use_action_lexicon")
+    for flag in flags:
+        if type(config.get(flag, False)) is not bool:
+            raise ValueError("Action feature flags must be boolean.")
+    return ("src/cti/models/action_crf.py",) if any(config.get(flag, False) for flag in flags) else ()
+
+
+def _environment(extra_dependencies=()):
     return {
         "python_major_minor": ".".join(platform.python_version_tuple()[:2]),
         "packages": {name: version(name) for name in (
             "spacy", "scikit-learn", "sklearn-crfsuite", "python-crfsuite", "joblib",
         )},
-        "dependency_sha256": {name: sha256_file(ROOT / name) for name in DEPENDENCY_FILES},
+        "dependency_sha256": {name: sha256_file(ROOT / name) for name in DEPENDENCY_FILES + tuple(extra_dependencies)},
     }
 
 
@@ -60,6 +69,10 @@ def _check_tagger(tagger, layer):
     check_model_scope(tagger.name)
     if tagger.name not in CLASSICAL_NER_MODULES:
         raise ValueError("Only supported classical NER taggers can be saved.")
+    if _profile_dependencies(getattr(tagger, "feature_config", None)):
+        from cti.models.action_crf import ActionBoundaryCRFTagger
+        if layer != "action" or not isinstance(tagger, ActionBoundaryCRFTagger):
+            raise ValueError("Action feature profiles require the action-layer CRF implementation.")
     labels = layer_labels(layer)
     # The shared contract checks readiness without inventing an input token.
     if tagger.predict([[]]) != [[]]:
@@ -92,7 +105,7 @@ def save_ner_tagger(tagger, path, layer, metadata=None):
         "language": "en",
         "labels": labels,
         "parameters": _parameters(tagger),
-        "environment": _environment(),
+        "environment": _environment(_profile_dependencies(getattr(tagger, "feature_config", None))),
         "metadata": {} if metadata is None else metadata,
     }
     json.dumps(manifest, allow_nan=False)
@@ -119,7 +132,8 @@ def load_ner_tagger(path, expected_layer=None):
         raise ValueError(f"Expected NER layer {expected_layer!r}, got {manifest.get('layer')!r}.")
     if manifest.get("language") != "en" or manifest.get("labels") != layer_labels(manifest.get("layer")):
         raise ValueError("NER artifact language or label schema does not match this project.")
-    if manifest.get("environment") != _environment():
+    profile = manifest.get("parameters", {}).get("feature_config")
+    if manifest.get("environment") != _environment(_profile_dependencies(profile)):
         raise ValueError("NER feature resources or runtime versions changed; retrain in this environment.")
     if hashlib.sha256(path.read_bytes()).hexdigest() != manifest.get("artifact_sha256"):
         raise ValueError("NER artifact hash does not match its manifest.")

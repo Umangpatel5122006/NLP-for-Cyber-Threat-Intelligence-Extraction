@@ -1,0 +1,1333 @@
+{
+  "metrics_version": "2",
+  "provenance": {
+    "config_sha256_lf": "8232d8789cbe8734b99d82c8ed0eb40557c5f90073a47e60adb8d4aa25f04f97",
+    "processed_train_sha256_lf": "23ccbb27007f86a98b3a6a2874bdd63ed8a6d8f8e61c55c608cb39a4d0e10edf",
+    "raw_dataset_sha256_lf": "c32bd166e893683800121ae9e13197770a345987912dc9dc31f0be19d9693b5a",
+    "source_sha256_lf": {
+      "src/cti/experiment_action.py": "e803851f39a17bf33f4694335dfd0f5fe5ad22aa73acd1eb878a66f6d663e005",
+      "src/cti/models/ner_data.py": "5c62df8c838089657ecc669a6df34776e61fbe2ba39b45dce2c4887d8fa7f502",
+      "src/cti/eval/cv.py": "f7200ee39e19e0a725a42339cc37703d814e4d2303b58877948416eede886d1b",
+      "src/cti/eval/metrics.py": "5eda5b5d7814a59fd1d61d75e47ffa20e363ef086109119ee3280c505f172989",
+      "src/cti/models/action_crf.py": "e5af0259851b3371dcc98f93cc8885ba8a5353fdf9bb438faaddb5218f1df7ce",
+      "src/cti/models/ner_artifact.py": "66e269a921a7931e1c44679e6db3ed934cc1584fbdaad3aa7953781cfc368aa7",
+      "src/cti/core/dataset.py": "5530272d7eaee7bf8ea22b2e167783dedff5ff651fb1b69353a77ec31d58af6b"
+    },
+    "environment": {
+      "python_major_minor": "3.12",
+      "packages": {
+        "spacy": "3.8.16",
+        "scikit-learn": "1.9.1",
+        "sklearn-crfsuite": "0.5.0",
+        "python-crfsuite": "0.9.12",
+        "joblib": "1.6.0"
+      },
+      "dependency_sha256": {
+        "src/cti/models/base.py": "78b31d5a0275748e06d61aa0b5e6d9dc6a36d397fad6b825076cb3ee105284e9",
+        "src/cti/models/crf.py": "cf24edf1cf2fe2421433c84e9165ed7a3c6b446bd512242031b32cb6066f66fc",
+        "src/cti/models/memm.py": "b9203a9767bfa2fa8f1d8c7e519b8ba7e3519e9dd7161809357753f7a13ab12d",
+        "src/cti/preprocessing/tokenizer.py": "9bf2b706af8270b3f94ffe9a01be9f00bb53e29a0794b9b41356cba72f2630ab",
+        "configs/labels.yaml": "c97c18862be8a70eadab268bb1ca6914007ebd864e2d573ebf3fae0e3af5b0ac",
+        "data/external/gazetteer.json": "299138401b1c6b494b64038941ae1d1c94a5d3267c2a83eb4a0b5c20d6643221"
+      }
+    }
+  },
+  "folds": [
+    {
+      "train_report_ids": [
+        "03_aptnotes_report",
+        "04_aptnotes_report",
+        "05_aptnotes_report",
+        "06_aptnotes_report",
+        "07_aptnotes_report",
+        "08_aptnotes_report",
+        "09_aptnotes_report",
+        "100_mitre_report",
+        "11_aptnotes_report",
+        "12_aptnotes_report",
+        "14_aptnotes_report",
+        "15_aptnotes_report",
+        "18_aptnotes_report",
+        "19_aptnotes_report",
+        "22_mandiant_report",
+        "23_mandiant_report",
+        "26_mandiant_report",
+        "28_mandiant_report",
+        "30_mandiant_report",
+        "31_mandiant_report",
+        "32_mandiant_report",
+        "33_mandiant_report",
+        "34_mandiant_report",
+        "35_mandiant_report",
+        "38_mandiant_report",
+        "39_mandiant_report",
+        "41_crowdstrike_report",
+        "45_crowdstrike_report",
+        "47_crowdstrike_report",
+        "48_crowdstrike_report",
+        "50_crowdstrike_report",
+        "53_SentinelOne_report",
+        "56_SentinelOne_report",
+        "57_SentinelOne_report",
+        "61_SentinelOne_report",
+        "65_SentinelOne_report",
+        "66_SentinelOne_report",
+        "68_SentinelOne_report",
+        "70_SentinelOne_report",
+        "72_SentinelOne_report",
+        "74_mitre_report",
+        "75_mitre_report",
+        "76_mitre_report",
+        "79_mitre_report",
+        "80_mitre_report",
+        "83_mitre_report",
+        "85_mitre_report",
+        "86_mitre_report",
+        "87_mitre_report",
+        "90_mitre_report",
+        "92_mitre_report",
+        "94_mitre_report",
+        "96_mitre_report",
+        "98_mitre_report"
+      ],
+      "validation_report_ids": [
+        "02_aptnotes_report",
+        "20_aptnotes_report",
+        "24_mandiant_report",
+        "40_crowdstrike_report",
+        "49_crowdstrike_report",
+        "51_crowdstrike_report",
+        "52_SentinelOne_report",
+        "55_SentinelOne_report",
+        "60_SentinelOne_report",
+        "62_SentinelOne_report",
+        "64_SentinelOne_report",
+        "71_SentinelOne_report",
+        "88_mitre_report",
+        "89_mitre_report",
+        "93_mitre_report",
+        "95_mitre_report"
+      ],
+      "validation_sentences": 2905
+    },
+    {
+      "train_report_ids": [
+        "02_aptnotes_report",
+        "05_aptnotes_report",
+        "07_aptnotes_report",
+        "08_aptnotes_report",
+        "100_mitre_report",
+        "11_aptnotes_report",
+        "12_aptnotes_report",
+        "20_aptnotes_report",
+        "22_mandiant_report",
+        "24_mandiant_report",
+        "26_mandiant_report",
+        "28_mandiant_report",
+        "30_mandiant_report",
+        "32_mandiant_report",
+        "38_mandiant_report",
+        "39_mandiant_report",
+        "40_crowdstrike_report",
+        "45_crowdstrike_report",
+        "48_crowdstrike_report",
+        "49_crowdstrike_report",
+        "51_crowdstrike_report",
+        "52_SentinelOne_report",
+        "55_SentinelOne_report",
+        "57_SentinelOne_report",
+        "60_SentinelOne_report",
+        "61_SentinelOne_report",
+        "62_SentinelOne_report",
+        "64_SentinelOne_report",
+        "66_SentinelOne_report",
+        "71_SentinelOne_report",
+        "76_mitre_report",
+        "79_mitre_report",
+        "85_mitre_report",
+        "86_mitre_report",
+        "88_mitre_report",
+        "89_mitre_report",
+        "90_mitre_report",
+        "92_mitre_report",
+        "93_mitre_report",
+        "95_mitre_report",
+        "98_mitre_report"
+      ],
+      "validation_report_ids": [
+        "03_aptnotes_report",
+        "04_aptnotes_report",
+        "06_aptnotes_report",
+        "09_aptnotes_report",
+        "14_aptnotes_report",
+        "15_aptnotes_report",
+        "18_aptnotes_report",
+        "19_aptnotes_report",
+        "23_mandiant_report",
+        "31_mandiant_report",
+        "33_mandiant_report",
+        "34_mandiant_report",
+        "35_mandiant_report",
+        "41_crowdstrike_report",
+        "47_crowdstrike_report",
+        "50_crowdstrike_report",
+        "53_SentinelOne_report",
+        "56_SentinelOne_report",
+        "65_SentinelOne_report",
+        "68_SentinelOne_report",
+        "70_SentinelOne_report",
+        "72_SentinelOne_report",
+        "74_mitre_report",
+        "75_mitre_report",
+        "80_mitre_report",
+        "83_mitre_report",
+        "87_mitre_report",
+        "94_mitre_report",
+        "96_mitre_report"
+      ],
+      "validation_sentences": 2861
+    },
+    {
+      "train_report_ids": [
+        "02_aptnotes_report",
+        "03_aptnotes_report",
+        "04_aptnotes_report",
+        "06_aptnotes_report",
+        "09_aptnotes_report",
+        "14_aptnotes_report",
+        "15_aptnotes_report",
+        "18_aptnotes_report",
+        "19_aptnotes_report",
+        "20_aptnotes_report",
+        "23_mandiant_report",
+        "24_mandiant_report",
+        "31_mandiant_report",
+        "33_mandiant_report",
+        "34_mandiant_report",
+        "35_mandiant_report",
+        "40_crowdstrike_report",
+        "41_crowdstrike_report",
+        "47_crowdstrike_report",
+        "49_crowdstrike_report",
+        "50_crowdstrike_report",
+        "51_crowdstrike_report",
+        "52_SentinelOne_report",
+        "53_SentinelOne_report",
+        "55_SentinelOne_report",
+        "56_SentinelOne_report",
+        "60_SentinelOne_report",
+        "62_SentinelOne_report",
+        "64_SentinelOne_report",
+        "65_SentinelOne_report",
+        "68_SentinelOne_report",
+        "70_SentinelOne_report",
+        "71_SentinelOne_report",
+        "72_SentinelOne_report",
+        "74_mitre_report",
+        "75_mitre_report",
+        "80_mitre_report",
+        "83_mitre_report",
+        "87_mitre_report",
+        "88_mitre_report",
+        "89_mitre_report",
+        "93_mitre_report",
+        "94_mitre_report",
+        "95_mitre_report",
+        "96_mitre_report"
+      ],
+      "validation_report_ids": [
+        "05_aptnotes_report",
+        "07_aptnotes_report",
+        "08_aptnotes_report",
+        "100_mitre_report",
+        "11_aptnotes_report",
+        "12_aptnotes_report",
+        "22_mandiant_report",
+        "26_mandiant_report",
+        "28_mandiant_report",
+        "30_mandiant_report",
+        "32_mandiant_report",
+        "38_mandiant_report",
+        "39_mandiant_report",
+        "45_crowdstrike_report",
+        "48_crowdstrike_report",
+        "57_SentinelOne_report",
+        "61_SentinelOne_report",
+        "66_SentinelOne_report",
+        "76_mitre_report",
+        "79_mitre_report",
+        "85_mitre_report",
+        "86_mitre_report",
+        "90_mitre_report",
+        "92_mitre_report",
+        "98_mitre_report"
+      ],
+      "validation_sentences": 2869
+    }
+  ],
+  "candidates": [
+    {
+      "id": "baseline",
+      "parameters": {
+        "c1": 1.0,
+        "c2": 1.0,
+        "min_freq": 0,
+        "max_iterations": 200,
+        "all_possible_transitions": true
+      },
+      "fold_metrics": [
+        {
+          "exact_default": {
+            "mode": "default",
+            "precision": 0.1285,
+            "recall": 0.0991,
+            "f1": 0.1119,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1285,
+                "recall": 0.0991,
+                "f1": 0.1119,
+                "support": 1584,
+                "predicted": 1222,
+                "true_positives": 157
+              }
+            }
+          },
+          "exact_strict": {
+            "mode": "strict",
+            "precision": 0.1285,
+            "recall": 0.0991,
+            "f1": 0.1119,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1285,
+                "recall": 0.0991,
+                "f1": 0.1119,
+                "support": 1584,
+                "predicted": 1222,
+                "true_positives": 157
+              }
+            }
+          },
+          "relaxed": {
+            "precision": 0.5131,
+            "recall": 0.3958,
+            "f1": 0.4469,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.5131,
+                "recall": 0.3958,
+                "f1": 0.4469,
+                "support": 1584,
+                "predicted": 1222,
+                "true_positives": 627
+              }
+            }
+          },
+          "token_level": {
+            "micro_precision": 0.3288,
+            "micro_recall": 0.3894,
+            "micro_f1": 0.3565,
+            "macro_precision": 0.3288,
+            "macro_recall": 0.3894,
+            "macro_f1": 0.3565,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.3288,
+                "recall": 0.3894,
+                "f1": 0.3565,
+                "support": 7065
+              }
+            }
+          },
+          "error_taxonomy": {
+            "counts": {
+              "exact_match": 157,
+              "boundary_error": 470,
+              "wrong_type": 0,
+              "missed": 957,
+              "spurious": 595
+            },
+            "total_gold": 1584,
+            "total_predicted": 1222,
+            "per_label": {
+              "ACTION": {
+                "spurious": 595,
+                "missed": 957,
+                "boundary_error": 470,
+                "exact_match": 157
+              }
+            },
+            "type_confusion_pairs": {}
+          }
+        },
+        {
+          "exact_default": {
+            "mode": "default",
+            "precision": 0.1498,
+            "recall": 0.1315,
+            "f1": 0.1401,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1498,
+                "recall": 0.1315,
+                "f1": 0.1401,
+                "support": 1445,
+                "predicted": 1268,
+                "true_positives": 190
+              }
+            }
+          },
+          "exact_strict": {
+            "mode": "strict",
+            "precision": 0.1498,
+            "recall": 0.1315,
+            "f1": 0.1401,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1498,
+                "recall": 0.1315,
+                "f1": 0.1401,
+                "support": 1445,
+                "predicted": 1268,
+                "true_positives": 190
+              }
+            }
+          },
+          "relaxed": {
+            "precision": 0.4921,
+            "recall": 0.4318,
+            "f1": 0.46,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.4921,
+                "recall": 0.4318,
+                "f1": 0.46,
+                "support": 1445,
+                "predicted": 1268,
+                "true_positives": 624
+              }
+            }
+          },
+          "token_level": {
+            "micro_precision": 0.3849,
+            "micro_recall": 0.3447,
+            "micro_f1": 0.3637,
+            "macro_precision": 0.3849,
+            "macro_recall": 0.3447,
+            "macro_f1": 0.3637,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.3849,
+                "recall": 0.3447,
+                "f1": 0.3637,
+                "support": 8121
+              }
+            }
+          },
+          "error_taxonomy": {
+            "counts": {
+              "exact_match": 190,
+              "boundary_error": 434,
+              "wrong_type": 0,
+              "missed": 821,
+              "spurious": 644
+            },
+            "total_gold": 1445,
+            "total_predicted": 1268,
+            "per_label": {
+              "ACTION": {
+                "boundary_error": 434,
+                "missed": 821,
+                "exact_match": 190,
+                "spurious": 644
+              }
+            },
+            "type_confusion_pairs": {}
+          }
+        },
+        {
+          "exact_default": {
+            "mode": "default",
+            "precision": 0.1435,
+            "recall": 0.1159,
+            "f1": 0.1282,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1435,
+                "recall": 0.1159,
+                "f1": 0.1282,
+                "support": 1424,
+                "predicted": 1150,
+                "true_positives": 165
+              }
+            }
+          },
+          "exact_strict": {
+            "mode": "strict",
+            "precision": 0.1435,
+            "recall": 0.1159,
+            "f1": 0.1282,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1435,
+                "recall": 0.1159,
+                "f1": 0.1282,
+                "support": 1424,
+                "predicted": 1150,
+                "true_positives": 165
+              }
+            }
+          },
+          "relaxed": {
+            "precision": 0.4765,
+            "recall": 0.3848,
+            "f1": 0.4258,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.4765,
+                "recall": 0.3848,
+                "f1": 0.4258,
+                "support": 1424,
+                "predicted": 1150,
+                "true_positives": 548
+              }
+            }
+          },
+          "token_level": {
+            "micro_precision": 0.3535,
+            "micro_recall": 0.3826,
+            "micro_f1": 0.3675,
+            "macro_precision": 0.3535,
+            "macro_recall": 0.3826,
+            "macro_f1": 0.3675,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.3535,
+                "recall": 0.3826,
+                "f1": 0.3675,
+                "support": 6929
+              }
+            }
+          },
+          "error_taxonomy": {
+            "counts": {
+              "exact_match": 165,
+              "boundary_error": 383,
+              "wrong_type": 0,
+              "missed": 876,
+              "spurious": 602
+            },
+            "total_gold": 1424,
+            "total_predicted": 1150,
+            "per_label": {
+              "ACTION": {
+                "spurious": 602,
+                "boundary_error": 383,
+                "missed": 876,
+                "exact_match": 165
+              }
+            },
+            "type_confusion_pairs": {}
+          }
+        }
+      ],
+      "pooled": {
+        "exact_default": {
+          "mode": "default",
+          "precision": 0.1407,
+          "recall": 0.115,
+          "f1": 0.1265,
+          "per_label": {
+            "ACTION": {
+              "precision": 0.1407,
+              "recall": 0.115,
+              "f1": 0.1265,
+              "support": 4453,
+              "predicted": 3640,
+              "true_positives": 512
+            }
+          }
+        },
+        "exact_strict": {
+          "mode": "strict",
+          "precision": 0.1407,
+          "recall": 0.115,
+          "f1": 0.1265,
+          "per_label": {
+            "ACTION": {
+              "precision": 0.1407,
+              "recall": 0.115,
+              "f1": 0.1265,
+              "support": 4453,
+              "predicted": 3640,
+              "true_positives": 512
+            }
+          }
+        },
+        "relaxed": {
+          "precision": 0.4942,
+          "recall": 0.404,
+          "f1": 0.4446,
+          "per_label": {
+            "ACTION": {
+              "precision": 0.4942,
+              "recall": 0.404,
+              "f1": 0.4446,
+              "support": 4453,
+              "predicted": 3640,
+              "true_positives": 1799
+            }
+          }
+        },
+        "token_level": {
+          "micro_precision": 0.3544,
+          "micro_recall": 0.3708,
+          "micro_f1": 0.3625,
+          "macro_precision": 0.3544,
+          "macro_recall": 0.3708,
+          "macro_f1": 0.3625,
+          "per_label": {
+            "ACTION": {
+              "precision": 0.3544,
+              "recall": 0.3708,
+              "f1": 0.3625,
+              "support": 22115
+            }
+          }
+        },
+        "error_taxonomy": {
+          "counts": {
+            "exact_match": 512,
+            "boundary_error": 1287,
+            "wrong_type": 0,
+            "missed": 2654,
+            "spurious": 1841
+          },
+          "total_gold": 4453,
+          "total_predicted": 3640,
+          "per_label": {
+            "ACTION": {
+              "spurious": 1841,
+              "missed": 2654,
+              "boundary_error": 1287,
+              "exact_match": 512
+            }
+          },
+          "type_confusion_pairs": {}
+        }
+      }
+    },
+    {
+      "id": "action_morphology",
+      "parameters": {
+        "c1": 1.0,
+        "c2": 1.0,
+        "min_freq": 0,
+        "max_iterations": 200,
+        "all_possible_transitions": true,
+        "feature_config": {
+          "use_action_morphology": true
+        }
+      },
+      "fold_metrics": [
+        {
+          "exact_default": {
+            "mode": "default",
+            "precision": 0.1382,
+            "recall": 0.113,
+            "f1": 0.1243,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1382,
+                "recall": 0.113,
+                "f1": 0.1243,
+                "support": 1584,
+                "predicted": 1295,
+                "true_positives": 179
+              }
+            }
+          },
+          "exact_strict": {
+            "mode": "strict",
+            "precision": 0.1382,
+            "recall": 0.113,
+            "f1": 0.1243,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1382,
+                "recall": 0.113,
+                "f1": 0.1243,
+                "support": 1584,
+                "predicted": 1295,
+                "true_positives": 179
+              }
+            }
+          },
+          "relaxed": {
+            "precision": 0.5189,
+            "recall": 0.4242,
+            "f1": 0.4668,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.5189,
+                "recall": 0.4242,
+                "f1": 0.4668,
+                "support": 1584,
+                "predicted": 1295,
+                "true_positives": 672
+              }
+            }
+          },
+          "token_level": {
+            "micro_precision": 0.3343,
+            "micro_recall": 0.4117,
+            "micro_f1": 0.369,
+            "macro_precision": 0.3343,
+            "macro_recall": 0.4117,
+            "macro_f1": 0.369,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.3343,
+                "recall": 0.4117,
+                "f1": 0.369,
+                "support": 7065
+              }
+            }
+          },
+          "error_taxonomy": {
+            "counts": {
+              "exact_match": 179,
+              "boundary_error": 493,
+              "wrong_type": 0,
+              "missed": 912,
+              "spurious": 623
+            },
+            "total_gold": 1584,
+            "total_predicted": 1295,
+            "per_label": {
+              "ACTION": {
+                "spurious": 623,
+                "missed": 912,
+                "boundary_error": 493,
+                "exact_match": 179
+              }
+            },
+            "type_confusion_pairs": {}
+          }
+        },
+        {
+          "exact_default": {
+            "mode": "default",
+            "precision": 0.1395,
+            "recall": 0.1301,
+            "f1": 0.1346,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1395,
+                "recall": 0.1301,
+                "f1": 0.1346,
+                "support": 1445,
+                "predicted": 1348,
+                "true_positives": 188
+              }
+            }
+          },
+          "exact_strict": {
+            "mode": "strict",
+            "precision": 0.1395,
+            "recall": 0.1301,
+            "f1": 0.1346,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1395,
+                "recall": 0.1301,
+                "f1": 0.1346,
+                "support": 1445,
+                "predicted": 1348,
+                "true_positives": 188
+              }
+            }
+          },
+          "relaxed": {
+            "precision": 0.4815,
+            "recall": 0.4491,
+            "f1": 0.4647,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.4815,
+                "recall": 0.4491,
+                "f1": 0.4647,
+                "support": 1445,
+                "predicted": 1348,
+                "true_positives": 649
+              }
+            }
+          },
+          "token_level": {
+            "micro_precision": 0.3728,
+            "micro_recall": 0.3521,
+            "micro_f1": 0.3622,
+            "macro_precision": 0.3728,
+            "macro_recall": 0.3521,
+            "macro_f1": 0.3622,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.3728,
+                "recall": 0.3521,
+                "f1": 0.3622,
+                "support": 8121
+              }
+            }
+          },
+          "error_taxonomy": {
+            "counts": {
+              "exact_match": 188,
+              "boundary_error": 461,
+              "wrong_type": 0,
+              "missed": 796,
+              "spurious": 699
+            },
+            "total_gold": 1445,
+            "total_predicted": 1348,
+            "per_label": {
+              "ACTION": {
+                "boundary_error": 461,
+                "missed": 796,
+                "exact_match": 188,
+                "spurious": 699
+              }
+            },
+            "type_confusion_pairs": {}
+          }
+        },
+        {
+          "exact_default": {
+            "mode": "default",
+            "precision": 0.1209,
+            "recall": 0.111,
+            "f1": 0.1157,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1209,
+                "recall": 0.111,
+                "f1": 0.1157,
+                "support": 1424,
+                "predicted": 1307,
+                "true_positives": 158
+              }
+            }
+          },
+          "exact_strict": {
+            "mode": "strict",
+            "precision": 0.1209,
+            "recall": 0.111,
+            "f1": 0.1157,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1209,
+                "recall": 0.111,
+                "f1": 0.1157,
+                "support": 1424,
+                "predicted": 1307,
+                "true_positives": 158
+              }
+            }
+          },
+          "relaxed": {
+            "precision": 0.4652,
+            "recall": 0.427,
+            "f1": 0.4453,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.4652,
+                "recall": 0.427,
+                "f1": 0.4453,
+                "support": 1424,
+                "predicted": 1307,
+                "true_positives": 608
+              }
+            }
+          },
+          "token_level": {
+            "micro_precision": 0.3493,
+            "micro_recall": 0.4206,
+            "micro_f1": 0.3816,
+            "macro_precision": 0.3493,
+            "macro_recall": 0.4206,
+            "macro_f1": 0.3816,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.3493,
+                "recall": 0.4206,
+                "f1": 0.3816,
+                "support": 6929
+              }
+            }
+          },
+          "error_taxonomy": {
+            "counts": {
+              "exact_match": 158,
+              "boundary_error": 450,
+              "wrong_type": 0,
+              "missed": 816,
+              "spurious": 699
+            },
+            "total_gold": 1424,
+            "total_predicted": 1307,
+            "per_label": {
+              "ACTION": {
+                "spurious": 699,
+                "boundary_error": 450,
+                "missed": 816,
+                "exact_match": 158
+              }
+            },
+            "type_confusion_pairs": {}
+          }
+        }
+      ],
+      "pooled": {
+        "exact_default": {
+          "mode": "default",
+          "precision": 0.1329,
+          "recall": 0.1179,
+          "f1": 0.125,
+          "per_label": {
+            "ACTION": {
+              "precision": 0.1329,
+              "recall": 0.1179,
+              "f1": 0.125,
+              "support": 4453,
+              "predicted": 3950,
+              "true_positives": 525
+            }
+          }
+        },
+        "exact_strict": {
+          "mode": "strict",
+          "precision": 0.1329,
+          "recall": 0.1179,
+          "f1": 0.125,
+          "per_label": {
+            "ACTION": {
+              "precision": 0.1329,
+              "recall": 0.1179,
+              "f1": 0.125,
+              "support": 4453,
+              "predicted": 3950,
+              "true_positives": 525
+            }
+          }
+        },
+        "relaxed": {
+          "precision": 0.4884,
+          "recall": 0.4332,
+          "f1": 0.4591,
+          "per_label": {
+            "ACTION": {
+              "precision": 0.4884,
+              "recall": 0.4332,
+              "f1": 0.4591,
+              "support": 4453,
+              "predicted": 3950,
+              "true_positives": 1929
+            }
+          }
+        },
+        "token_level": {
+          "micro_precision": 0.3513,
+          "micro_recall": 0.3926,
+          "micro_f1": 0.3708,
+          "macro_precision": 0.3513,
+          "macro_recall": 0.3926,
+          "macro_f1": 0.3708,
+          "per_label": {
+            "ACTION": {
+              "precision": 0.3513,
+              "recall": 0.3926,
+              "f1": 0.3708,
+              "support": 22115
+            }
+          }
+        },
+        "error_taxonomy": {
+          "counts": {
+            "exact_match": 525,
+            "boundary_error": 1404,
+            "wrong_type": 0,
+            "missed": 2524,
+            "spurious": 2021
+          },
+          "total_gold": 4453,
+          "total_predicted": 3950,
+          "per_label": {
+            "ACTION": {
+              "spurious": 2021,
+              "missed": 2524,
+              "boundary_error": 1404,
+              "exact_match": 525
+            }
+          },
+          "type_confusion_pairs": {}
+        }
+      }
+    },
+    {
+      "id": "action_boundaries",
+      "parameters": {
+        "c1": 1.0,
+        "c2": 1.0,
+        "min_freq": 0,
+        "max_iterations": 200,
+        "all_possible_transitions": true,
+        "feature_config": {
+          "use_action_morphology": true,
+          "use_action_lexicon": true
+        }
+      },
+      "fold_metrics": [
+        {
+          "exact_default": {
+            "mode": "default",
+            "precision": 0.1451,
+            "recall": 0.1199,
+            "f1": 0.1314,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1451,
+                "recall": 0.1199,
+                "f1": 0.1314,
+                "support": 1584,
+                "predicted": 1309,
+                "true_positives": 190
+              }
+            }
+          },
+          "exact_strict": {
+            "mode": "strict",
+            "precision": 0.1451,
+            "recall": 0.1199,
+            "f1": 0.1314,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1451,
+                "recall": 0.1199,
+                "f1": 0.1314,
+                "support": 1584,
+                "predicted": 1309,
+                "true_positives": 190
+              }
+            }
+          },
+          "relaxed": {
+            "precision": 0.5256,
+            "recall": 0.4343,
+            "f1": 0.4756,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.5256,
+                "recall": 0.4343,
+                "f1": 0.4756,
+                "support": 1584,
+                "predicted": 1309,
+                "true_positives": 688
+              }
+            }
+          },
+          "token_level": {
+            "micro_precision": 0.3423,
+            "micro_recall": 0.4153,
+            "micro_f1": 0.3753,
+            "macro_precision": 0.3423,
+            "macro_recall": 0.4153,
+            "macro_f1": 0.3753,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.3423,
+                "recall": 0.4153,
+                "f1": 0.3753,
+                "support": 7065
+              }
+            }
+          },
+          "error_taxonomy": {
+            "counts": {
+              "exact_match": 190,
+              "boundary_error": 498,
+              "wrong_type": 0,
+              "missed": 896,
+              "spurious": 621
+            },
+            "total_gold": 1584,
+            "total_predicted": 1309,
+            "per_label": {
+              "ACTION": {
+                "spurious": 621,
+                "missed": 896,
+                "boundary_error": 498,
+                "exact_match": 190
+              }
+            },
+            "type_confusion_pairs": {}
+          }
+        },
+        {
+          "exact_default": {
+            "mode": "default",
+            "precision": 0.1441,
+            "recall": 0.1398,
+            "f1": 0.1419,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1441,
+                "recall": 0.1398,
+                "f1": 0.1419,
+                "support": 1445,
+                "predicted": 1402,
+                "true_positives": 202
+              }
+            }
+          },
+          "exact_strict": {
+            "mode": "strict",
+            "precision": 0.1441,
+            "recall": 0.1398,
+            "f1": 0.1419,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1441,
+                "recall": 0.1398,
+                "f1": 0.1419,
+                "support": 1445,
+                "predicted": 1402,
+                "true_positives": 202
+              }
+            }
+          },
+          "relaxed": {
+            "precision": 0.4822,
+            "recall": 0.4678,
+            "f1": 0.4749,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.4822,
+                "recall": 0.4678,
+                "f1": 0.4749,
+                "support": 1445,
+                "predicted": 1402,
+                "true_positives": 676
+              }
+            }
+          },
+          "token_level": {
+            "micro_precision": 0.3833,
+            "micro_recall": 0.3571,
+            "micro_f1": 0.3697,
+            "macro_precision": 0.3833,
+            "macro_recall": 0.3571,
+            "macro_f1": 0.3697,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.3833,
+                "recall": 0.3571,
+                "f1": 0.3697,
+                "support": 8121
+              }
+            }
+          },
+          "error_taxonomy": {
+            "counts": {
+              "exact_match": 202,
+              "boundary_error": 474,
+              "wrong_type": 0,
+              "missed": 769,
+              "spurious": 726
+            },
+            "total_gold": 1445,
+            "total_predicted": 1402,
+            "per_label": {
+              "ACTION": {
+                "boundary_error": 474,
+                "missed": 769,
+                "exact_match": 202,
+                "spurious": 726
+              }
+            },
+            "type_confusion_pairs": {}
+          }
+        },
+        {
+          "exact_default": {
+            "mode": "default",
+            "precision": 0.1296,
+            "recall": 0.1173,
+            "f1": 0.1231,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1296,
+                "recall": 0.1173,
+                "f1": 0.1231,
+                "support": 1424,
+                "predicted": 1289,
+                "true_positives": 167
+              }
+            }
+          },
+          "exact_strict": {
+            "mode": "strict",
+            "precision": 0.1296,
+            "recall": 0.1173,
+            "f1": 0.1231,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.1296,
+                "recall": 0.1173,
+                "f1": 0.1231,
+                "support": 1424,
+                "predicted": 1289,
+                "true_positives": 167
+              }
+            }
+          },
+          "relaxed": {
+            "precision": 0.4686,
+            "recall": 0.4242,
+            "f1": 0.4453,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.4686,
+                "recall": 0.4242,
+                "f1": 0.4453,
+                "support": 1424,
+                "predicted": 1289,
+                "true_positives": 604
+              }
+            }
+          },
+          "token_level": {
+            "micro_precision": 0.3438,
+            "micro_recall": 0.4012,
+            "micro_f1": 0.3703,
+            "macro_precision": 0.3438,
+            "macro_recall": 0.4012,
+            "macro_f1": 0.3703,
+            "per_label": {
+              "ACTION": {
+                "precision": 0.3438,
+                "recall": 0.4012,
+                "f1": 0.3703,
+                "support": 6929
+              }
+            }
+          },
+          "error_taxonomy": {
+            "counts": {
+              "exact_match": 167,
+              "boundary_error": 437,
+              "wrong_type": 0,
+              "missed": 820,
+              "spurious": 685
+            },
+            "total_gold": 1424,
+            "total_predicted": 1289,
+            "per_label": {
+              "ACTION": {
+                "boundary_error": 437,
+                "spurious": 685,
+                "missed": 820,
+                "exact_match": 167
+              }
+            },
+            "type_confusion_pairs": {}
+          }
+        }
+      ],
+      "pooled": {
+        "exact_default": {
+          "mode": "default",
+          "precision": 0.1398,
+          "recall": 0.1255,
+          "f1": 0.1323,
+          "per_label": {
+            "ACTION": {
+              "precision": 0.1398,
+              "recall": 0.1255,
+              "f1": 0.1323,
+              "support": 4453,
+              "predicted": 4000,
+              "true_positives": 559
+            }
+          }
+        },
+        "exact_strict": {
+          "mode": "strict",
+          "precision": 0.1398,
+          "recall": 0.1255,
+          "f1": 0.1323,
+          "per_label": {
+            "ACTION": {
+              "precision": 0.1398,
+              "recall": 0.1255,
+              "f1": 0.1323,
+              "support": 4453,
+              "predicted": 4000,
+              "true_positives": 559
+            }
+          }
+        },
+        "relaxed": {
+          "precision": 0.492,
+          "recall": 0.4419,
+          "f1": 0.4656,
+          "per_label": {
+            "ACTION": {
+              "precision": 0.492,
+              "recall": 0.4419,
+              "f1": 0.4656,
+              "support": 4453,
+              "predicted": 4000,
+              "true_positives": 1968
+            }
+          }
+        },
+        "token_level": {
+          "micro_precision": 0.3556,
+          "micro_recall": 0.3895,
+          "micro_f1": 0.3718,
+          "macro_precision": 0.3556,
+          "macro_recall": 0.3895,
+          "macro_f1": 0.3718,
+          "per_label": {
+            "ACTION": {
+              "precision": 0.3556,
+              "recall": 0.3895,
+              "f1": 0.3718,
+              "support": 22115
+            }
+          }
+        },
+        "error_taxonomy": {
+          "counts": {
+            "exact_match": 559,
+            "boundary_error": 1409,
+            "wrong_type": 0,
+            "missed": 2485,
+            "spurious": 2032
+          },
+          "total_gold": 4453,
+          "total_predicted": 4000,
+          "per_label": {
+            "ACTION": {
+              "spurious": 2032,
+              "missed": 2485,
+              "boundary_error": 1409,
+              "exact_match": 559
+            }
+          },
+          "type_confusion_pairs": {}
+        }
+      }
+    }
+  ]
+}

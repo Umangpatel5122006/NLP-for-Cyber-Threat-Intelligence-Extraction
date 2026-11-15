@@ -1,6 +1,7 @@
 # Project progress, in order
 
-Latest checkpoint: [train-only action CRF comparison](ACTION_EXPERIMENT.md).
+Latest checkpoint: [action boundary features and model upgrade](ACTION_BOUNDARY_FEATURES.md).
+The earlier [train-only action comparison](ACTION_EXPERIMENT.md) step is committed.
 The [local browser workbench and API](BROWSER_WORKBENCH.md) step is committed.
 The [consolidated findings](FINDING_MERGE.md) step is committed.
 The [original-report evidence offsets](OFFSET_MAPPING.md) step is committed.
@@ -15,14 +16,14 @@ The relevance baseline now trains on the official train split, saves/reloads
 its fitted TF-IDF + Logistic Regression pipeline, and annotates live sentences.
 Dev sentence F1 is 0.6793 at threshold 0.5. Entity and action CRFs now also have
 saved artifacts, full-dev reload checks and live document modules. New metrics
-version 2 all-dev exact F1 is 0.2596 (entities) and 0.1379 (actions), using the
+version 2 all-dev exact F1 is 0.2596 (entities) and 0.1551 (actions), using the
 existing processed BIO labels. The official test split is still reserved.
-All 146 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
+All 155 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
 native imports remain blocked by Application Control without policy changes.
 Deep learning is excluded. Allowed NER choices are CRF, MEMM, and token Logistic
 Regression; historical neural experiments are guarded against execution.
-The committed browser step passed its classical/frontend validation workflow
-in GitHub Actions. The new action-experiment tests await their remote run after
+The committed action comparison passed its classical validation workflow
+in GitHub Actions. The new action-feature tests await their remote run after
 commit/push. See the latest checkpoint for evidence and
 [WSL_SETUP.md](../docs/WSL_SETUP.md) for working local commands.
 
@@ -45,9 +46,16 @@ train reports retained the baseline (pooled exact F1 0.1265 vs 0.1208/0.1209).
 The decision was frozen before dev loading. A full-train baseline refit then
 reproduced all frozen dev predictions exactly; neither active model changed.
 
-Next: retain existing useful features and test action-specific lexical/
-morphological boundary features with train-only selection. Wider context and
-removing entity-oriented cues did not meet the improvement criterion.
+The follow-up adds optional action morphology and a training-only boundary
+dictionary. The combined profile passed train-only CV (0.1323 vs 0.1265),
+then improved dev exact F1 to 0.1551. It is now the active action model, with
+the previous artifact backed up. Restart the review server to load it.
+Entity inference and the frontend schema remain compatible. The full Chrome
+check passed using the promoted artifact.
+
+Next: reduce background false positives using a train-only joint relevance/
+action-gating experiment. More spurious spans remain a tradeoff of the new
+model; final-test performance is not yet known.
 Model accuracy, technique classification, remaining extraction tasks and final
 frozen evaluation still need work. NER confidence remains unavailable (`null`)
 and no aggregate confidence is invented during merging.

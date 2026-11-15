@@ -17,7 +17,7 @@ Last synced: 2026-11-15
 | P2 | Preprocessing | **Done** | cleaner, defanger, language detector, sentence splitter, spaCy tokenizer |
 | P3 | IOC extraction | **Done** | `ioc_finder` in pipeline, `ioc_regex` as fallback |
 | P4 | NER training data (BIO) | **Done** | two layers (`entities`, `action`), span sanitation, 99-100% retention, audit passed |
-| P5 | Statistical NER | **Saved classical baselines integrated** | CRF entity/action artifacts, train/dev CLI and reports; MEMM and token LogReg persistence tested |
+| P5 | Statistical NER | **Saved classical models integrated** | Selected action boundary profile, train/dev reports; CRF/MEMM/token LogReg persistence |
 | P5b | Relevance filter | **Reusable module complete** | saved TF-IDF + LogReg, train/dev CLI, opt-in document pipeline; threshold work remains |
 | P6 | Attack-technique classifier | Not started | labels exist in SMAH-CTI (`tactic`, `techniques`) |
 | P6b | Vulnerabilities and affected systems (new) | Not started | no gold labels in SMAH-CTI |
@@ -33,11 +33,12 @@ evidence mapping covers cleaner/defanger changes. Consolidated findings now keep
 per-source evidence, actual host components and explicit overlap information.
 The local browser workbench now reuses this pipeline through an API, with report
 input/upload, original highlights, filters, evidence details and JSON export.
-All 146 tests pass in WSL; the previous Windows API and Chrome UI checks remain
-recorded in [BROWSER_WORKBENCH.md](BROWSER_WORKBENCH.md). The browser commit
-passed GitHub Actions. The first train-only action CRF comparison is complete:
-baseline retained, active models unchanged. See [ACTION_EXPERIMENT.md](ACTION_EXPERIMENT.md).
-Next: action-specific boundary features and remaining classical extraction tasks;
+All 155 tests pass in WSL. The new action boundary profile passed train-only
+selection and improved dev exact F1 from 0.1379 to 0.1551; it is now the default
+with the prior model backed up. Chrome checks pass with this artifact. See
+[ACTION_BOUNDARY_FEATURES.md](ACTION_BOUNDARY_FEATURES.md). The prior negative
+comparison remains in [ACTION_EXPERIMENT.md](ACTION_EXPERIMENT.md).
+Next: background false-positive reduction and remaining classical extraction tasks;
 the official test split stays reserved.
 
 ---

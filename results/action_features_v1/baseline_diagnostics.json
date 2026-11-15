@@ -1,0 +1,148 @@
+{
+  "gold_action_spans": 608,
+  "predicted_action_spans": 654,
+  "predictions_on_irrelevant_dev_sentences": 289,
+  "error_taxonomy": {
+    "counts": {
+      "exact_match": 87,
+      "boundary_error": 206,
+      "wrong_type": 0,
+      "missed": 315,
+      "spurious": 361
+    },
+    "total_gold": 608,
+    "total_predicted": 654,
+    "per_label": {
+      "ACTION": {
+        "missed": 315,
+        "boundary_error": 206,
+        "spurious": 361,
+        "exact_match": 87
+      }
+    },
+    "type_confusion_pairs": {}
+  },
+  "example_sampling": "20 gold spans with overlapping non-exact predictions; random seed 42",
+  "boundary_examples": [
+    {
+      "uid": "mitre-81_mitre_report-p1-s34-033924",
+      "doc_id": "81_mitre_report",
+      "gold": "executed",
+      "predicted": "executed using WMI and its main purpose appears to be running secondary payloads"
+    },
+    {
+      "uid": "aptnotes-16_aptnotes_report-p3-s17-70262d",
+      "doc_id": "16_aptnotes_report",
+      "gold": "leveraged the popular internet service and email provider Ukr.net and pretended to be from either \u201c the Embassy of Ukraine to the US \u201d or \u201c the Embassy of Ukraine in the US",
+      "predicted": "leveraged the popular internet service and email provider Ukr.net"
+    },
+    {
+      "uid": "aptnotes-10_aptnotes_report-p3-s27-69bd4f",
+      "doc_id": "10_aptnotes_report",
+      "gold": "compares it with an embedded MachineGuid value",
+      "predicted": "compares"
+    },
+    {
+      "uid": "mitre-97_mitre_report-p1-s43-179b98",
+      "doc_id": "97_mitre_report",
+      "gold": "scanning and exploiting internet facing servers",
+      "predicted": "exploiting internet facing servers for initial access"
+    },
+    {
+      "uid": "crowdstrike-46_crowdstrike_report-p24-s216-a1283a",
+      "doc_id": "46_crowdstrike_report",
+      "gold": "exploiting stolen cloud credentials",
+      "predicted": "exploiting stolen cloud credentials to access AI services to fuel an expanding criminal market for unauthorized LLM queries"
+    },
+    {
+      "uid": "crowdstrike-46_crowdstrike_report-p21-s167-32b3b5",
+      "doc_id": "46_crowdstrike_report",
+      "gold": "deploying their characteristic BeaverTail and InvisibleFerret malware families",
+      "predicted": "deploying"
+    },
+    {
+      "uid": "crowdstrike-46_crowdstrike_report-p18-s141-e850fc",
+      "doc_id": "46_crowdstrike_report",
+      "gold": "enable persistent access to compromised accounts",
+      "predicted": "using this technique often register their own device for MFA to enable persistent access to compromised accounts"
+    },
+    {
+      "uid": "crowdstrike-46_crowdstrike_report-p12-s83-a22741",
+      "doc_id": "46_crowdstrike_report",
+      "gold": "introducing a backdoor account to establish persistence",
+      "predicted": "introducing a backdoor account"
+    },
+    {
+      "uid": "mitre-97_mitre_report-p1-s35-00f6b2",
+      "doc_id": "97_mitre_report",
+      "gold": "waiting for a specific moment to deploy",
+      "predicted": "waiting for a specific moment to deploy the capability"
+    },
+    {
+      "uid": "aptnotes-16_aptnotes_report-p2-s12-19a6ee",
+      "doc_id": "16_aptnotes_report",
+      "gold": "focused its email attempts on scheduling a video or phone call meeting",
+      "predicted": "focused its email attempts on scheduling a video"
+    },
+    {
+      "uid": "mitre-97_mitre_report-p1-s4-db659e",
+      "doc_id": "97_mitre_report",
+      "gold": "deploying a new variant",
+      "predicted": "deploying a new variant of CADDYWIPER"
+    },
+    {
+      "uid": "sentinel-54_SentinelOne_report-p1-s29-d65f96",
+      "doc_id": "54_SentinelOne_report",
+      "gold": "executes",
+      "predicted": "downloads and executes a malicious x86 - 64 binary sourced"
+    },
+    {
+      "uid": "mitre-78_mitre_report-p1-s50-f2a683",
+      "doc_id": "78_mitre_report",
+      "gold": "executes",
+      "predicted": "downloads and executes from memory a .NET executable"
+    },
+    {
+      "uid": "aptnotes-10_aptnotes_report-p8-s82-3d36c3",
+      "doc_id": "10_aptnotes_report",
+      "gold": "serves as the initial infection vector , enabling victim profiling and facilitating the delivery of additional payloads",
+      "predicted": "facilitating the delivery of additional payloads"
+    },
+    {
+      "uid": "mitre-81_mitre_report-p1-s15-7f41e2",
+      "doc_id": "81_mitre_report",
+      "gold": "load",
+      "predicted": "load a Base64 - encoded string"
+    },
+    {
+      "uid": "mandiant-29_mandiant_report-p1-s42-cd3de6",
+      "doc_id": "29_mandiant_report",
+      "gold": "allowing BUSHWALK to remain in an undetected dormant state by creatively modifying a Perl module and LotL technique by using built - in system utilities unique to Ivanti products",
+      "predicted": "creatively modifying a Perl module and LotL technique"
+    },
+    {
+      "uid": "aptnotes-10_aptnotes_report-p3-s29-10383a",
+      "doc_id": "10_aptnotes_report",
+      "gold": "continues its malicious activities",
+      "predicted": "reads the payload from a hard - coded file path and continues its malicious activities"
+    },
+    {
+      "uid": "aptnotes-10_aptnotes_report-p3-s29-10383a",
+      "doc_id": "10_aptnotes_report",
+      "gold": "The malware then reads the payload from a hard - coded file path",
+      "predicted": "reads the payload from a hard - coded file path and continues its malicious activities"
+    },
+    {
+      "uid": "aptnotes-10_aptnotes_report-p8-s84-e12f16",
+      "doc_id": "10_aptnotes_report",
+      "gold": "compromised a victim by delivering LPEClient via a Trojanized VNC or Putty client",
+      "predicted": "compromised a victim by delivering LPEClient via a Trojanized VNC or Putty client for an intermediate infection"
+    },
+    {
+      "uid": "crowdstrike-46_crowdstrike_report-p18-s136-1c5d91",
+      "doc_id": "46_crowdstrike_report",
+      "gold": "exfiltrate data from cloud - based software as a service ( SaaS ) applications",
+      "predicted": "exfiltrate data"
+    }
+  ]
+}

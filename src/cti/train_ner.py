@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def train_from_config(config_path, raw_dir, splits_dir, processed_dir, model_dir,
-                      results_dir, layers=("entities", "action"), run_name="ner_v2"):
+                      results_dir, layers=("entities", "action"), run_name="ner_current"):
     if not re.fullmatch(r"[A-Za-z0-9_-]+", run_name):
         raise ValueError("run_name must be a filename prefix using letters, digits, underscores or hyphens.")
     if not layers or any(layer not in ("entities", "action") for layer in layers):
@@ -68,6 +68,13 @@ def train_from_config(config_path, raw_dir, splits_dir, processed_dir, model_dir
         name = settings["model"]
         importlib.import_module(CLASSICAL_NER_MODULES[name])
         tagger = create(name, **settings.get("parameters", {}))
+        if name == "crf_tagger":
+            from cti.models.action_crf import PROFILE_FLAGS, create_crf_tagger
+            features = settings.get("parameters", {}).get("feature_config") or {}
+            if any(features.get(flag, False) for flag in PROFILE_FLAGS):
+                if layer != "action":
+                    raise ValueError("Action feature profiles require the action layer.")
+            tagger = create_crf_tagger(**settings.get("parameters", {}))
         unknown_parameters = set(settings.get("parameters", {})) - set(inspect.signature(type(tagger)).parameters)
         if unknown_parameters:
             raise ValueError(f"Unsupported {name} parameters: {sorted(unknown_parameters)}.")
@@ -132,7 +139,7 @@ def main(argv=None):
     parser.add_argument("--model-dir", type=Path, default=Path("models"))
     parser.add_argument("--results-dir", type=Path, default=Path("results"))
     parser.add_argument("--layer", choices=("entities", "action", "both"), default="both")
-    parser.add_argument("--run-name", default="ner_v2")
+    parser.add_argument("--run-name", default="ner_current")
     args = parser.parse_args(argv)
     layers = ("entities", "action") if args.layer == "both" else (args.layer,)
     train_from_config(args.config, args.raw_dir, args.splits_dir, args.processed_dir,

@@ -1,0 +1,13 @@
+{
+  "promoted_at_utc": "2026-11-15T07:57:11.166880+00:00",
+  "selected": "action_boundaries",
+  "old_action_sha256": "92beaafb3cc27e0267e9f8f99b0cc6d79b61094da32de0f4f860c80c054cfc6d",
+  "new_action_sha256": "1732d7e0a1d4c5be1433dff1daf31c2893e0702b43b70142840d871e4d45da15",
+  "previous_model_backup": "models/action_features_v1/previous_active_action.joblib",
+  "train_cv_baseline_exact_f1": 0.1265,
+  "train_cv_selected_exact_f1": 0.1323,
+  "dev_baseline_exact_f1": 0.1379,
+  "dev_selected_exact_f1": 0.1551,
+  "test_split_used": false,
+  "restart_review_server_required": true
+}

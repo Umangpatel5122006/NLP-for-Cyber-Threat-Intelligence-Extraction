@@ -4,6 +4,7 @@ Run from the repository root after python -m cti.experiment_action.
 Only train/dev annotations are selected; the official test IDs are exclusion guards.
 """
 
+import argparse
 import hashlib
 import json
 import random
@@ -19,8 +20,15 @@ from cti.models.ner_artifact import sha256_file
 from cti.models.ner_data import load_aligned_ner
 
 
-def main():
-    folder = Path("results/action_cv_v1")
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--results-dir", type=Path, default=Path("results/action_cv_v1"))
+    parser.add_argument("--model-dir", type=Path, default=Path("models/action_cv_v1"))
+    parser.add_argument("--config", type=Path, default=Path("configs/action_experiment.yaml"))
+    parser.add_argument("--active-action-report", type=Path, default=Path("results/ner_v2_action.json"),
+                        help="Reference artifact report for the current active action model.")
+    args = parser.parse_args(argv)
+    folder = args.results_dir
     cv = json.loads((folder / "cv.json").read_text(encoding="utf-8"))
     summary = json.loads((folder / "summary.json").read_text(encoding="utf-8"))
     selection = json.loads((folder / "selection.json").read_text(encoding="utf-8"))
@@ -40,13 +48,13 @@ def main():
     assert sorted(seen) == sorted(set(train.doc_ids))
     for name, digest in cv["provenance"]["source_sha256_lf"].items():
         assert sha256_file(name) == digest
-    assert sha256_file("configs/action_experiment.yaml") == cv["provenance"]["config_sha256_lf"]
+    assert sha256_file(args.config) == cv["provenance"]["config_sha256_lf"]
 
     per_doc = {}
     for report in cv["candidates"]:
         predictions = [None] * len(train.tokens)
         for number, fold in enumerate(cv["folds"], 1):
-            cache = json.loads(Path(f"models/action_cv_v1/{report['id']}_fold_{number}.json").read_text(encoding="utf-8"))
+            cache = json.loads((args.model_dir / f"{report['id']}_fold_{number}.json").read_text(encoding="utf-8"))
             assert cache["signature"]["fingerprint"] == _digest(cv["provenance"])
             decoded = cache["predictions"]
             assert cache["predictions_sha256"] == _digest(decoded)
@@ -124,14 +132,15 @@ def main():
     }
     (folder / "baseline_diagnostics.json").write_text(json.dumps(diagnostics, indent=2) + "\n", encoding="utf-8")
     for layer in ("entities", "action"):
-        report = json.loads(Path(f"results/ner_v2_{layer}.json").read_text(encoding="utf-8"))
+        reference = args.active_action_report if layer == "action" else Path("results/ner_v2_entities.json")
+        report = json.loads(reference.read_text(encoding="utf-8"))
         assert hashlib.sha256(Path(f"models/ner_{layer}.joblib").read_bytes()).hexdigest() == report["artifact"]["artifact_sha256"]
     message = (
         "All 9 fold caches independently re-scored; metrics equal stored reports.\n"
         "70 training reports used once each for validation; dev/test report IDs excluded from CV.\n"
         "Selection rechecked from train-only results.\n"
         "Refitted baseline reproduces all 1238 frozen dev predictions and every reported metric exactly.\n"
-        "Existing entity/action model hashes unchanged.\n"
+        "Active entity/action model hashes match the supplied reference reports.\n"
         "Experiment source/config hashes match the run provenance.\n"
     )
     (folder / "integrity_validation.txt").write_text(message, encoding="utf-8")

@@ -1,0 +1,6 @@
+All 9 fold caches independently re-scored; metrics equal stored reports.
+70 training reports used once each for validation; dev/test report IDs excluded from CV.
+Selection rechecked from train-only results.
+Refitted baseline reproduces all 1238 frozen dev predictions and every reported metric exactly.
+Active entity/action model hashes match the supplied reference reports.
+Experiment source/config hashes match the run provenance.

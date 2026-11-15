@@ -62,16 +62,18 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** all **146 tests pass** in an isolated Ubuntu-24.04 WSL
+**Current validation:** all **155 tests pass** in an isolated Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
-saved-NER, original-offset, merger, API and eight action-experiment tests;
-see `results/action_experiment_validation.txt` and
+saved-NER, original-offset, merger, API and action-experiment/profile tests;
+see `results/action_features_validation.txt` and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
 were changed. The 17 API tests also pass in Windows Python 3.11, and actual
 Chrome checks cover the responsive frontend and real saved-model inference.
-The latest [action checkpoint](checkpoints/ACTION_EXPERIMENT.md) records a
-train-only CRF comparison that retained the baseline. The
+The latest [boundary-feature checkpoint](checkpoints/ACTION_BOUNDARY_FEATURES.md)
+records the selected action profile and active-model upgrade. The earlier
+[action checkpoint](checkpoints/ACTION_EXPERIMENT.md) records the negative
+context/regularization comparison. The
 [browser checkpoint](checkpoints/BROWSER_WORKBENCH.md) records the local UI/API
 and its validation. The [merge checkpoint](checkpoints/FINDING_MERGE.md) records consolidated
 findings. The [offset checkpoint](checkpoints/OFFSET_MAPPING.md) records original
@@ -89,9 +91,9 @@ The [Classical NLP tests workflow](.github/workflows/classical-nlp.yml)
 checks the complete classical suite on Ubuntu/Python 3.11 after a push or pull
 request and can also be run manually in Actions. It checks tokenizer startup,
 excludes neural packages, and records test/train-dev validation artifacts.
-The committed browser step passed its classical/frontend validation workflow in
-[GitHub Actions](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43686129829).
-The new experiment tests join normal full-suite discovery; this step awaits its
+The committed action experiment passed its classical validation workflow in
+[GitHub Actions](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43689971420).
+The new feature tests join normal full-suite discovery; this step awaits its
 remote run after commit/push.
 
 ---
@@ -158,8 +160,8 @@ PowerShell at the repository root:
 wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.train_ner'
 
 # Analyze a report with preprocessing, IOC extraction and both saved NER layers.
-wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.analyze --input examples/sample_report.txt --output results/ner_demo.json'
-Get-Content results/ner_demo.json
+wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.analyze --input examples/sample_report.txt --output results/ner_current_demo.json'
+Get-Content results/ner_current_demo.json
 ```
 
 In another working pinned environment, run the same `cti.train_ner` and
@@ -172,13 +174,15 @@ sentences**, with no relevance gate. The official test split is unused.
 | Layer | All-dev exact P | All-dev exact R | All-dev exact F1 | All-dev relaxed F1 | All-dev token macro F1 |
 |---|---:|---:|---:|---:|---:|
 | Entities | 0.2470 | 0.2735 | 0.2596 | 0.3258 | 0.2865 |
-| Action | 0.1330 | 0.1431 | 0.1379 | 0.4643 | 0.3957 |
+| Action + boundary features | 0.1419 | 0.1711 | 0.1551 | 0.4966 | 0.4231 |
 
-These metrics version 2 results establish saved-model baselines. Action
-boundaries still need improvement. Evaluation uses the existing processed BIO
-labels, rather than raw-span or end-to-end report annotations. The corresponding
-`results/ner_v2_*` files retain metrics, provenance and aligned dev predictions;
-both models produce identical full-dev predictions after reload.
+These metrics version 2 results describe the current saved models. Action
+boundaries and spurious spans still need improvement. Evaluation uses the
+existing processed BIO labels, rather than raw-span or end-to-end report
+annotations. `results/ner_v2_*` preserves the earlier baseline;
+`results/action_features_v1/action_boundaries_dev.json` records the selected
+action model. Normal retraining writes `ner_current_*` reports to preserve that
+history. Saved models reproduce their dev predictions after reload.
 
 `configs/ner_training.yaml` selects training settings; `configs/config_ner.yaml`
 selects document modules. Artifacts and manifests are saved under ignored
@@ -223,7 +227,28 @@ schema, merge rules, limitations, test evidence and review commands.
 
 ---
 
-## Train-Only Action CRF Comparison
+## Action Boundary Features
+
+The selected action CRF adds English inflection/function-word cues and
+stem-level boundary statistics fitted on training data only. Current-sentence
+counts are excluded when constructing its training features. Existing useful
+feature groups remain enabled; no trained POS parser, neural model or extra
+dataset is introduced.
+
+Three-fold report-grouped training CV selected the combined profile (pooled
+exact F1 **0.1323** vs **0.1265** baseline), with wins in two folds. The choice
+was frozen before dev evaluation. All-dev action exact F1 then improved from
+**0.1379 to 0.1551**, with 104 exact matches vs 87. Spurious spans increased
+from 361 to 400, so reducing background predictions remains important.
+
+The selected artifact is now the default. Restart the running web server to
+load it. The previous model is backed up under ignored `models/action_features_v1/`.
+See [the feature checkpoint](checkpoints/ACTION_BOUNDARY_FEATURES.md) for the
+protocol, uncertainty, tradeoffs and reproduction commands.
+
+---
+
+## Earlier Train-Only Action CRF Comparison
 
 The fixed `configs/action_experiment.yaml` comparison used three report-grouped
 folds across the 70 official train reports. It fit on relevant training
@@ -238,8 +263,9 @@ sentences and evaluated every sentence in each validation fold.
 Neither variant met the predefined minimum-gain and fold-consistency rule.
 Selection was frozen before dev evaluation; losing variants were not scored on
 dev. The baseline's full-train refit reproduced all 1,238 saved dev predictions
-exactly, including all-dev action exact F1 **0.1379**. Active model files and the
-working browser app are unchanged. No accuracy improvement is claimed.
+exactly, including all-dev action exact F1 **0.1379**. That experiment made no
+active-model change. The later boundary-feature experiment above updates the
+action model.
 
 `python -m cti.experiment_action` reproduces/resumes the comparison in a working
 classical runtime. See [the action checkpoint](checkpoints/ACTION_EXPERIMENT.md)
