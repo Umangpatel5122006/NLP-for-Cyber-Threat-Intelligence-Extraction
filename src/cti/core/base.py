@@ -20,10 +20,39 @@ class Entity:
 
 
 @dataclass
+class Finding:
+    id: str
+    text: str
+    label: str
+    start: int
+    end: int
+    canonical_value: str | None
+    canonical_status: str
+    original_start: int
+    original_end: int
+    original_text: str
+    sources: list[str]
+    observed_labels: list[str]
+    evidence: list[Entity]
+    role: str = "primary"
+    parent_ids: list[str] = field(default_factory=list)
+    component_ids: list[str] = field(default_factory=list)
+
+
+@dataclass
+class FindingOverlap:
+    left_id: str
+    right_id: str
+    kind: str
+
+
+@dataclass
 class Document:
     text: str
     entities: list[Entity] = field(default_factory=list)
     metadata: dict = field(default_factory=dict)
+    findings: list[Finding] = field(default_factory=list)
+    overlaps: list[FindingOverlap] = field(default_factory=list)
     original_text: str = field(init=False)
 
     def __post_init__(self):
@@ -43,7 +72,15 @@ class Document:
             raise ValueError("A text transform must preserve the supplied original report.")
         if updated.text != self.text and (self.entities or self.metadata.get("sentences")):
             raise ValueError("Run text normalization before sentence splitting and entity extraction.")
+        if updated.text != self.text:
+            self.invalidate_findings()
         self.text, self._text_map = updated.text, updated
+
+    def invalidate_findings(self):
+        """Derived merge output must be rebuilt after detector/text changes."""
+        self.findings.clear()
+        self.overlaps.clear()
+        self.metadata.pop("merge", None)
 
     def original_span(self, start, end):
         self.validate_text_tracking()

@@ -17,6 +17,7 @@ _BUILTIN_MODULES = {
     "relevance_filter": "cti.models.relevance",
     "ner_entities": "cti.extractors.ner",
     "ner_action": "cti.extractors.ner",
+    "result_merger": "cti.output.merger",
 }
 
 

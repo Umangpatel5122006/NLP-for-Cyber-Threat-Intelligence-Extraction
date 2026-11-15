@@ -2,6 +2,12 @@
 
 Date: 2026-11-15 (Asia/Calcutta)
 
+Follow-up: this step was committed as `3bf5cae` and its
+[GitHub Actions run](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43679041828)
+passed all 96 tests, real training and original-evidence inference checks. The
+next [merge checkpoint](FINDING_MERGE.md) adds consolidated findings. The original
+implementation record below is preserved.
+
 ## Result
 
 The document pipeline now preserves the supplied report as `original_text` and

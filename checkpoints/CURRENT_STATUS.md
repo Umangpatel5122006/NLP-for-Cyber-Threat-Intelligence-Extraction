@@ -1,6 +1,7 @@
 # Project progress, in order
 
-Latest checkpoint: [original-report evidence offsets](OFFSET_MAPPING.md).
+Latest checkpoint: [consolidated findings and frontend readiness](FINDING_MERGE.md).
+The [original-report evidence offsets](OFFSET_MAPPING.md) step is committed.
 The [saved classical NER and document inference](NER_INTEGRATION.md) step is committed.
 The preceding [classical-only methods and CI](CLASSICAL_SCOPE.md) step is committed.
 The [saved sentence relevance module](RELEVANCE_MODULE.md) is committed.
@@ -14,20 +15,27 @@ Dev sentence F1 is 0.6793 at threshold 0.5. Entity and action CRFs now also have
 saved artifacts, full-dev reload checks and live document modules. New metrics
 version 2 all-dev exact F1 is 0.2596 (entities) and 0.1379 (actions), using the
 existing processed BIO labels. The official test split is still reserved.
-All 96 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
+All 121 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
 native imports remain blocked by Application Control without policy changes.
 Deep learning is excluded. Allowed NER choices are CRF, MEMM, and token Logistic
 Regression; historical neural experiments are guarded against execution.
-The committed NER step passed 78 tests, relevance persistence, both real CRF
-training/reload runs and inference in GitHub Actions. The current original-span
+The committed offset step passed 96 tests, relevance persistence, both real CRF
+training/reload runs and original-offset inference in GitHub Actions. The current merge
 assertions await a remote run after commit/push. See the latest checkpoint for evidence and
 [WSL_SETUP.md](../docs/WSL_SETUP.md) for working local commands.
 
 Original-report mapping is implemented for cleaning/defanging. The document
 preserves `original_text`, and entities/sentences include original evidence
-spans alongside normalized offsets. All 18 offset tests also pass on Windows.
-Next: define an IOC/NER merge policy before frontend highlighting. NER confidence
-remains explicitly unavailable (`null`).
+spans alongside normalized offsets. The configured pipelines now add consolidated
+`findings` and typed `overlaps`, retaining detector observations and copied source
+evidence. All 25 new merger tests also pass on Windows. Mixed-case IOC source
+alignment is fixed without changing URL path case.
+
+After review of this step, a basic prediction-review frontend can be next:
+report input, original-text highlighting, primary findings and source details.
+Model accuracy, technique classification, remaining extraction tasks and final
+frozen evaluation still need work. NER confidence remains unavailable (`null`)
+and no aggregate confidence is invented during merging.
 
 ## 1. Project goal and structure
 

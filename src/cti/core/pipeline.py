@@ -18,7 +18,7 @@ def load_all_modules():
 
     Configured document pipelines use lazy built-in registration instead.
     """
-    for pkg_name in ["cti.preprocessing", "cti.extractors", "cti.models"]:
+    for pkg_name in ["cti.preprocessing", "cti.extractors", "cti.models", "cti.output"]:
         pkg = importlib.import_module(pkg_name)
         for m in pkgutil.iter_modules(pkg.__path__):
             if pkg_name == "cti.models" and m.name in EXCLUDED_NER_MODELS:
@@ -28,7 +28,10 @@ def load_all_modules():
 
 class Pipeline:
     def __init__(self, modules):
-        self.modules = modules
+        self.modules = list(modules)
+        finalizers = [index for index, module in enumerate(self.modules) if module.name == "result_merger"]
+        if finalizers and finalizers != [len(self.modules) - 1]:
+            raise ValueError("result_merger must run once, after all extraction modules.")
 
     @classmethod
     def from_config(cls, path: str):

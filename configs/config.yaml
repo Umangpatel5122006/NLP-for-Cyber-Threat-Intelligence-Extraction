@@ -4,3 +4,4 @@ pipeline:
   - module: language_detector
   - module: sentence_splitter
   - module: ioc_finder        # swap to ioc_regex to use our hand-written version
+  - module: result_merger

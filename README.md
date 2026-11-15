@@ -38,13 +38,14 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** all **96 tests pass** in an isolated Ubuntu-24.04 WSL
+**Current validation:** all **121 tests pass** in an isolated Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
-16 saved-NER tests and 18 original-offset tests; see `results/offset_validation.txt` and
+saved-NER, original-offset and 25 merger tests; see `results/merge_validation.txt` and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
-were changed. The 18 offset tests also pass in Windows Python 3.11.
-The latest [offset checkpoint](checkpoints/OFFSET_MAPPING.md) records original
+were changed. The 25 merger tests also pass in Windows Python 3.11.
+The latest [merge checkpoint](checkpoints/FINDING_MERGE.md) records consolidated
+findings and frontend readiness. The [offset checkpoint](checkpoints/OFFSET_MAPPING.md) records original
 evidence projection; the [NER checkpoint](checkpoints/NER_INTEGRATION.md) records
 real training, dev results and document inference.
 
@@ -59,10 +60,10 @@ The [Classical NLP tests workflow](.github/workflows/classical-nlp.yml)
 checks the complete classical suite on Ubuntu/Python 3.11 after a push or pull
 request and can also be run manually in Actions. It checks tokenizer startup,
 excludes neural packages, and records test/train-dev validation artifacts.
-The committed NER step passed all 78 tests, relevance persistence, real
-entity/action training and inference in
-[GitHub Actions](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43639592315).
-This step adds original-evidence assertions to CI; the updated workflow has been
+The committed offset step passed all 96 tests, relevance persistence, real
+entity/action training and original-evidence inference checks in
+[GitHub Actions](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43679041828).
+This step adds finding/evidence assertions to CI; the updated workflow has been
 checked locally and awaits a remote run after commit/push.
 
 ---
@@ -78,6 +79,9 @@ The pipeline follows a modular, plug-in architecture configured via `configs/con
 6. **Classical NER Taggers**: Models implement the shared `BaseTagger` interface and can be selected by registry name: `crf_tagger`, `memm_tagger`, and `token_logreg`. Each is trained on token-aligned BIO tags across two specialized layers:
    - `entities` layer: `THREAT_ACTOR`, `MALWARE_TOOL`, `INFRASTRUCTURE`
    - `action` layer: `ACTION`
+7. **Result Merger (`result_merger`)**: Builds consolidated `findings` and typed
+   `overlaps`, retaining raw `entities`, original positions and per-source
+   evidence. It runs after all detectors in the configured pipelines.
 
 ---
 
@@ -160,6 +164,34 @@ composition or replacements prevent a one-to-one mapping. See
 [the offset checkpoint](checkpoints/OFFSET_MAPPING.md) for the JSON contract and
 [the NER checkpoint](checkpoints/NER_INTEGRATION.md)
 for review commands and limitations.
+
+---
+
+## Consolidated Findings and Frontend Readiness
+
+Configured pipelines now keep detector observations in `entities` and provide
+a consolidated `findings` view. Exact-span IOC/INFRASTRUCTURE matches carry both
+sources as evidence. Actual URL/email host domains are linked as components;
+actions and their nested entities remain separate. Conflicting labels and other
+overlaps remain available for review. Per-source confidence is preserved without
+an aggregate attack probability.
+
+```powershell
+wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.analyze --input examples/merge_report.txt --output results/merge_report_demo.json'
+Get-Content results/merge_report_demo.json
+```
+
+That synthetic report produces 13 observations consolidated into 9 findings,
+including 7 primary findings and 2 host components. Repeated occurrences keep
+separate positions. Canonical IOC values are additional fields and preserve
+the source spelling in evidence. Mixed-case IOC source alignment is also fixed;
+URL path/query/fragment case is preserved.
+
+After reviewing this merge step, the backend can support a basic frontend for
+report input, original-text highlighting, findings and source-evidence review.
+Model accuracy improvements and the remaining extraction tasks continue
+separately. See [the merge checkpoint](checkpoints/FINDING_MERGE.md) for the
+schema, merge rules, limitations, test evidence and review commands.
 
 ---
 

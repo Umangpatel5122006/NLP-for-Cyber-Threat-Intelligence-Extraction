@@ -1,0 +1,4 @@
+APT29 used Mimikatz to steal credentials.
+It contacted hxxps://EVIL[.]example[.]com/A and 185.22.10[.]5.
+Contact Admin[at]EVIL[.]example[.]com.
+The same address 185.22.10(.)5 appeared again.

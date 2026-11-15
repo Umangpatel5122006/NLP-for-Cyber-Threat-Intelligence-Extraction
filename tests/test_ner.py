@@ -16,6 +16,7 @@ from cti.models.crf import CRFTagger
 from cti.models.memm import MEMMTagger, TokenLogisticTagger
 from cti.models.ner_artifact import load_ner_tagger, save_ner_tagger
 from cti.models.ner_data import load_aligned_ner
+from cti.output.merger import ResultMerger
 from cti.preprocessing.tokenizer import tokenize
 
 
@@ -101,7 +102,7 @@ class NERPipelineTests(unittest.TestCase):
 
     def pipeline(self):
         config = yaml.safe_load((ROOT / "configs/config.yaml").read_text(encoding="utf-8"))
-        config["pipeline"] += [
+        config["pipeline"][-1:-1] = [
             {"module": "ner_entities", "params": {"model_path": str(self.entities)}},
             {"module": "ner_action", "params": {"model_path": str(self.action)}},
         ]
@@ -129,8 +130,14 @@ class NERPipelineTests(unittest.TestCase):
     def test_repeated_inference_deduplicates_own_findings(self):
         document = self.pipeline().run(TEXTS[0])
         before = list(document.entities)
+        merged_before = copy.deepcopy(document.findings)
+        self.assertTrue(merged_before)
         EntityNER(self.entities).process(document)
         self.assertEqual(document.entities, before)
+        self.assertEqual(document.findings, [])
+        self.assertNotIn("merge", document.metadata)
+        ResultMerger().process(document)
+        self.assertEqual(document.findings, merged_before)
 
     def test_optional_relevance_gate_requires_predictions_and_keeps_other_entities(self):
         document = self.pipeline().run(TEXTS[0])

@@ -33,6 +33,7 @@ class _NERModule(BaseModule):
                 remaining.append(finding)
                 seen.add(key)
         doc.entities[:] = sorted(remaining, key=lambda entity: (entity.start, entity.end, entity.label, entity.source))
+        doc.invalidate_findings()
         doc.metadata.setdefault("ner", {})[self.layer] = details
         return doc
 

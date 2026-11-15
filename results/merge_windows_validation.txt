@@ -1,0 +1,30 @@
+test_actions_and_their_nested_entities_remain_primary (test_merger.MergerTests.test_actions_and_their_nested_entities_remain_primary) ... ok
+test_ambiguous_specific_types_do_not_absorb_infrastructure (test_merger.MergerTests.test_ambiguous_specific_types_do_not_absorb_infrastructure) ... ok
+test_bracketed_ipv6_host_component_excludes_brackets (test_merger.MergerTests.test_bracketed_ipv6_host_component_excludes_brackets) ... ok
+test_broad_infrastructure_spans_are_retained (test_merger.MergerTests.test_broad_infrastructure_spans_are_retained) ... ok
+test_canonical_values_do_not_change_evidence_text_or_positions (test_merger.MergerTests.test_canonical_values_do_not_change_evidence_text_or_positions) ... ok
+test_configured_pipeline_exports_resolvable_evidence_and_relationships (test_merger.MergerTests.test_configured_pipeline_exports_resolvable_evidence_and_relationships) ... ok
+test_conflicting_exact_labels_are_retained (test_merger.MergerTests.test_conflicting_exact_labels_are_retained) ... ok
+test_crossing_spans_are_retained_and_identified (test_merger.MergerTests.test_crossing_spans_are_retained_and_identified) ... ok
+test_detector_reruns_invalidate_the_view_until_rebuilt (test_merger.MergerTests.test_detector_reruns_invalidate_the_view_until_rebuilt) ... ok
+test_domains_in_url_paths_and_queries_stay_primary (test_merger.MergerTests.test_domains_in_url_paths_and_queries_stay_primary) ... ok
+test_email_local_part_is_preserved_and_only_its_domain_is_a_component (test_merger.MergerTests.test_email_local_part_is_preserved_and_only_its_domain_is_a_component) ... ok
+test_empty_input_and_registry_creation (test_merger.MergerTests.test_empty_input_and_registry_creation) ... ok
+test_evidence_copies_recompute_original_fields_without_mutating_observations (test_merger.MergerTests.test_evidence_copies_recompute_original_fields_without_mutating_observations) ... ok
+test_exact_duplicates_are_removed_from_the_view_without_changing_raw_observations (test_merger.MergerTests.test_exact_duplicates_are_removed_from_the_view_without_changing_raw_observations) ... ok
+test_invalid_ioc_syntax_remains_visible_without_overriding_infrastructure (test_merger.MergerTests.test_invalid_ioc_syntax_remains_visible_without_overriding_infrastructure) ... ok
+test_invalid_observations_do_not_replace_an_existing_view (test_merger.MergerTests.test_invalid_observations_do_not_replace_an_existing_view) ... ok
+test_malformed_or_unsupported_values_retain_raw_evidence (test_merger.MergerTests.test_malformed_or_unsupported_values_retain_raw_evidence) ... ok
+test_merger_order_is_enforced (test_merger.MergerTests.test_merger_order_is_enforced) ... ok
+test_multiple_sources_and_scores_remain_separate_evidence (test_merger.MergerTests.test_multiple_sources_and_scores_remain_separate_evidence) ... ok
+test_real_ioc_alignment_retains_mixed_case_and_distinct_url_paths (test_merger.MergerTests.test_real_ioc_alignment_retains_mixed_case_and_distinct_url_paths) ... ok
+test_repeated_canonical_values_remain_separate_occurrences (test_merger.MergerTests.test_repeated_canonical_values_remain_separate_occurrences) ... ok
+test_specific_ioc_carries_exact_span_infrastructure_evidence (test_merger.MergerTests.test_specific_ioc_carries_exact_span_infrastructure_evidence) ... ok
+test_url_host_domain_is_a_linked_component (test_merger.MergerTests.test_url_host_domain_is_a_linked_component) ... ok
+test_url_normalization_preserves_userinfo_port_path_query_and_fragment (test_merger.MergerTests.test_url_normalization_preserves_userinfo_port_path_query_and_fragment) ... ok
+test_view_is_deterministic_across_input_order_and_reruns (test_merger.MergerTests.test_view_is_deterministic_across_input_order_and_reruns) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 0.040s
+
+OK

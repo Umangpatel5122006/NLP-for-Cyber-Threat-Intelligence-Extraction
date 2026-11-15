@@ -70,6 +70,16 @@ jobs:
           assert all(result["original_text"][e["original_start"]:e["original_end"]] == e["original_text"] for e in evidence)
           assert result["metadata"]["offsets"]["unit"] == "unicode_code_points"
           assert any("[.]" in e["original_text"] for e in result["entities"])
+          assert result["metadata"]["merge"]["policy"] == "conservative_occurrence_v1"
+          identifiers = {f["id"] for f in result["findings"]}
+          assert identifiers
+          for finding in result["findings"]:
+              assert finding["evidence"]
+              assert set(finding["parent_ids"] + finding["component_ids"]) <= identifiers
+              assert result["original_text"][finding["original_start"]:finding["original_end"]] == finding["original_text"]
+          keys = lambda rows: {(e["start"], e["end"], e["label"], e["source"], e["confidence"]) for e in rows}
+          assert keys(result["entities"]) == keys([e for f in result["findings"] for e in f["evidence"]])
+          assert all({edge["left_id"], edge["right_id"]} <= identifiers for edge in result["overlaps"])
           PY
       - name: Upload validation evidence
         if: always()

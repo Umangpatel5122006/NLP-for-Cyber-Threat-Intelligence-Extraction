@@ -21,6 +21,8 @@ class IOCRegex(BaseModule):
         self.params = params
 
     def process(self, doc: Document) -> Document:
+        doc.validate_text_tracking()
+        doc.invalidate_findings()
         for label, pattern in PATTERNS.items():
             for m in pattern.finditer(doc.text):
                 doc.entities.append(

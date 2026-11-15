@@ -8,3 +8,4 @@ pipeline:
   - module: relevance_filter
     params:
       model_path: models/relevance.joblib
+  - module: result_merger

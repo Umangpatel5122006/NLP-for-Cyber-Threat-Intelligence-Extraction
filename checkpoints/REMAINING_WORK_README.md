@@ -22,17 +22,19 @@ Last synced: 2026-11-15
 | P6 | Attack-technique classifier | Not started | labels exist in SMAH-CTI (`tactic`, `techniques`) |
 | P6b | Vulnerabilities and affected systems (new) | Not started | no gold labels in SMAH-CTI |
 | P7 | Relation extraction | Not started | |
-| P8 | Full pipeline integration | **Partial** | preprocessing + IOC + saved relevance/NER + original offsets; merging and techniques remain |
+| P8 | Full pipeline integration | **Partial** | preprocessing + IOC + saved relevance/NER + original offsets + merged findings; techniques and remaining extractors remain |
 | P9 | Evaluation | **Partial** | corrected metrics version 2, grouped validation utilities; official test reserved |
 | P10 | Output, demo, feed ingestion | **CLI and JSON baseline** | `cti.analyze`, sample report/output; frontend, exports and feeds remain |
 | P11 | Upgrade guide, report, demo | Not started | |
 
 **Current position:** saved entity/action taggers now run in the document pipeline,
 with corrected dev diagnostics and identical predictions after reload. Original
-evidence mapping now covers cleaner/defanger changes. All 96 tests pass in WSL,
-and all 18 offset tests pass on Windows. The preceding NER commit passed its
-78-test GitHub Actions run, including real training and inference. See
-[OFFSET_MAPPING.md](OFFSET_MAPPING.md). IOC/NER merging is the next reviewable step.
+evidence mapping covers cleaner/defanger changes. Consolidated findings now keep
+per-source evidence, actual host components and explicit overlap information.
+All 121 tests pass in WSL, and all 25 merger tests pass on Windows. The preceding
+offset commit passed its 96-test GitHub Actions run, including real training and
+inference. See [FINDING_MERGE.md](FINDING_MERGE.md). A basic report-review frontend
+can be the next step after review; model/extraction improvements still remain.
 
 ---
 
@@ -135,17 +137,17 @@ Matches "vulnerabilities" and "affected systems" in the title. SMAH-CTI has no g
 - [x] **F1. Model persistence.** Relevance and classical entity/action artifacts have manifests and train/dev reload checks. CRF, MEMM and token LogReg round trips are tested.
 - [x] **F2. NER modules in the pipeline:** `ner_entities` and `ner_action` wrap saved taggers: sentence split → tokenize → predict → BIO to character spans. Confidence is explicitly unavailable (`null`); calibrated marginal confidence remains optional future work.
 - [x] **F3. Offset mapping.** Cleaning/defanging retain the original report and project sentence/entity evidence into original Unicode code-point spans. Covering-span semantics, CRLF/BOM preservation and repeated-indicator alignment are tested.
-- [ ] **F4. Merge policy.** Resolve overlaps between IOC entities and NER entities (domain inside URL or email; INFRASTRUCTURE vs IOC), deduplicate, normalize (lowercase hashes, canonical domains), keep source and confidence.
+- [x] **F4. Merge policy.** A derived findings view deduplicates exact observations, combines exact IOC/INFRASTRUCTURE evidence, links actual URL/email hosts, preserves legitimate/conflicting overlaps and repeated mentions, and adds conservative canonical values. Raw sources and per-source confidence remain available.
 - [ ] **F5. Final pipeline order:** cleaner → defanger → language detector → sentence splitter → ioc_finder → relevance filter → NER (entities, action) → system/vulnerability taggers → technique classifier → relation extractor → merger.
 - [ ] **F6. Language routing.** Validate an explicit IOC-only fallback for Hindi, Marathi and Gujarati first. Further extraction needs tested language-specific dictionaries/rules or classical taggers with suitable annotated data. Neural translation/encoders are excluded. Create a small evaluation sample per language.
 - [ ] **F7. Tests.** Unit test per new module; one end-to-end test on a short sample report; regression test that fails if dev F1 drops.
 
 ### Stage G - P10: outputs and input feeds
 
-- [ ] **G1. Result schema (JSON):** entities with character positions, label, confidence, source module; IOCs; techniques with ATT&CK IDs; relations; metadata (language, model versions).
+- [ ] **G1. Result schema (JSON):** raw entities, consolidated findings/components, original positions, per-source evidence and overlap metadata are implemented. Technique/ATT&CK IDs and semantic relations remain.
 - [ ] **G2. STIX 2.1 export** with the `stix2` library: indicator, malware, tool, intrusion-set, vulnerability, attack-pattern, relationship, report. Validate the bundle.
 - [ ] **G3. Input adapters.** Plain text, HTML (trafilatura or BeautifulSoup), PDF (pdfplumber or PyMuPDF), and RSS/advisory feeds, since the project covers threat-intelligence feeds.
-- [ ] **G4. Interfaces.** `python -m cti.analyze --input report.txt` provides the CLI/JSON baseline with original evidence spans. A small FastAPI endpoint and frontend highlighting remain; define the IOC/NER merge policy first.
+- [ ] **G4. Interfaces.** `python -m cti.analyze --input report.txt` provides the CLI/JSON baseline with original evidence and merged findings. A basic frontend is now a reasonable next step after review; reuse the Python pipeline for inference. A small API and further UI/export work remain.
 - [ ] **G5. Real-report check.** Run the full system on 3-5 public reports that are **not** in SMAH-CTI and review the output by hand.
 
 ### Stage H - P9: final evaluation (done last)

@@ -130,7 +130,7 @@ class RelevancePipelineTests(unittest.TestCase):
 
     def config(self):
         config = yaml.safe_load((ROOT / "configs/config.yaml").read_text(encoding="utf-8"))
-        config["pipeline"].append({
+        config["pipeline"].insert(-1, {
             "module": "relevance_filter", "params": {"model_path": str(self.path)}
         })
         path = self.root / "config.yaml"

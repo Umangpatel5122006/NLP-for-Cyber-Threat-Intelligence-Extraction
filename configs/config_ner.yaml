@@ -12,3 +12,4 @@ pipeline:
   - module: ner_action
     params:
       model_path: models/ner_action.joblib
+  - module: result_merger
