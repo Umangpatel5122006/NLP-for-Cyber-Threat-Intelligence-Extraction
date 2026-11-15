@@ -1,6 +1,14 @@
 # Project progress, in order
 
-Latest local checkpoint: [Hindi/Hinglish rules v2](INDIC_RULES_V2.md).
+Latest local checkpoint: [action relevance comparison](ACTION_RELEVANCE_EXPERIMENT.md).
+Four predeclared TF-IDF/Logistic Regression cutoffs were compared on three
+report-disjoint training folds. None meets the fixed gain/recall/coverage policy;
+the baseline stays active. Dev/test were not evaluated in this experiment.
+All 279 WSL tests and the independent saved-prediction audit pass. Existing
+model hashes and app behavior are unchanged. Training the action CRF with
+background negatives is the next model experiment, not completed work.
+
+Previous local checkpoint: [Hindi/Hinglish rules v2](INDIC_RULES_V2.md).
 Verification/form requests and bare destinations now support bounded identity/
 account-threat findings, preserving warning/negation context and source offsets.
 Downloaded authored examples are development diagnostics, not accuracy evidence.

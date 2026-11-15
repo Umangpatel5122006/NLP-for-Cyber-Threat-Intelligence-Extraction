@@ -1,0 +1,25 @@
+{
+  "passed": true,
+  "training_sentences": 8635,
+  "training_reports": 70,
+  "report_disjoint_folds": 3,
+  "cutoffs_recounted": [
+    0.1,
+    0.2,
+    0.3,
+    0.5
+  ],
+  "selected": "no_gate",
+  "dev_evaluated": false,
+  "test_evaluated": false,
+  "existing_model_sha256_verified": {
+    "message_spam": "29e05300ac835d169b1ef9d4650dc219e350e11a817b65efe7afb96c61d8a2e3",
+    "message_generalization_v1/candidate": "8e9006bbb6d57eb9a37e9b865329c6c57c5bedecb0b150980af8dfc0d87a9300",
+    "ner_entities": "d5195ebe781197a15ebea3e31b15228334c236e05bec2f1b2c91de3a6033cd79",
+    "ner_action": "1732d7e0a1d4c5be1433dff1daf31c2893e0702b43b70142840d871e4d45da15"
+  },
+  "oof_sha256_lf": "f76e4e36b06707593c8cf3e2cb7c0464c8888427b65badd81f5ff0abf25b3955",
+  "independent_counts_match_public_seqeval": true,
+  "scope": "Recounts cached train-only predictions; does not independently refit relevance models.",
+  "audit_script_sha256_lf": "de96ecdc76bdc990d6721dda307d100957a9b71b87fc2e004289ab47d522629e"
+}

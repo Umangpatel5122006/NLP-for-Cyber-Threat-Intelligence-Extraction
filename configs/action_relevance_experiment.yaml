@@ -1,0 +1,18 @@
+version: 1
+folds: 3
+seed: 42
+cutoffs: [0.1, 0.2, 0.3, 0.5]
+relevance_parameters:
+  c: 1.0
+  min_df: 2
+  max_iter: 1000
+  seed: 1
+selection:
+  minimum_f1_gain: 0.005
+  minimum_fold_wins: 2
+  maximum_exact_recall_loss: 0.01
+  maximum_relevant_sentence_skip_rate: 0.03
+confirmation:
+  minimum_f1_gain: 0.002
+  maximum_exact_recall_loss: 0.01
+  maximum_relevant_sentence_skip_rate: 0.03

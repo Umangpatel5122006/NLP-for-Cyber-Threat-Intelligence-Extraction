@@ -32,6 +32,9 @@ source/validation audits; downloaded data, browser output and private annotation
 remain ignored.
 The [Hindi/Hinglish v2 rule report](indic_rules_v2/README.md) preserves only compact
 validation and development-diagnostic counts, with their non-independent scope.
+The [action relevance comparison](action_relevance_v1/README.md) keeps the rejected
+train-only cutoff results and independent recount. Local OOF rows remain ignored;
+no default model changed and no dev/test evaluation was needed.
 
 Removing previously tracked generated files from Git's index keeps their local
 copies. The cleanup applies to future commits; it does not rewrite existing

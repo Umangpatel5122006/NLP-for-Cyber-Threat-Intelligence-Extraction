@@ -49,6 +49,10 @@ removing the target preserves supported financial-offer/request detections.
 The current robustness check covers 768 generated combinations and both real
 API modes. Restart the server and verify the **English rules v2** label.
 Current CTI dev exact-span F1 remains 0.2596 (entities) and 0.1551 (actions).
+A [train-only relevance-filter comparison](checkpoints/ACTION_RELEVANCE_EXPERIMENT.md)
+retains the current action pipeline: none of four classical cutoffs meets the
+fixed gain/recall/coverage policy. No dev or test examples were evaluated in
+that comparison; no default artifact changed.
 See [the current robustness checkpoint](checkpoints/MESSAGE_ROBUSTNESS.md),
 [the integrated checkpoint](checkpoints/INTEGRATED_FINDINGS_AND_SMS_MODEL.md)
 and [SMS data provenance](docs/SMS_DATASET.md).
@@ -123,10 +127,10 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** all **270 tests pass** in an isolated Ubuntu-24.04 WSL
+**Current validation:** all **279 tests pass** in an isolated Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
 saved-NER, original-offset, merger, API, action-feature, scam-pattern and launcher tests;
-see `results/indic_rules_v2_validation.txt` (local generated log) and
+see `results/action_relevance_tests.txt` (local generated log) and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
 were changed. A focused native Windows run passes 82 API/language/Indic-rule/
