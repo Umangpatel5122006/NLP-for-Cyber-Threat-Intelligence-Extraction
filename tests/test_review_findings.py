@@ -23,7 +23,8 @@ class ReviewFindingsTests(unittest.TestCase):
         doc.metadata["message_classifier"] = {"status": "ok", "label": "ham"}
         result = message_assessment(doc)
         self.assertEqual(result["status"], "no_pattern_detected")
-        self.assertEqual(result["coverage"]["supported_languages"], ["en"])
+        self.assertEqual(result["coverage"]["supported_languages"], ["en", "hi", "hi-en"])
+        self.assertEqual(result["coverage"]["trained_model_languages"], ["en"])
         self.assertFalse(result["coverage"]["language_verified"])
 
     def test_missing_rules_do_not_hide_behind_a_ham_prediction(self):

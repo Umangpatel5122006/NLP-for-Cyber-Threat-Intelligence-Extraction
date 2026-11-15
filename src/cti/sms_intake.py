@@ -23,7 +23,8 @@ FIELDS = ("id", "text", "source_id", "source_reference", "usage_permission", "ob
 CATEGORIES = ("financial_notification", "delivery", "employment", "investment", "grant_or_prize",
               "credential_request", "warning", "personal", "other")
 LABELS = ("ham", "spam", "uncertain")
-POLICY = "sms_intake_v1; char_wb(3,5) hashing cosine>=0.85; campaign union; 5 group folds seed91"
+LANGUAGES = ("en", "hi", "hi-en")
+POLICY = "sms_intake_v2; en,hi,hi-en; char_wb(3,5) hashing cosine>=0.85; campaign union; 5 language-label group folds seed91"
 MAX_ROWS = 2000
 
 
@@ -69,7 +70,7 @@ def resolve_annotation(row):
         return None, "invalid_or_out_of_scope_text"
     if row["origin"] != "real":
         return None, "non_real_origin"
-    if row["language"] != "en":
+    if row["language"] not in LANGUAGES:
         return None, "unsupported_language"
     if not row["source_id"] or not row["source_reference"] or row["usage_permission"] not in ("public_dataset", "consented_research"):
         return None, "missing_source_or_permission"
@@ -101,7 +102,8 @@ def protected_references(exclude_folder=None):
     """Text-only exclusions across whole old corpora; no evaluation or fitting."""
     if sha(DATA.read_bytes()) != DATA_SHA256:
         raise ValueError("Protected UCI corpus differs from the pinned source.")
-    paths = [DATA, SOURCE, ROOT / "examples/message_challenge.json", ROOT / "examples/sms_collection_exclusions.json"]
+    paths = [DATA, SOURCE, ROOT / "examples/message_challenge.json", ROOT / "examples/sms_collection_exclusions.json",
+             ROOT / "examples/hindi_hinglish_regressions.json"]
     texts = [r["text"] for r in read_rows()] + [r["text"] for r in source_rows()]
     for path in paths[2:]:
         texts.extend(r["text"] for r in json.loads(path.read_text(encoding="utf-8"))["messages"])
@@ -114,7 +116,7 @@ def protected_references(exclude_folder=None):
         snapshot = definition.with_name("accepted.jsonl")
         manifest = json.loads(definition.read_text(encoding="utf-8"))
         payload = snapshot.read_bytes()
-        if manifest.get("schema_version") != 1 or sha(payload) != manifest.get("accepted_sha256"):
+        if manifest.get("schema_version") not in (1, 2) or sha(payload) != manifest.get("accepted_sha256"):
             raise ValueError("An earlier protected intake snapshot has changed.")
         texts.extend(json.loads(line)["text"] for line in payload.decode("utf-8").splitlines())
         hashes[snapshot.relative_to(ROOT).as_posix()] = sha(payload)
@@ -200,6 +202,8 @@ def audit_annotations(rows, protected_texts):
     summary = {"input_rows": len(rows), "accepted_rows": len(unique), "quarantined_rows": len(quarantined),
                "quarantine_reasons": dict(sorted(Counter(r["reason"] for r in quarantined).items())),
                "labels": dict(sorted(Counter(r["label"] for r in unique).items())),
+               "language_labels": {lang: dict(Counter(r["label"] for r in unique if r["language"] == lang))
+                                   for lang in sorted({r["language"] for r in unique})},
                "source_labels": source_labels,
                "single_label_sources": [source for source, counts in source_labels.items() if len(counts) == 1],
                "category_labels": {category: dict(Counter(r["label"] for r in unique if r["category"] == category))
@@ -212,20 +216,22 @@ def freeze_batch(rows, folder, provenance):
     from sklearn.model_selection import StratifiedGroupKFold
 
     # This minimum permits splitting; it is not a claim of adequate sample size.
-    if any(len({r["group"] for r in rows if r["label"] == label}) < 5 for label in ("ham", "spam")):
-        raise ValueError("Need at least five independent groups per label before freezing.")
+    languages = {r["language"] for r in rows}
+    if not languages or any(len({r["group"] for r in rows if r["label"] == label and r["language"] == lang}) < 5
+                            for lang in languages for label in ("ham", "spam")):
+        raise ValueError("Need at least five independent groups per label in every included language before freezing.")
     folds = list(StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=91).split(
-        rows, [r["label"] for r in rows], [r["group"] for r in rows]))
+        rows, [r["language"] + ":" + r["label"] for r in rows], [r["group"] for r in rows]))
     test, dev = set(folds[0][1]), set(folds[1][1])
     partitions = {"train": [], "dev": [], "test": []}
     for i, row in enumerate(rows):
         partitions["test" if i in test else "dev" if i in dev else "train"].append(row["id"])
     validate_split(rows, {"partitions": partitions})
     for values in partitions.values():
-        if {r["label"] for r in rows if r["id"] in values} != {"ham", "spam"}:
-            raise ValueError("Grouped split cannot represent both labels in each partition; collect more groups.")
+        if any({r["label"] for r in rows if r["id"] in values and r["language"] == lang} != {"ham", "spam"} for lang in languages):
+            raise ValueError("Grouped split cannot represent each language/label in every partition; collect more groups.")
     payload = b"".join((json.dumps(r, ensure_ascii=True, sort_keys=True) + "\n").encode() for r in rows)
-    manifest = {"schema_version": 1, "policy": POLICY, "protocol_source_sha256": protocol_sources(),
+    manifest = {"schema_version": 2, "policy": POLICY, "languages": sorted(languages), "protocol_source_sha256": protocol_sources(),
                 "provenance": provenance, "accepted_sha256": sha(payload), "partitions": partitions,
                 "groups": {r["id"]: r["group"] for r in rows}, "test_evaluated": False}
     folder = Path(folder)
@@ -246,7 +252,7 @@ def load_intake(split, folder):
     folder = Path(folder)
     manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
     payload = (folder / "accepted.jsonl").read_bytes()
-    if (manifest.get("schema_version") != 1 or manifest.get("policy") != POLICY
+    if (manifest.get("schema_version") != 2 or manifest.get("policy") != POLICY
             or manifest.get("protocol_source_sha256") != protocol_sources() or sha(payload) != manifest.get("accepted_sha256")):
         raise ValueError("Frozen intake data or protocol changed.")
     rows = [json.loads(line) for line in payload.decode("utf-8").splitlines()]

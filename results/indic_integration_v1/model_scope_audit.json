@@ -1,0 +1,39 @@
+{
+  "source": "uds5501 / SMS dataset / Kaggle v1 (2018)",
+  "source_url": "https://www.kaggle.com/datasets/uds5501/sms-dataset",
+  "license_as_declared": "CC BY-SA 3.0",
+  "archive_sha256": "b1ed0eaccff68ee427855276c4d50fdac14cc3be328c89d880bcdb1320465cb8",
+  "csv_sha256": "a1c138cd6febb8bebb799f8a5242a3cb8f95bd66cb5f1876a82b648217ea4447",
+  "source_labels": {
+    "spam": 107,
+    "ham": 77
+  },
+  "devanagari_rows": 0,
+  "overlap_audit": {
+    "input_rows": 184,
+    "exact_excluded": 0,
+    "near_excluded": 21,
+    "retained_rows": 163,
+    "retained_original_labels": {
+      "spam": 96,
+      "ham": 67
+    },
+    "policy": "canonical exact + stateless char_wb(3,5) hashing cosine >= 0.85",
+    "protected_labels_used": false
+  },
+  "retained_unverified_language_guesses": {
+    "en": 159,
+    "hi-en": 4
+  },
+  "language_gold_available": false,
+  "trained_on_source": false,
+  "test_evaluated": false,
+  "decision": "Small source for future review, not Hindi/Hinglish model validation. No Devanagari Hindi; no author language labels or independent adjudication records.",
+  "protected_source_sha256": {
+    "models/sms_source/SMSSpamCollection": "7d039a24a6083ed9ef0f806ebad56bbb976e3aeb8de05669173bfdc4996c239d",
+    "models/domain_research/mendeley_5971.csv": "649844f1c62a6b27e145eaf17a65f7010c56c390e11a794ea8329993a05ba71e",
+    "examples/message_challenge.json": "7e9d4fa798a2c11d216a79adfaa275d85e31b7b5d8e4fd662d306540cbd60706",
+    "examples/sms_collection_exclusions.json": "b010e4f3072e926d65703f8d1e5ae0d869261c0a61bfd209cff887651b29550d",
+    "examples/hindi_hinglish_regressions.json": "597f9c8265af692018f9f0918fddc6e29f2000772ef6403d92844a4976968331"
+  }
+}

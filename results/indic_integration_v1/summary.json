@@ -1,0 +1,71 @@
+{
+  "date": "2026-11-15",
+  "message_rule_languages": [
+    "en",
+    "hi",
+    "hi-en"
+  ],
+  "trained_sms_ner_languages": [
+    "en"
+  ],
+  "coverage_version": 2,
+  "hindi_hinglish_method": "authored_lexical_rules",
+  "learned_hindi_hinglish_model_trained": false,
+  "full_suite": {
+    "runtime": "Ubuntu-24.04 WSL / Python 3.12",
+    "tests": 266,
+    "passed": true
+  },
+  "native_focused_tests": {
+    "tests": 78,
+    "passed": true
+  },
+  "browser": {
+    "default": {
+      "passed": true,
+      "check_groups": 28,
+      "authored_indic_cases_in_both_modes": 36,
+      "preview_false_alarm_observations": []
+    },
+    "candidate": {
+      "passed": true,
+      "check_groups": 28,
+      "authored_indic_cases_in_both_modes": 36,
+      "preview_false_alarm_observations": [
+        {
+          "case": "benign_credit_notification",
+          "expected": "ham",
+          "predicted": "spam",
+          "false_alarm": true,
+          "artifact_sha256": "8e9006bbb6d57eb9a37e9b865329c6c57c5bedecb0b150980af8dfc0d87a9300"
+        }
+      ]
+    }
+  },
+  "http_cases": 72,
+  "regression_origin": "assistant_authored_synthetic",
+  "regressions_are_real_world_accuracy": false,
+  "existing_model_artifact_sha256": {
+    "message_spam": "29e05300ac835d169b1ef9d4650dc219e350e11a817b65efe7afb96c61d8a2e3",
+    "message_generalization_v1/candidate": "8e9006bbb6d57eb9a37e9b865329c6c57c5bedecb0b150980af8dfc0d87a9300",
+    "ner_entities": "d5195ebe781197a15ebea3e31b15228334c236e05bec2f1b2c91de3a6033cd79",
+    "ner_action": "1732d7e0a1d4c5be1433dff1daf31c2893e0702b43b70142840d871e4d45da15"
+  },
+  "weights_changed": false,
+  "test_evaluated": false,
+  "remote_ci_run": false,
+  "source_sha256": {
+    "src/cti/extractors/indic_message_risk.py": "2e8dbfc2fc1ec1e45ac916fb10cff6d9ffc20c4e42a0fe1d75b064ded6381c98",
+    "src/cti/extractors/message_risk.py": "4839b0b35d999b983f4d4f02aef6ce9ee9bc92fa88b6477576f197fc9b1f884e",
+    "src/cti/preprocessing/language_detector.py": "88d0bdec5501bb86c5ca0cf2cbdc4696d6dee83395e51c254072b0324d3e109b",
+    "src/cti/core/pipeline.py": "2cd3b6770d65afe9190d805028396914195e7583ac9c863a3c7b3f43276f6ee3",
+    "src/cti/output/review.py": "efe6d018c75717f6b314195204e1db5cf52e2d951cc140a486815789ceb87820",
+    "src/cti/web/server.py": "1f14ed7cb4e63544cb6d4e3eeecbc87cc36192d7e04b501d5f6aa4464718bc02",
+    "src/cti/web/static/app.js": "bb912a98af6f0a13dbd3c8e193881d966b5f004c6e1ae46636923c7298fa1331",
+    "src/cti/web/static/index.html": "3d8b82ae7f7f59866a7b0a189e0868da6fca5f7e68d32b8d67451006354ca0cc",
+    "src/cti/web/static/styles.css": "59122317d1be5dde81fa04e2f5d35ba2c646530ebb5751393e8e0e619eaa5e70",
+    "src/cti/sms_intake.py": "6d28b6c6402faf01b68227320a4d44ef867436f6632669eba1464f8bedeb319f",
+    "scripts/check_web_ui.mjs": "e81a4f27688bb325031c08767fbc891c6a0afccfb4d2068bdc4ae3d59b0f89ef",
+    "scripts/audit_indic_sms_source.py": "eb62fd2623804e9701d644cac68861b43d589ca90aba38b6bc88a8e27f952484"
+  }
+}

@@ -36,6 +36,34 @@ def independent_fixtures():
 
 
 class SMSIntakeTests(unittest.TestCase):
+    def test_reviewed_hindi_and_hinglish_are_accepted_with_source_language_retained(self):
+        for language, text in (("hi", "कृपया अपना पासवर्ड मुझे बताएं।"), ("hi-en", "Aap apna password mujhe batao.")):
+            with self.subTest(language=language):
+                rows, quarantine, summary = audit_annotations([annotation(language, text, "spam", language=language)], [])
+                self.assertEqual(quarantine, [])
+                self.assertEqual(rows[0]["language"], language)
+                self.assertEqual(summary["language_labels"][language], {"spam": 1})
+
+    def test_freeze_represents_every_language_and_label_without_splitting_shared_groups(self):
+        # Artificial cross-language families exercise group locks, not linguistic quality.
+        rows = [{**r, "id": language + "-" + r["id"], "language": language}
+                for language in ("en", "hi", "hi-en") for r in independent_fixtures()]
+        with tempfile.TemporaryDirectory() as folder:
+            definition = freeze_batch(rows, folder, {})
+            self.assertEqual(definition["schema_version"], 2)
+            self.assertEqual(definition["languages"], ["en", "hi", "hi-en"])
+            for split in ("train", "dev"):
+                selected = load_intake(split, folder)
+                self.assertEqual({(r["language"], r["label"]) for r in selected},
+                                 {(lang, label) for lang in ("en", "hi", "hi-en") for label in ("ham", "spam")})
+
+    def test_missing_hindi_class_cannot_hide_behind_sufficient_english_data(self):
+        rows = independent_fixtures() + [{**r, "id": "hi-" + r["id"], "language": "hi"}
+                                        for r in independent_fixtures() if r["label"] == "spam"]
+        with tempfile.TemporaryDirectory() as folder:
+            with self.assertRaisesRegex(ValueError, "every included language"):
+                freeze_batch(rows, folder, {})
+
     def test_csv_preserves_source_unicode_newlines_and_punctuation(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "annotations.csv"
@@ -198,7 +226,7 @@ class SMSIntakeTests(unittest.TestCase):
             previous.mkdir(parents=True)
             examples = root / "examples"
             examples.mkdir()
-            for name in ("message_challenge.json", "sms_collection_exclusions.json"):
+            for name in ("message_challenge.json", "sms_collection_exclusions.json", "hindi_hinglish_regressions.json"):
                 (examples / name).write_text(json.dumps({"messages": [{"text": name}]}), encoding="utf-8")
             uci, supplement = root / "uci", root / "supplement"
             uci.write_bytes(b"fake protected source")

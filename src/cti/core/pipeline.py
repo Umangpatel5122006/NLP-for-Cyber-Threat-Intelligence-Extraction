@@ -43,8 +43,12 @@ class Pipeline:
         ]
         return cls(modules) # 4. return the finished pipeline
 
-    def run(self, text: str) -> Document:
+    def run(self, text: str, *, language_hint="auto") -> Document:
+        if language_hint not in ("auto", "en", "hi", "hi-en"):
+            raise ValueError("Choose auto, en, hi or hi-en as the language setting.")
         doc = Document(text=text)  # wrap the text in a Document
+        if language_hint != "auto":
+            doc.metadata["language_hint"] = language_hint
         for module in self.modules:
             doc = module.process(doc)   # each worker adds its findings
             doc.validate_text_tracking()

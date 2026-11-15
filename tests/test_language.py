@@ -33,13 +33,13 @@ class LanguageCoverageTests(unittest.TestCase):
     def test_mixed_script_coverage_is_uncertain(self):
         details = describe_language("Please reply आपके खाते में राशि जमा करने के लिए उत्तर दें")
         self.assertEqual(details["script"], "mixed")
-        self.assertEqual(details["language"], "unknown")
+        self.assertEqual(details["language"], "hi-en")
 
-    def test_latin_script_is_an_assumption_including_spanish_and_hinglish(self):
-        for text in ("Su cuenta bancaria necesita una nueva clave", "Aapke bank account me paise milenge reply karo"):
+    def test_latin_guesses_remain_unverified_with_distinct_hinglish_routing(self):
+        for text, status in (("Su cuenta bancaria necesita una nueva clave", "assumed_english"), ("Aapke bank account me paise milenge reply karo", "guessed_hinglish")):
             with self.subTest(text=text):
                 details = describe_language(text)
-                self.assertEqual(details["status"], "assumed_english")
+                self.assertEqual(details["status"], status)
                 self.assertFalse(details["verified"])
                 self.assertIn("not verified", details["note"])
 
@@ -50,8 +50,8 @@ class LanguageCoverageTests(unittest.TestCase):
 
     def test_non_english_negative_pattern_result_is_not_a_supported_negative(self):
         doc = Pipeline.from_config("configs/config.yaml").run("आपके खाते में राशि जमा होगी।")
-        self.assertEqual(doc.metadata["message_risk"]["status"], "unsupported_language")
-        self.assertEqual(doc.metadata["message_assessment"]["status"], "unsupported_language")
+        self.assertEqual(doc.metadata["message_risk"]["status"], "no_pattern_detected")
+        self.assertEqual(doc.metadata["message_assessment"]["status"], "partial_coverage")
         self.assertEqual(doc.review_findings, [])
 
     def test_positive_english_cues_in_mixed_text_are_preserved_with_partial_coverage(self):
@@ -59,7 +59,7 @@ class LanguageCoverageTests(unittest.TestCase):
         doc = Pipeline.from_config("configs/config.yaml").run(text)
         self.assertNotEqual(doc.metadata["language"], "en")
         self.assertEqual(doc.metadata["message_risk"]["status"], "suspicious")
-        self.assertEqual(doc.metadata["message_risk"]["coverage"]["status"], "partial")
+        self.assertEqual(doc.metadata["message_risk"]["coverage"]["status"], "applied")
         self.assertTrue(any(r["kind"] == "message_rule" for r in doc.review_findings))
 
     def test_unsupported_language_does_not_load_or_predict_sms_model(self):

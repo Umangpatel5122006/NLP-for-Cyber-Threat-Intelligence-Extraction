@@ -174,10 +174,14 @@ class MessageRisk(BaseModule):
         from cti.preprocessing.language_detector import describe_language
         details = doc.metadata.get("language_detection") or describe_language(doc.text)
         language = doc.metadata.get("language", details["language"])
-        result = assess_message(doc.original_text)
-        supported = language == "en"
+        if language in ("hi", "hi-en"):
+            from cti.extractors.indic_message_risk import assess_indic_document
+            result = assess_indic_document(doc)
+        else:
+            result = assess_message(doc.original_text)
+        supported = language in ("en", "hi", "hi-en")
         positive = result["status"] in ("suspicious", "review_context")
-        result["coverage"] = {"supported_languages": ["en"], "language": language,
+        result["coverage"] = {"supported_languages": ["en", "hi", "hi-en"], "language": language,
                               "status": "applied" if supported else "partial" if positive else "unsupported_language"}
         if not supported and not positive:
             result.update(status="unsupported_language", summary="English scam-pattern coverage is unavailable or uncertain for this text. No safety conclusion can be made.")

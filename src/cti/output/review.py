@@ -55,13 +55,13 @@ def message_assessment(doc):
     elif model_positive:
         status, summary = "suspicious", "The classical SMS classifier predicts spam. Review the message; this is not verified fraud."
     elif risk.get("status") == "unsupported_language":
-        status, summary = "unsupported_language", "English message analysis is unavailable or uncertain for this text. IOC findings remain available; this is not a safety verdict."
+        status, summary = "unsupported_language", "Message-rule language coverage is unavailable or uncertain for this text. IOC findings remain available; this is not a safety verdict."
     elif model.get("status") != "ok" or risk.get("status") != "no_pattern_detected":
-        status, summary = "partial_coverage", "Message analysis coverage is incomplete. The SMS classifier or English pattern check did not run within its supported scope. Missing detections do not establish safety."
+        status, summary = "partial_coverage", "Message analysis coverage is incomplete. A trained SMS classifier or pattern check did not run within its supported scope. Missing detections do not establish safety."
     else:
         status, summary = "no_pattern_detected", "No supported message-risk detection. This does not establish safety; inspect model coverage and extracted evidence."
     detection = doc.metadata.get("language_detection", {})
-    coverage = {"version": 1, "supported_languages": ["en"], "language": doc.metadata.get("language", "unknown"),
+    coverage = {"version": 2, "supported_languages": ["en", "hi", "hi-en"], "trained_model_languages": ["en"], "language": doc.metadata.get("language", "unknown"),
                 "language_method": detection.get("method", "not_recorded"), "language_verified": False,
                 "language_note": detection.get("note", "Only English NLP is supported; language has not been verified."),
                 "rules": risk.get("coverage", {}).get("status", "not_recorded"),

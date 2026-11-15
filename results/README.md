@@ -27,6 +27,9 @@ test/CLI evidence; raw annotations and private snapshots stay in ignored
 The [language coverage summary](language_coverage_v1/README.md) records explicit
 English scope, browser/API checks and unchanged model identities without adding
 screenshots or per-case response files to Git.
+The [Hindi/Hinglish integration](indic_integration_v1/README.md) retains compact
+source/validation audits; downloaded data, browser output and private annotations
+remain ignored.
 
 Removing previously tracked generated files from Git's index keeps their local
 copies. The cleanup applies to future commits; it does not rewrite existing

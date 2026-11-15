@@ -25,6 +25,15 @@
   border-radius:8px;
   overflow-wrap:anywhere
 }
+.language-field
+{
+  margin:16px 0;
+  max-width:100%
+}
+.language-field select
+{
+  max-width:320px
+}
 .mode-setup p,.mode-setup ul
 {
   margin:8px 0 12px

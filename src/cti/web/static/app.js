@@ -45,7 +45,7 @@ function updateControls() {
   $("analyze-button").disabled = state.busy || state.refreshing || !ready || !reportText().trim();
   // Keep unavailable modes selectable so their setup instructions are visible.
   $("analysis-mode").disabled = state.busy || state.refreshing;
-  for (const id of ["report-input", "report-file", "example-button", "clear-button"]) $(id).disabled = state.busy;
+  for (const id of ["report-input", "report-file", "example-button", "clear-button", "report-language"]) $(id).disabled = state.busy;
   $("connection-status").disabled = state.busy || state.refreshing;
   $("retry-models").disabled = state.busy || state.refreshing;
   $("analyze-button").classList.toggle("busy", state.busy);
@@ -103,7 +103,7 @@ function showModeSetup() {
   $("mode-setup").hidden = !unavailable;
   $("mode-help").textContent = mode && !mode.ready
     ? "This mode needs setup before analysis can run. IOC mode remains available when ready."
-    : "Both modes include English scam-pattern checks. Zero extracted findings is not a safety verdict.";
+    : "Both modes include English, Hindi and Hinglish message-pattern checks. Zero extracted findings is not a safety verdict.";
   if (!unavailable) return;
   $("setup-heading").textContent = unavailable.label + " needs setup";
   $("setup-message").textContent = unavailable.message;
@@ -327,7 +327,7 @@ function renderResults() {
   renderDetails();
 }
 function renderMessageRisk(risk) {
-  $("risk-method").textContent = "Classical model + English rules v" + risk.rule_version;
+  $("risk-method").textContent = risk.indic_rule_version ? "Hindi/Hinglish phrase rules v" + risk.indic_rule_version : "Classical model + English rules v" + risk.rule_version;
   const model = state.result.document.metadata.message_classifier;
   const assessment = state.result.document.metadata.message_assessment || risk;
   $("model-verdict").textContent = model?.status === "ok" ? "Classical SMS model: " + (model.label === "spam" ? "spam predicted" : "ham predicted") : "Classical SMS model: " + (model?.status === "not_applicable" ? "outside its scope" : "unavailable");
@@ -335,7 +335,7 @@ function renderMessageRisk(risk) {
   $("model-disagreement").textContent = assessment?.disagreement ? "The classifier predicts ham, but message rules flag suspicious cues. The suspicious finding is retained for review." : "Ham/spam is a separate prediction from scam-pattern rules and CTI entity extraction.";
   $("message-risk").hidden = false;
   $("message-risk").dataset.status = assessment?.status || "unavailable";
-  $("risk-status").textContent = {suspicious: "Suspicious message detected for review", review_context: "Review the message context", no_pattern_detected: "No supported message-risk detection", unsupported_language: "English analysis unavailable for this text", partial_coverage: "Message analysis coverage is incomplete"}[assessment?.status] || "Message risk check unavailable";
+  $("risk-status").textContent = {suspicious: "Suspicious message detected for review", review_context: "Review the message context", no_pattern_detected: "No supported message-risk detection", unsupported_language: "Message-rule language coverage unavailable", partial_coverage: "Message analysis coverage is incomplete"}[assessment?.status] || "Message risk check unavailable";
   $("risk-summary").textContent = assessment?.summary || "Restart the local server to load the message risk check. Extracted findings alone do not establish safety.";
   $("language-coverage").textContent = assessment?.coverage?.language_note || "Only English NLP is supported; language has not been verified.";
   $("risk-alert").hidden = false;
@@ -346,7 +346,7 @@ function renderMessageRisk(risk) {
   $("map-risk").dataset.status = assessment?.status || "unavailable";
   $("map-risk-title").textContent = $("risk-status").textContent;
   $("map-risk-note").textContent = risk?.status === "suspicious"
-    ? "This message is flagged by English scam-pattern rules. Orange highlights show the cues, even when no entities or technical IOCs are extracted."
+    ? "This message is flagged by " + (risk.indic_rule_version ? "Hindi/Hinglish phrase" : "English scam-pattern") + " rules. Orange highlights show the cues, even when no entities or technical IOCs are extracted."
     : risk?.status === "review_context"
       ? "Highlighted cues appear in warning or example context. Review the wording before interpreting the message."
       : $("risk-summary").textContent;
@@ -366,7 +366,7 @@ function showAnalysis(result) {
   if (result.document.metadata?.message_risk?.rule_version !== 2) {
     throw new Error("The running server has outdated message rules. Stop it with Ctrl+C, run python scripts/start_workbench.py, then reload this page. No model retraining is needed for this rule update.");
   }
-  if (result.document.metadata?.message_assessment?.coverage?.version !== 1) {
+  if (result.document.metadata?.message_assessment?.coverage?.version !== 2) {
     throw new Error("The running server has outdated language-coverage reporting. Stop it with Ctrl+C, run python scripts/start_workbench.py, then reload this page. No model retraining is needed.");
   }
   state.result = result;
@@ -382,11 +382,13 @@ function showAnalysis(result) {
   for (const id of ["download-button", "finding-search", "label-filter", "show-components"]) $(id).disabled = false;
   $("finding-search").value = "";
   $("show-components").checked = false;
-  $("analysis-timing").textContent = (result.analysis.elapsed_ms / 1000).toFixed(2) + "s · " + (doc.metadata.language === "en" ? "English assumed" : (doc.metadata.script || "unknown") + " script");
+  const languageName = {en: "English", hi: "Hindi", "hi-en": "Hinglish"}[doc.metadata.language];
+  $("analysis-timing").textContent = (result.analysis.elapsed_ms / 1000).toFixed(2) + "s · " + (languageName ? languageName + (doc.metadata.language_detection?.status === "user_selected" ? " selected" : doc.metadata.language === "en" ? " assumed" : " guessed") : (doc.metadata.script || "unknown") + " script");
   const cueCount = riskSignals().length;
   $("map-note").textContent = doc.entities.length + " extraction observations · " + cueCount + " message-risk cues · Select a highlight to inspect its evidence";
   const unsupported = doc.metadata.language !== "en" || Object.values(doc.metadata.ner || {}).some((layer) => layer.status === "unsupported_language");
-  if (unsupported) notice("NLP models support English only. Language coverage is unavailable or uncertain for this report; extracted IOC evidence remains available.");
+  if (["hi", "hi-en"].includes(doc.metadata.language)) notice("Hindi/Hinglish phrase checks are active. Trained SMS and entity/action models support English only; IOC evidence remains available.");
+  else if (unsupported) notice("Language coverage is unavailable or uncertain. Message rules cover English/Hindi/Hinglish; trained models cover English only. IOC evidence remains available.");
   else notice();
   renderResults();
 }
@@ -398,7 +400,9 @@ async function analyze() {
   if (Array.from(text).length > state.maxCharacters) { notice("Reports can contain up to " + state.maxCharacters.toLocaleString() + " characters.", true); return; }
   resetResults(); setBusy(true); notice();
   try {
-    const result = await fetchJSON("/api/analyze", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({text, mode: $("analysis-mode").value})});
+    const payload = {text, mode: $("analysis-mode").value};
+    if ($("report-language").value !== "auto") payload.language = $("report-language").value;
+    const result = await fetchJSON("/api/analyze", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload)});
     showAnalysis(result);
   } catch (error) { notice(error.message || "The analysis request failed.", true); }
   finally { setBusy(false); }
@@ -406,6 +410,7 @@ async function analyze() {
 
 $("report-input").addEventListener("input", () => { state.rawInput = null; $("file-name").textContent = $("report-input").value ? "Pasted / edited text" : "UTF-8 \u00b7 .txt or .md"; resetResults(); notice(); updateControls(); });
 $("analysis-mode").addEventListener("change", () => { resetResults(); notice(); showModeSetup(); updateControls(); });
+$("report-language").addEventListener("change", () => { resetResults(); notice(); updateControls(); });
 $("analyze-button").addEventListener("click", analyze);
 $("connection-status").addEventListener("click", refreshStatus);
 $("retry-models").addEventListener("click", refreshStatus);

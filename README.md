@@ -7,13 +7,14 @@ are CRF, MEMM, and token Logistic Regression. Trained spaCy NER, BiLSTMs,
 transformers, neural embeddings, and LLMs are excluded. spaCy's blank tokenizer,
 token shapes, and rule-based dictionary matching remain in scope.
 
-**Language support: English only** for trained NER, relevance and SMS models,
-and English scam-pattern rules. Hindi/Marathi/Gujarati guesses are unverified
-heuristics; they do not provide trained NLP in those languages. IOC patterns can
-be extracted from other-language text. Latin text is visibly **English assumed**,
-including unvalidated Hinglish/other Latin-script languages. Unsupported language
-or an unavailable/out-of-scope SMS model now shows explicit coverage limits.
-See [the language checkpoint](checkpoints/LANGUAGE_COVERAGE.md).
+**Language support:** English trained NER/relevance/SMS models, plus **English,
+Hindi and Hinglish message-pattern rules**. Hindi/Hinglish produce rule Findings
+and original-source highlights in both modes. Their trained classifiers and CTI
+NER are still unavailable; no multilingual learned accuracy is claimed. The
+language control offers Auto/English/Hindi/Hinglish. Automatic script/lexical
+guesses are unverified, with manual selection available. IOC extraction works
+across surrounding languages. See [the integration checkpoint](checkpoints/HINDI_HINGLISH.md)
+and the earlier [coverage checkpoint](checkpoints/LANGUAGE_COVERAGE.md).
 
 ---
 
@@ -119,17 +120,17 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** all **253 tests pass** in an isolated Ubuntu-24.04 WSL
+**Current validation:** all **266 tests pass** in an isolated Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
 saved-NER, original-offset, merger, API, action-feature, scam-pattern and launcher tests;
-see `results/language_coverage_validation.txt` (local generated log) and
+see `results/indic_integration_validation.txt` (local generated log) and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
-were changed. Current native Windows subsets pass 23 API, 10 language and 10
-combined-review tests. Actual Chrome checks cover real NER/IOC inference, scam
+were changed. A focused native Windows run passes 78 API/language/Indic-rule/
+combined-review/intake tests. Actual Chrome checks cover real NER/IOC inference, scam
 warnings, JSON export, mobile layout, missing-model recovery and language scope
-in both modes. The latest [language checkpoint](checkpoints/LANGUAGE_COVERAGE.md)
-records coverage states and the unverified Latin-script assumption.
+in both modes. The latest [Hindi/Hinglish checkpoint](checkpoints/HINDI_HINGLISH.md)
+records phrase-rule support, data auditing and the remaining supervised-model gap.
 The earlier [data intake checkpoint](checkpoints/SMS_DATA_INTAKE.md) records
 22 native intake tests and private batch leakage checks. The earlier
 [learned comparison checkpoint](checkpoints/LEARNED_MESSAGE_EXPANSION.md)

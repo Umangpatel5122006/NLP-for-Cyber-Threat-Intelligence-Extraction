@@ -360,7 +360,7 @@ try {
   await evaluate("document.getElementById('analysis-mode').value='ner';document.getElementById('analysis-mode').dispatchEvent(new Event('change',{bubbles:true}))");
   await setText("हा हल्ला आहे 185.22.10[.]5.");
   await analyze();
-  assert.equal(await evaluate("!document.getElementById('notice').hidden && document.getElementById('notice').textContent.includes('support English')"), true);
+  assert.equal(await evaluate("!document.getElementById('notice').hidden && document.getElementById('notice').textContent.includes('English only')"), true);
   assert.equal(await evaluate("state.result.document.metadata.message_assessment.status"), "unsupported_language");
   record("Unsupported-language NER status is visible while IOC evidence remains available.");
   for (const mode of ["ioc", "ner"]) {
@@ -377,11 +377,12 @@ try {
       await analyze();
       const report = await evaluate("state.result.document");
       assert.notEqual(report.metadata.language, "en");
-      assert.equal(report.metadata.message_assessment.status, "unsupported_language");
+      const indic = ["hi", "hi-en"].includes(report.metadata.language);
+      assert.equal(report.metadata.message_assessment.status, indic ? "partial_coverage" : "unsupported_language");
       assert.equal(report.metadata.message_classifier.status, "not_applicable");
       assert.ok(report.findings.some(row => row.label === "IP"));
       assert.equal(await evaluate("document.getElementById('report-view').textContent"), text);
-      assert.equal(await evaluate("document.getElementById('map-risk-title').textContent"), "English analysis unavailable for this text");
+      assert.equal(await evaluate("document.getElementById('map-risk-title').textContent"), indic ? "Message analysis coverage is incomplete" : "Message-rule language coverage unavailable");
       if (mode === "ner") assert.ok(Object.values(report.metadata.ner).every(layer => layer.status === "unsupported_language"));
       languageObservations.push({case: name, mode, language: report.metadata.language, script: report.metadata.script, status: report.metadata.message_assessment.status});
     }
@@ -391,16 +392,53 @@ try {
   assert.equal(await evaluate("document.documentElement.scrollWidth <= window.innerWidth"), true);
   await screenshot("web_unsupported_language_mobile.png");
   await command("Emulation.setDeviceMetricsOverride", {width: 1440, height: 1120, deviceScaleFactor: 1, mobile: false}, session);
-  record("Six non-English/mixed script cases preserve IOCs and show unavailable English coverage in BOTH modes, including mobile layout.");
-  for (const text of ["Su cuenta bancaria necesita una nueva clave", "Aapke bank account me paise milenge reply karo"]) {
+  record("Six script cases preserve IOCs and distinguish Hindi/Hinglish partial coverage from unsupported languages in BOTH modes, including mobile layout.");
+  for (const [text, status, label] of [["Su cuenta bancaria necesita una nueva clave", "assumed_english", "English assumed"], ["Aapke bank account me paise milenge reply karo", "guessed_hinglish", "Hinglish guessed"]]) {
     await setText(text);
     await analyze();
-    assert.equal(await evaluate("state.result.document.metadata.language_detection.status"), "assumed_english");
+    assert.equal(await evaluate("state.result.document.metadata.language_detection.status"), status);
     assert.equal(await evaluate("state.result.document.metadata.language_detection.verified"), false);
     assert.ok((await evaluate("document.getElementById('language-coverage').textContent")).includes("not verified"));
-    assert.ok((await evaluate("document.getElementById('analysis-timing').textContent")).includes("English assumed"));
+    assert.ok((await evaluate("document.getElementById('analysis-timing').textContent")).includes(label));
   }
-  record("Spanish/Hinglish Latin text is explicitly an unverified English assumption, not claimed multilingual coverage.");
+  record("Latin English assumptions and lexical Hinglish guesses remain explicitly unverified.");
+  const indicCases = JSON.parse(await readFile("examples/hindi_hinglish_regressions.json", "utf8")).messages;
+  for (const mode of ["ioc", "ner"]) {
+    await evaluate("document.getElementById('analysis-mode').value=" + JSON.stringify(mode) + ";document.getElementById('analysis-mode').dispatchEvent(new Event('change',{bubbles:true}))");
+    for (const entry of indicCases) {
+      await setText(entry.text);
+      await analyze();
+      const doc = await evaluate("state.result.document");
+      assert.equal(doc.metadata.message_risk.status, entry.expected_rule_status, entry.id);
+      assert.equal(doc.metadata.message_classifier.status, "not_applicable");
+      assert.equal(await evaluate("document.getElementById('report-view').textContent"), entry.text);
+      assert.ok((await evaluate("document.getElementById('risk-method').textContent")).includes("Hindi/Hinglish phrase rules"));
+      if (entry.expected_rule_status !== "no_pattern_detected") {
+        assert.ok(doc.review_findings.some(r => r.kind === "message_rule"));
+        assert.ok(await evaluate("document.querySelectorAll('#report-view mark[data-risk-index]').length") > 0);
+      }
+      for (const cue of doc.metadata.message_risk.signals) {
+        assert.equal(Array.from(entry.text).slice(cue.original_start, cue.original_end).join(""), cue.original_text);
+      }
+    }
+  }
+  await screenshot("web_hindi_hinglish_evidence.png");
+  record("Eighteen authored Hindi/Hinglish threat, benign and warning cases pass in BOTH modes, with original cues and no English-model predictions.");
+  await evaluate("document.getElementById('report-language').value='hi-en';document.getElementById('report-language').dispatchEvent(new Event('change',{bubbles:true}))");
+  assert.equal(await evaluate("state.result"), null);
+  assert.equal(await evaluate("document.getElementById('download-button').disabled"), true);
+  await setText("Please share your password.");
+  await analyze();
+  assert.equal(await evaluate("state.result.document.metadata.language"), "hi-en");
+  assert.equal(await evaluate("state.result.document.metadata.language_detection.status"), "user_selected");
+  assert.equal(await evaluate("state.result.document.metadata.message_classifier.status"), "not_applicable");
+  await command("Emulation.setDeviceMetricsOverride", {width: 390, height: 844, deviceScaleFactor: 1, mobile: true}, session);
+  assert.equal(await evaluate("document.documentElement.scrollWidth <= window.innerWidth"), true);
+  await screenshot("web_hinglish_mobile.png");
+  await evaluate("document.getElementById('report-language').value='auto';document.getElementById('report-language').dispatchEvent(new Event('change',{bubbles:true}))");
+  assert.equal(await evaluate("state.result"), null);
+  await command("Emulation.setDeviceMetricsOverride", {width: 1440, height: 1120, deviceScaleFactor: 1, mobile: false}, session);
+  record("Manual Hindi/Hinglish language selection clears stale results, routes the API and preserves mobile layout.");
   await setText("Routine administrative documentation for the scheduled meeting. ".repeat(20));
   await analyze();
   assert.equal(await evaluate("state.result.document.metadata.message_assessment.status"), "partial_coverage");

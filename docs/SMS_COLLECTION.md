@@ -67,7 +67,7 @@ in a prepared runtime:
 | `source_reference` | Dataset URL/row locator, or a nonidentifying private collection reference |
 | `usage_permission` | `public_dataset` or `consented_research`; record the actual license/permission in the source reference or rationale |
 | `observed_date` | Known observation or collection date as `YYYY-MM-DD`; do not invent an original send date |
-| `language`, `origin` | `en` and `real` for eligible training rows; generated content is `synthetic` and is excluded |
+| `language`, `origin` | `en`, `hi` or `hi-en`, and `real` for eligible rows; generated/translated text is not real collected SMS and is excluded |
 | `category` | One of the categories below; category does not determine the label |
 | `campaign_id` | Shared stable ID for related campaign/template variants, even when wording differs; leave blank when unknown |
 | `reviewer_a`, `label_a` | First reviewer's alias and independent `ham`, `spam` or `uncertain` label |
@@ -100,9 +100,10 @@ source-aware validation as well as template grouping.
 
 ## What the audit and freeze enforce
 
-- Exclude non-real, non-English, empty/oversized, uncertain or insufficiently
-  reviewed records. The current classifier's scope is English messages <=1,000
-  characters. Missing provenance/date/category/rationale is quarantined.
+- Exclude non-real, unsupported-language, empty/oversized, uncertain or insufficiently
+  reviewed records. Intake accepts English/Hindi/Hinglish messages <=1,000
+  characters; trained models still cover English only. Missing
+  provenance/date/category/rationale is quarantined.
 - Quarantine contradictory canonical-template labels; collapse redundant
   number/URL variants so they do not count as independent examples.
 - Exclude exact/near matches to the entire pinned UCI/supplement corpora,
@@ -113,9 +114,10 @@ source-aware validation as well as template grouping.
   campaign members. If any member overlaps a protected reference, exclude the
   entire connected group. Removing a duplicate alias does not break campaign
   links between its remaining members.
-- Freeze five stratified group folds with seed 91: fold 0 is reserved test,
-  fold 1 dev, and the other three train. Require at least five independent
-  groups per label and both labels in every partition. This minimum allows
+- Freeze five language/label-stratified group folds with seed 91: fold 0 is
+  reserved test, fold 1 dev, and the other three train. Require at least five
+  independent groups per label **per included language**, with both labels for
+  every language in every partition. This minimum allows
   splitting; it does not establish adequate sample size or deployment readiness.
 - Verify snapshot, protocol source and prior-reference hashes. The loader
   accepts only train/dev and rejects test before file access. No official

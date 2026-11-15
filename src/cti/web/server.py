@@ -115,15 +115,19 @@ class ReviewEngine:
                     break
         return {"schema_version": 1, "modes": modes, "max_characters": MAX_CHARACTERS,
                 "review_schema_version": 1,
-                "language_support": {"ner": ["en"], "sms_classifier": ["en"], "message_rules": ["en"],
+                "language_support": {"ner": ["en"], "sms_classifier": ["en"], "message_rules": ["en", "hi", "hi-en"],
                                      "ioc_extraction": "language_independent_patterns",
-                                     "language_detection": "unicode_script_heuristic; not verified language identification"},
+                                     "language_detection": "script_and_lexical_heuristic; manual override; not verified language identification"},
                 "message_classifier": message_model,
-                "message_risk": {"method": "english_rules", "rule_version": RULE_VERSION, "available_in": list(MODES)}}
+                "message_risk": {"method": "classical_multilingual_rules", "rule_version": RULE_VERSION,
+                                 "indic_rule_version": 1, "supported_languages": ["en", "hi", "hi-en"], "available_in": list(MODES)}}
 
     def analyze(self, payload):
-        if not isinstance(payload, dict) or set(payload) != {"text", "mode"}:
+        if not isinstance(payload, dict) or not {"text", "mode"} <= set(payload) or set(payload) - {"text", "mode", "language"}:
             raise ReviewError(400, "invalid_request", "Provide report text and an analysis mode.")
+        language = payload.get("language", "auto")
+        if not isinstance(language, str) or language not in ("auto", "en", "hi", "hi-en"):
+            raise ReviewError(400, "invalid_language", "Choose Auto, English, Hindi or Hinglish.")
         text, mode = payload["text"], payload["mode"]
         if not isinstance(mode, str) or mode not in MODES:
             raise ReviewError(400, "invalid_mode", "Choose a supported analysis mode.")
@@ -141,7 +145,7 @@ class ReviewEngine:
         try:
             pipeline = self._pipeline(mode)
             started = time.perf_counter()
-            document = pipeline.run(text)
+            document = pipeline.run(text, language_hint=language) if language != "auto" else pipeline.run(text)
             return {
                 "document": asdict(document),
                 "analysis": {"mode": mode, "elapsed_ms": round((time.perf_counter() - started) * 1000)},

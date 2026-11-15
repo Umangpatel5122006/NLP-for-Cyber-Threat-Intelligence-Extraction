@@ -1,6 +1,15 @@
 # Project progress, in order
 
-Latest local checkpoint: [language and analysis coverage](LANGUAGE_COVERAGE.md).
+Latest local checkpoint: [Hindi/Hinglish message checks](HINDI_HINGLISH.md).
+Both modes apply classical Hindi/Hinglish phrase/request/context checks, show
+original-source cues and support Auto/manual language selection. English SMS/CTI
+models remain English-only; no new-language learned accuracy is claimed. Intake
+accepts en/hi/hi-en with per-language class/group locks. A pinned 184-row source
+was audited but not fitted: no Devanagari rows or author language labels. Real
+reviewed Hindi/Hinglish data are still needed. All 266 WSL tests and 78 native
+focused tests pass. Model weights are unchanged.
+
+Previous local checkpoint: [language and analysis coverage](LANGUAGE_COVERAGE.md).
 One NLP target language is supported: English. Script guesses do not add trained
 Hindi/Marathi/Gujarati support. API/UI now disclose assumed English, unsupported
 language and incomplete checks while retaining IOC/positive-rule evidence.
@@ -52,7 +61,7 @@ Dev sentence F1 is 0.6793 at threshold 0.5. Entity and action CRFs now also have
 saved artifacts, full-dev reload checks and live document modules. New metrics
 version 2 all-dev exact F1 is 0.2596 (entities) and 0.1551 (actions), using the
 existing processed BIO labels. The official test split is still reserved.
-All 253 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
+All 266 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
 native imports remain blocked by Application Control without policy changes.
 Deep learning is excluded. Allowed NER choices are CRF, MEMM, and token Logistic
 Regression; historical neural experiments are guarded against execution.

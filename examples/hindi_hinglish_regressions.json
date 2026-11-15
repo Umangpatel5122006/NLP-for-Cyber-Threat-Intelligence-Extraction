@@ -1,0 +1,96 @@
+{
+  "origin": "assistant_authored_synthetic",
+  "purpose": "regression_only_never_training_or_independent_accuracy_evaluation",
+  "messages": [
+    {
+      "id": "hi-grant",
+      "text": "सरकार हर नागरिक को १५ लाख रुपये दे रही है। पैसे खाते में प्राप्त करने के लिए कृपया इस नंबर पर SMS करें।",
+      "expected_rule_status": "suspicious"
+    },
+    {
+      "id": "hinglish-grant",
+      "text": "Sarkar aapke khate me 8 lakh rupaye de rahi hai. Paise paane ke liye is number par SMS karein.",
+      "expected_rule_status": "suspicious"
+    },
+    {
+      "id": "hi-secret",
+      "text": "अपना ओटीपी और पासवर्ड इस नंबर पर भेजें।",
+      "expected_rule_status": "suspicious"
+    },
+    {
+      "id": "hinglish-secret",
+      "text": "Aap apna OTP aur PIN mujhe batao.",
+      "expected_rule_status": "suspicious"
+    },
+    {
+      "id": "hi-warning",
+      "text": "सावधान! यह एक फर्जी संदेश का उदाहरण है: आप ५० लाख रुपये जीत गए हैं। इनाम पाने के लिए SMS करें।",
+      "expected_rule_status": "review_context"
+    },
+    {
+      "id": "hinglish-warning",
+      "text": "Savdhan, farzi SMS ka example: Aap 50 lakh rupaye jeet gaye hain. Inaam paane ke liye reply karein.",
+      "expected_rule_status": "review_context"
+    },
+    {
+      "id": "hi-negation",
+      "text": "अपना ओटीपी किसी को मत बताएं।",
+      "expected_rule_status": "no_pattern_detected"
+    },
+    {
+      "id": "hinglish-negation",
+      "text": "Kabhi apna OTP kisi ko share mat karo.",
+      "expected_rule_status": "no_pattern_detected"
+    },
+    {
+      "id": "hinglish-completed",
+      "text": "Aapke bank account me Rs5000 credit ho gaye. SMS HELP for details.",
+      "expected_rule_status": "no_pattern_detected"
+    },
+    {
+      "id": "hi-completed",
+      "text": "आपके बैंक खाते में ₹५००० जमा हो गए हैं। किसी कार्रवाई की जरूरत नहीं है।",
+      "expected_rule_status": "no_pattern_detected"
+    },
+    {
+      "id": "hi-ownapp",
+      "text": "अपना ओटीपी केवल अपने ऐप में दर्ज करें।",
+      "expected_rule_status": "no_pattern_detected"
+    },
+    {
+      "id": "hinglish-ownapp",
+      "text": "Apna OTP keval apne app me enter karein.",
+      "expected_rule_status": "no_pattern_detected"
+    },
+    {
+      "id": "hi-no-fee",
+      "text": "ओटीपी भेजें, कोई शुल्क नहीं है।",
+      "expected_rule_status": "suspicious"
+    },
+    {
+      "id": "hinglish-threat",
+      "text": "Apna OTP bhejo nahi to account band kar denge.",
+      "expected_rule_status": "suspicious"
+    },
+    {
+      "id": "hi-friend",
+      "text": "कल घर आ जाना और दूध ले आना।",
+      "expected_rule_status": "no_pattern_detected"
+    },
+    {
+      "id": "hinglish-friend",
+      "text": "Kal ghar aa jana aur doodh le aana.",
+      "expected_rule_status": "no_pattern_detected"
+    },
+    {
+      "id": "hi-negated-offer",
+      "text": "सरकार पैसे नहीं देगी। कृपया SMS करें।",
+      "expected_rule_status": "no_pattern_detected"
+    },
+    {
+      "id": "hi-link",
+      "text": "अपना पासवर्ड इस लिंक पर दर्ज करें: hxxps://bank-check[.]example[.]com/login",
+      "expected_rule_status": "suspicious"
+    }
+  ]
+}
