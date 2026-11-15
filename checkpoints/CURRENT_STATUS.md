@@ -1,6 +1,15 @@
 # Project progress, in order
 
-Latest local checkpoint: [learned SMS data expansion](LEARNED_MESSAGE_EXPANSION.md).
+Latest local checkpoint: [reviewed SMS data intake](SMS_DATA_INTAKE.md).
+The empty local annotation CSV and audit/freeze command are ready. They exclude
+unresolved/synthetic records and prior corpus/diagnostic/campaign overlaps,
+preserve reviewer/source provenance locally, freeze new group splits, and reject
+test access. No new real messages or training are claimed. Next input is the
+team's independently reviewed legitimate and suspicious SMS collection; see
+[the guide](../docs/SMS_COLLECTION.md). Private batches stay ignored by Git.
+Current validation is 239 WSL tests and 22 native Windows intake tests.
+
+Previous local checkpoint: [learned SMS data expansion](LEARNED_MESSAGE_EXPANSION.md).
 The candidate learns from 255 additional overlap-audited training messages and
 raises supplement dev spam F1 from 0.6400 to 0.9538 (UCI 0.9810 to 0.9761).
 It is **held**, with default artifacts unchanged: authored diagnostic false
@@ -34,7 +43,7 @@ Dev sentence F1 is 0.6793 at threshold 0.5. Entity and action CRFs now also have
 saved artifacts, full-dev reload checks and live document modules. New metrics
 version 2 all-dev exact F1 is 0.2596 (entities) and 0.1551 (actions), using the
 existing processed BIO labels. The official test split is still reserved.
-All 217 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
+All 239 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
 native imports remain blocked by Application Control without policy changes.
 Deep learning is excluded. Allowed NER choices are CRF, MEMM, and token Logistic
 Regression; historical neural experiments are guarded against execution.

@@ -1,0 +1,14 @@
+{
+  "purpose": "Known diagnostic messages: exclude overlaps from future training intake.",
+  "messages": [
+    {
+      "text": "PM Modi is giving 15 lakhs rupees to every citizen of our country . To credit it in you bank account .\nKindly SMS 6969 on following number :\n6969696969"
+    },
+    {
+      "text": "PM Modi is giving 15 lakhs rupees to every citizen of our country. To credit it in your bank account. Kindly SMS 6969."
+    },
+    {
+      "text": "Your bank account was credited with INR 1000. No action is required."
+    }
+  ]
+}

@@ -19,6 +19,8 @@ dist/
 
 # Models & Weights (root directory only)
 /models/
+# Team-collected SMS annotations, provenance and frozen private batch snapshots.
+/data/local_sms/
 *.joblib
 *.pkl
 *.pickle

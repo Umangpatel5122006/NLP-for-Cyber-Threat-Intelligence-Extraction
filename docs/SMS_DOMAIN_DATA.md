@@ -78,3 +78,5 @@ scams. Preserve collection source, date, labeling rationale and template groups;
 remove private personal information. Do not label examples just from keywords.
 Freeze new source/template partitions before tuning, and keep a separate final
 evaluation set. Do not fit the current dev or diagnostic challenge examples.
+The [collection and intake guide](SMS_COLLECTION.md) now supplies the private
+CSV schema, review checks, protected-overlap exclusions and batch freeze commands.

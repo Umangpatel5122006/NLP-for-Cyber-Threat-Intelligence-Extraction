@@ -50,6 +50,10 @@ Preview it independently with
 `python scripts/start_workbench.py --port 8766 --message-model models/message_generalization_v1/candidate.joblib`.
 See [supplement provenance and data needs](docs/SMS_DOMAIN_DATA.md) before
 collecting more examples. Both SMS holdouts and the CTI test remain reserved.
+The next [data-intake step](checkpoints/SMS_DATA_INTAKE.md) provides a local
+annotation CSV, overlap/review checks and immutable new batch splits. Follow
+[the collection guide](docs/SMS_COLLECTION.md) to add real reviewed examples;
+`data/local_sms/` stays ignored. Intake checks do not train or change the app.
 
 On a fresh clone, model binaries are absent because `models/` is ignored.
 After installing pinned dependencies or preparing WSL, run
@@ -107,16 +111,18 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** all **217 tests pass** in an isolated Ubuntu-24.04 WSL
+**Current validation:** all **239 tests pass** in an isolated Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
 saved-NER, original-offset, merger, API, action-feature, scam-pattern and launcher tests;
-see `results/message_expansion_validation.txt` (local generated log) and
+see `results/sms_intake_validation.txt` (local generated log) and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
 were changed. Current native Windows subsets pass 22 API, 17 rule and 7 review
 tests. Twenty-two actual Chrome check groups cover real NER/IOC inference, scam
 warnings, JSON export, mobile layout and missing-model recovery.
-The latest [learned comparison checkpoint](checkpoints/LEARNED_MESSAGE_EXPANSION.md)
+The latest [data intake checkpoint](checkpoints/SMS_DATA_INTAKE.md) records
+22 native intake tests and private batch leakage checks. The earlier
+[learned comparison checkpoint](checkpoints/LEARNED_MESSAGE_EXPANSION.md)
 records the candidate, independent audit and release hold. The earlier
 [fix checkpoint](checkpoints/MESSAGE_ROBUSTNESS.md)
 records phone-independent request matching, mutation checks and remaining limits.

@@ -1,0 +1,32 @@
+{
+  "date": "2026-11-15",
+  "step": "sms_intake_v1",
+  "full_suite": {
+    "runtime": "Ubuntu-24.04 WSL / Python 3.12",
+    "tests": 239,
+    "passed": true
+  },
+  "native_intake": {
+    "runtime": "Windows project .venv / Python 3.11",
+    "tests": 22,
+    "passed": true
+  },
+  "native_wsl_cli_audits_identical": true,
+  "synthetic_cli_rows": 3,
+  "synthetic_cli_rows_accepted": 0,
+  "freeze_empty_accepted_set_rejected": true,
+  "new_real_rows_collected": 0,
+  "new_model_trained": false,
+  "existing_artifacts_unchanged": {
+    "models/message_spam.joblib": "29e05300ac835d169b1ef9d4650dc219e350e11a817b65efe7afb96c61d8a2e3",
+    "models/message_generalization_v1/candidate.joblib": "8e9006bbb6d57eb9a37e9b865329c6c57c5bedecb0b150980af8dfc0d87a9300"
+  },
+  "existing_candidate_still_held": true,
+  "protocol_source_sha256": {
+    "src/cti/sms_intake.py": "19e9a3860acc0a12882e453aeb1734326ca18beca989716496491484e9566b53",
+    "src/cti/core/sms_domain.py": "6b50ea5a91f03949daace040006df050f0772455587062b59a6ce6ecab5360b5",
+    "src/cti/core/sms_data.py": "68d0b7f8146920ea91b1c042be1fce666e8d181eb9fc6890e9b76b04563d182b"
+  },
+  "test_evaluated": false,
+  "remote_ci_run": false
+}
