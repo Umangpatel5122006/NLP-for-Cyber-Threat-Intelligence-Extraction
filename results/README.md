@@ -24,6 +24,9 @@ independent audit are in [message_generalization_v1/](message_generalization_v1/
 The next [SMS intake validation](sms_intake_v1/README.md) keeps only compact
 test/CLI evidence; raw annotations and private snapshots stay in ignored
 `data/local_sms/` rather than in public results.
+The [language coverage summary](language_coverage_v1/README.md) records explicit
+English scope, browser/API checks and unchanged model identities without adding
+screenshots or per-case response files to Git.
 
 Removing previously tracked generated files from Git's index keeps their local
 copies. The cleanup applies to future commits; it does not rewrite existing

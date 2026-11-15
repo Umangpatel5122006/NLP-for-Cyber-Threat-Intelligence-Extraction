@@ -317,7 +317,8 @@ function renderResults() {
   }
   if (!findings.length) {
     const empty = element("div", "list-empty");
-    empty.append(element("p", "", reviewFindings().length ? "No findings match these filters." : "No detections requiring review."), element("small", "", "Missing detections do not establish safety. Check model coverage and message assessment."));
+    const limited = ["unsupported_language", "partial_coverage"].includes(state.result?.document?.metadata?.message_assessment?.status);
+    empty.append(element("p", "", reviewFindings().length ? "No findings match these filters." : limited ? "No extracted findings; analysis coverage is limited." : "No detections requiring review."), element("small", "", "Missing detections do not establish safety. Check model coverage and message assessment."));
     fragment.append(empty);
   }
   list.replaceChildren(fragment);
@@ -334,8 +335,9 @@ function renderMessageRisk(risk) {
   $("model-disagreement").textContent = assessment?.disagreement ? "The classifier predicts ham, but message rules flag suspicious cues. The suspicious finding is retained for review." : "Ham/spam is a separate prediction from scam-pattern rules and CTI entity extraction.";
   $("message-risk").hidden = false;
   $("message-risk").dataset.status = assessment?.status || "unavailable";
-  $("risk-status").textContent = {suspicious: "Suspicious message detected for review", review_context: "Review the message context", no_pattern_detected: "No supported message-risk detection"}[assessment?.status] || "Message risk check unavailable";
+  $("risk-status").textContent = {suspicious: "Suspicious message detected for review", review_context: "Review the message context", no_pattern_detected: "No supported message-risk detection", unsupported_language: "English analysis unavailable for this text", partial_coverage: "Message analysis coverage is incomplete"}[assessment?.status] || "Message risk check unavailable";
   $("risk-summary").textContent = assessment?.summary || "Restart the local server to load the message risk check. Extracted findings alone do not establish safety.";
+  $("language-coverage").textContent = assessment?.coverage?.language_note || "Only English NLP is supported; language has not been verified.";
   $("risk-alert").hidden = false;
   $("risk-alert").dataset.status = assessment?.status || "unavailable";
   $("risk-headline").textContent = $("risk-status").textContent;
@@ -364,6 +366,9 @@ function showAnalysis(result) {
   if (result.document.metadata?.message_risk?.rule_version !== 2) {
     throw new Error("The running server has outdated message rules. Stop it with Ctrl+C, run python scripts/start_workbench.py, then reload this page. No model retraining is needed for this rule update.");
   }
+  if (result.document.metadata?.message_assessment?.coverage?.version !== 1) {
+    throw new Error("The running server has outdated language-coverage reporting. Stop it with Ctrl+C, run python scripts/start_workbench.py, then reload this page. No model retraining is needed.");
+  }
   state.result = result;
   const doc = result.document, rows = reviewFindings(), primary = rows.filter((finding) => finding.role === "primary");
   const extractions = doc.findings.filter((finding) => finding.role === "primary");
@@ -377,11 +382,11 @@ function showAnalysis(result) {
   for (const id of ["download-button", "finding-search", "label-filter", "show-components"]) $(id).disabled = false;
   $("finding-search").value = "";
   $("show-components").checked = false;
-  $("analysis-timing").textContent = (result.analysis.elapsed_ms / 1000).toFixed(2) + "s · " + (doc.metadata.language || "unknown").toUpperCase();
+  $("analysis-timing").textContent = (result.analysis.elapsed_ms / 1000).toFixed(2) + "s · " + (doc.metadata.language === "en" ? "English assumed" : (doc.metadata.script || "unknown") + " script");
   const cueCount = riskSignals().length;
   $("map-note").textContent = doc.entities.length + " extraction observations · " + cueCount + " message-risk cues · Select a highlight to inspect its evidence";
-  const unsupported = Object.values(doc.metadata.ner || {}).some((layer) => layer.status === "unsupported_language");
-  if (unsupported) notice("Entity and action models support English. IOC findings are shown for this report.");
+  const unsupported = doc.metadata.language !== "en" || Object.values(doc.metadata.ner || {}).some((layer) => layer.status === "unsupported_language");
+  if (unsupported) notice("NLP models support English only. Language coverage is unavailable or uncertain for this report; extracted IOC evidence remains available.");
   else notice();
   renderResults();
 }

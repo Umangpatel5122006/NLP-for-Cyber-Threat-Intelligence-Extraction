@@ -7,6 +7,14 @@ are CRF, MEMM, and token Logistic Regression. Trained spaCy NER, BiLSTMs,
 transformers, neural embeddings, and LLMs are excluded. spaCy's blank tokenizer,
 token shapes, and rule-based dictionary matching remain in scope.
 
+**Language support: English only** for trained NER, relevance and SMS models,
+and English scam-pattern rules. Hindi/Marathi/Gujarati guesses are unverified
+heuristics; they do not provide trained NLP in those languages. IOC patterns can
+be extracted from other-language text. Latin text is visibly **English assumed**,
+including unvalidated Hinglish/other Latin-script languages. Unsupported language
+or an unavailable/out-of-scope SMS model now shows explicit coverage limits.
+See [the language checkpoint](checkpoints/LANGUAGE_COVERAGE.md).
+
 ---
 
 ## Run the Browser Workbench
@@ -111,16 +119,18 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** all **239 tests pass** in an isolated Ubuntu-24.04 WSL
+**Current validation:** all **253 tests pass** in an isolated Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
 saved-NER, original-offset, merger, API, action-feature, scam-pattern and launcher tests;
-see `results/sms_intake_validation.txt` (local generated log) and
+see `results/language_coverage_validation.txt` (local generated log) and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
-were changed. Current native Windows subsets pass 22 API, 17 rule and 7 review
-tests. Twenty-two actual Chrome check groups cover real NER/IOC inference, scam
-warnings, JSON export, mobile layout and missing-model recovery.
-The latest [data intake checkpoint](checkpoints/SMS_DATA_INTAKE.md) records
+were changed. Current native Windows subsets pass 23 API, 10 language and 10
+combined-review tests. Actual Chrome checks cover real NER/IOC inference, scam
+warnings, JSON export, mobile layout, missing-model recovery and language scope
+in both modes. The latest [language checkpoint](checkpoints/LANGUAGE_COVERAGE.md)
+records coverage states and the unverified Latin-script assumption.
+The earlier [data intake checkpoint](checkpoints/SMS_DATA_INTAKE.md) records
 22 native intake tests and private batch leakage checks. The earlier
 [learned comparison checkpoint](checkpoints/LEARNED_MESSAGE_EXPANSION.md)
 records the candidate, independent audit and release hold. The earlier

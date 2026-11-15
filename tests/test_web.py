@@ -17,6 +17,12 @@ def available_iocs(mode):
 
 
 class ReviewEngineTests(unittest.TestCase):
+    def test_capabilities_declare_one_nlp_language_and_separate_ioc_scope(self):
+        scope = ReviewEngine(loader=available_iocs).status()["language_support"]
+        for name in ("ner", "sms_classifier", "message_rules"):
+            self.assertEqual(scope[name], ["en"])
+        self.assertEqual(scope["ioc_extraction"], "language_independent_patterns")
+
     def test_status_reports_unavailable_models_and_keeps_ioc_mode_ready(self):
         status = ReviewEngine(loader=available_iocs).status()
         modes = {mode["id"]: mode for mode in status["modes"]}

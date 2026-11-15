@@ -1,0 +1,60 @@
+{
+  "date": "2026-11-15",
+  "supported_nlp_languages": [
+    "en"
+  ],
+  "language_identification": "unverified_unicode_script_heuristic_v2",
+  "new_language_models_added": false,
+  "full_suite": {
+    "runtime": "Ubuntu-24.04 WSL / Python 3.12",
+    "tests": 253,
+    "passed": true
+  },
+  "native_windows_passed": {
+    "language_tests": 10,
+    "review_tests": 10,
+    "api_tests": 23
+  },
+  "browser": {
+    "default": {
+      "passed": true,
+      "check_groups": 26,
+      "non_english_both_mode_cases": 12,
+      "preview_false_alarm_observations": []
+    },
+    "candidate": {
+      "passed": true,
+      "check_groups": 26,
+      "non_english_both_mode_cases": 12,
+      "preview_false_alarm_observations": [
+        {
+          "case": "benign_credit_notification",
+          "expected": "ham",
+          "predicted": "spam",
+          "false_alarm": true,
+          "artifact_sha256": "8e9006bbb6d57eb9a37e9b865329c6c57c5bedecb0b150980af8dfc0d87a9300"
+        }
+      ]
+    }
+  },
+  "real_http_cases": 20,
+  "existing_model_artifact_sha256": {
+    "message_spam": "29e05300ac835d169b1ef9d4650dc219e350e11a817b65efe7afb96c61d8a2e3",
+    "message_generalization_v1/candidate": "8e9006bbb6d57eb9a37e9b865329c6c57c5bedecb0b150980af8dfc0d87a9300",
+    "ner_entities": "d5195ebe781197a15ebea3e31b15228334c236e05bec2f1b2c91de3a6033cd79",
+    "ner_action": "1732d7e0a1d4c5be1433dff1daf31c2893e0702b43b70142840d871e4d45da15"
+  },
+  "weights_changed": false,
+  "test_evaluated": false,
+  "remote_ci_run": false,
+  "source_sha256": {
+    "src/cti/preprocessing/language_detector.py": "3818fbdc8a5777af3f8959f319f354bb2a4cf08506587cbe4e4639c9fbc5ce6c",
+    "src/cti/extractors/message_risk.py": "da428d95b7685d1e0ad32a3a11d8df8c98f1861b99e5bf578d238a9a1c6eba87",
+    "src/cti/output/review.py": "6ee1eae4187221e0e466296af9445050fc20ce16a70ef710a62a8e6572f4bda0",
+    "src/cti/web/server.py": "f22e60c778115aeb2a5ba95036cad2ff7ceb50577f15804e9d7550fc1405e38e",
+    "src/cti/web/static/app.js": "e850d678d544e9b9e291c10f012cdc68989714104a13a8b84d21128e1defb853",
+    "src/cti/web/static/index.html": "9bc43ef323769a31ef03d73d3806353d58c12b766281ba7278b041e3084af480",
+    "src/cti/web/static/styles.css": "0197c1729353e527cf39a474f52e2cd7a4df6f1c3f4f0b87ca3e907e3de5d4d4",
+    "scripts/check_web_ui.mjs": "d20622e9ec0264e3c5322e0c2db41d5494c00f8894a5a67a3d9c41fc65231f3e"
+  }
+}

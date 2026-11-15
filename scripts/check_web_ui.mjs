@@ -50,6 +50,7 @@ function command(method, params = {}, sessionId) {
 let session;
 const checks = [];
 const modelObservations = [];
+const languageObservations = [];
 const record = (message) => { checks.push(message); console.log(message); };
 async function evaluate(expression) {
   const result = await command("Runtime.evaluate", {expression, awaitPromise: true, returnByValue: true}, session);
@@ -360,7 +361,64 @@ try {
   await setText("हा हल्ला आहे 185.22.10[.]5.");
   await analyze();
   assert.equal(await evaluate("!document.getElementById('notice').hidden && document.getElementById('notice').textContent.includes('support English')"), true);
+  assert.equal(await evaluate("state.result.document.metadata.message_assessment.status"), "unsupported_language");
   record("Unsupported-language NER status is visible while IOC evidence remains available.");
+  for (const mode of ["ioc", "ner"]) {
+    await evaluate("document.getElementById('analysis-mode').value=" + JSON.stringify(mode) + ";document.getElementById('analysis-mode').dispatchEvent(new Event('change',{bubbles:true}))");
+    for (const [name, text] of [
+      ["Hindi", "यह संदेश आपके बैंक खाते की जानकारी मांगता है। 185.22.10[.]5"],
+      ["Gujarati", "આ હુમલો ખતરનાક છે 185.22.10[.]5"],
+      ["Arabic", "يرجى إرسال كلمة المرور للحساب المصرفي 185.22.10[.]5"],
+      ["Cyrillic", "Ваш банковский счёт заблокирован 185.22.10[.]5"],
+      ["Chinese", "您的账户已冻结。https://bank-check[.]example[.]com/verify 185.22.10[.]5"],
+      ["Mixed", "Please reply आपके खाते में राशि जमा करने के लिए उत्तर दें 185.22.10[.]5"],
+    ]) {
+      await setText(text);
+      await analyze();
+      const report = await evaluate("state.result.document");
+      assert.notEqual(report.metadata.language, "en");
+      assert.equal(report.metadata.message_assessment.status, "unsupported_language");
+      assert.equal(report.metadata.message_classifier.status, "not_applicable");
+      assert.ok(report.findings.some(row => row.label === "IP"));
+      assert.equal(await evaluate("document.getElementById('report-view').textContent"), text);
+      assert.equal(await evaluate("document.getElementById('map-risk-title').textContent"), "English analysis unavailable for this text");
+      if (mode === "ner") assert.ok(Object.values(report.metadata.ner).every(layer => layer.status === "unsupported_language"));
+      languageObservations.push({case: name, mode, language: report.metadata.language, script: report.metadata.script, status: report.metadata.message_assessment.status});
+    }
+  }
+  await screenshot("web_unsupported_language.png");
+  await command("Emulation.setDeviceMetricsOverride", {width: 390, height: 844, deviceScaleFactor: 1, mobile: true}, session);
+  assert.equal(await evaluate("document.documentElement.scrollWidth <= window.innerWidth"), true);
+  await screenshot("web_unsupported_language_mobile.png");
+  await command("Emulation.setDeviceMetricsOverride", {width: 1440, height: 1120, deviceScaleFactor: 1, mobile: false}, session);
+  record("Six non-English/mixed script cases preserve IOCs and show unavailable English coverage in BOTH modes, including mobile layout.");
+  for (const text of ["Su cuenta bancaria necesita una nueva clave", "Aapke bank account me paise milenge reply karo"]) {
+    await setText(text);
+    await analyze();
+    assert.equal(await evaluate("state.result.document.metadata.language_detection.status"), "assumed_english");
+    assert.equal(await evaluate("state.result.document.metadata.language_detection.verified"), false);
+    assert.ok((await evaluate("document.getElementById('language-coverage').textContent")).includes("not verified"));
+    assert.ok((await evaluate("document.getElementById('analysis-timing').textContent")).includes("English assumed"));
+  }
+  record("Spanish/Hinglish Latin text is explicitly an unverified English assumption, not claimed multilingual coverage.");
+  await setText("Routine administrative documentation for the scheduled meeting. ".repeat(20));
+  await analyze();
+  assert.equal(await evaluate("state.result.document.metadata.message_assessment.status"), "partial_coverage");
+  assert.equal(await evaluate("document.getElementById('map-risk-title').textContent"), "Message analysis coverage is incomplete");
+  record("A report beyond the SMS length limit shows incomplete coverage rather than a full negative verdict.");
+  await evaluate(`(() => {
+    window.qaCoverageFetch = window.fetch;
+    const legacy = structuredClone(state.result);
+    delete legacy.document.metadata.message_assessment.coverage;
+    window.fetch = (url,...args) => url === '/api/analyze' ? Promise.resolve(new Response(JSON.stringify(legacy),{status:200,headers:{'Content-Type':'application/json'}})) : window.qaCoverageFetch(url,...args);
+  })()`);
+  await click("analyze-button");
+  await waitFor("!state.busy && !document.getElementById('notice').hidden");
+  assert.equal(await evaluate("state.result"), null);
+  assert.ok((await evaluate("document.getElementById('notice').textContent")).includes("outdated language-coverage"));
+  assert.equal(await evaluate("document.getElementById('download-button').disabled"), true);
+  await evaluate("window.fetch=window.qaCoverageFetch;delete window.qaCoverageFetch;");
+  record("A stale backend without language coverage is rejected with restart guidance and export disabled.");
   await click("example-button");
   await waitFor("!state.busy && document.getElementById('report-input').value.includes('APT29')");
   await analyze();
@@ -384,7 +442,7 @@ try {
   assert.deepEqual(failures.filter((message) => !message.includes("ERR_INTERNET_DISCONNECTED")), []);
   await writeFile(resolve(outputDirectory, "web_browser_validation.json"), JSON.stringify({
     passed: true, analysis_reference: {mode: summary.mode, action_artifact_sha256: summary.actionArtifact, finding_count: summary.findings},
-    checks, browser_console_errors: failures, preview_protocol: previewProtocol || null, model_observations: modelObservations,
+    checks, browser_console_errors: failures, preview_protocol: previewProtocol || null, model_observations: modelObservations, language_observations: languageObservations,
   }, null, 2) + "\n");
 } finally {
   try { await command("Browser.close"); } catch { browser.kill(); }

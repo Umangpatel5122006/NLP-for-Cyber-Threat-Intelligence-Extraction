@@ -54,8 +54,19 @@ def message_assessment(doc):
         status, summary = "suspicious", risk["summary"]
     elif model_positive:
         status, summary = "suspicious", "The classical SMS classifier predicts spam. Review the message; this is not verified fraud."
+    elif risk.get("status") == "unsupported_language":
+        status, summary = "unsupported_language", "English message analysis is unavailable or uncertain for this text. IOC findings remain available; this is not a safety verdict."
+    elif model.get("status") != "ok" or risk.get("status") != "no_pattern_detected":
+        status, summary = "partial_coverage", "Message analysis coverage is incomplete. The SMS classifier or English pattern check did not run within its supported scope. Missing detections do not establish safety."
     else:
         status, summary = "no_pattern_detected", "No supported message-risk detection. This does not establish safety; inspect model coverage and extracted evidence."
+    detection = doc.metadata.get("language_detection", {})
+    coverage = {"version": 1, "supported_languages": ["en"], "language": doc.metadata.get("language", "unknown"),
+                "language_method": detection.get("method", "not_recorded"), "language_verified": False,
+                "language_note": detection.get("note", "Only English NLP is supported; language has not been verified."),
+                "rules": risk.get("coverage", {}).get("status", "not_recorded"),
+                "sms_model": model.get("status", "unavailable")}
     return {"status": status, "summary": summary, "rule_status": risk.get("status", "unavailable"),
             "model_status": model.get("status", "unavailable"), "model_label": model.get("label"),
+            "coverage": coverage,
             "disagreement": rule_positive and model.get("label") == "ham", "score_kind": "no_combined_probability"}

@@ -115,6 +115,9 @@ class ReviewEngine:
                     break
         return {"schema_version": 1, "modes": modes, "max_characters": MAX_CHARACTERS,
                 "review_schema_version": 1,
+                "language_support": {"ner": ["en"], "sms_classifier": ["en"], "message_rules": ["en"],
+                                     "ioc_extraction": "language_independent_patterns",
+                                     "language_detection": "unicode_script_heuristic; not verified language identification"},
                 "message_classifier": message_model,
                 "message_risk": {"method": "english_rules", "rule_version": RULE_VERSION, "available_in": list(MODES)}}
 

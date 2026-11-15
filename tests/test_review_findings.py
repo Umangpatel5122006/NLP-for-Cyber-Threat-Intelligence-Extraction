@@ -5,10 +5,32 @@ from cti.core.base import Document
 from cti.core.pipeline import Pipeline
 from cti.extractors.message_risk import MessageRisk
 from cti.output.merger import ResultMerger
+from cti.output.review import message_assessment
 from test_message_risk import USER_MESSAGE
 
 
 class ReviewFindingsTests(unittest.TestCase):
+    def test_missing_sms_model_is_incomplete_coverage_not_a_complete_negative(self):
+        doc = Pipeline.from_config("configs/config.yaml").run("Meet the family for lunch tomorrow.")
+        for status in ("unavailable", "not_applicable"):
+            doc.metadata["message_classifier"] = {"status": status}
+            result = message_assessment(doc)
+            self.assertEqual(result["status"], "partial_coverage")
+            self.assertEqual(result["coverage"]["sms_model"], status)
+
+    def test_completed_english_ham_and_rules_keep_the_normal_negative_state(self):
+        doc = Pipeline.from_config("configs/config.yaml").run("Meet the family for lunch tomorrow.")
+        doc.metadata["message_classifier"] = {"status": "ok", "label": "ham"}
+        result = message_assessment(doc)
+        self.assertEqual(result["status"], "no_pattern_detected")
+        self.assertEqual(result["coverage"]["supported_languages"], ["en"])
+        self.assertFalse(result["coverage"]["language_verified"])
+
+    def test_missing_rules_do_not_hide_behind_a_ham_prediction(self):
+        doc = Document("A message")
+        doc.metadata["message_classifier"] = {"status": "ok", "label": "ham"}
+        self.assertEqual(message_assessment(doc)["status"], "partial_coverage")
+
     def test_scam_has_review_finding_without_inventing_entities_or_iocs(self):
         doc = Pipeline.from_config("configs/config.yaml").run(USER_MESSAGE)
         self.assertEqual(doc.findings, [])

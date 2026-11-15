@@ -1,6 +1,15 @@
 # Project progress, in order
 
-Latest local checkpoint: [reviewed SMS data intake](SMS_DATA_INTAKE.md).
+Latest local checkpoint: [language and analysis coverage](LANGUAGE_COVERAGE.md).
+One NLP target language is supported: English. Script guesses do not add trained
+Hindi/Marathi/Gujarati support. API/UI now disclose assumed English, unsupported
+language and incomplete checks while retaining IOC/positive-rule evidence.
+Non-Latin scripts in a message are no longer ignored in favor of an ASCII URL.
+All 253 WSL tests pass; native subsets pass 10 language, 10 review and 23 API
+tests. Default and held-candidate browser checks cover both modes. Model weights
+are unchanged; no multilingual accuracy gain or final-test evaluation is claimed.
+
+Previous local checkpoint: [reviewed SMS data intake](SMS_DATA_INTAKE.md).
 The empty local annotation CSV and audit/freeze command are ready. They exclude
 unresolved/synthetic records and prior corpus/diagnostic/campaign overlaps,
 preserve reviewer/source provenance locally, freeze new group splits, and reject
@@ -43,7 +52,7 @@ Dev sentence F1 is 0.6793 at threshold 0.5. Entity and action CRFs now also have
 saved artifacts, full-dev reload checks and live document modules. New metrics
 version 2 all-dev exact F1 is 0.2596 (entities) and 0.1551 (actions), using the
 existing processed BIO labels. The official test split is still reserved.
-All 239 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
+All 253 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
 native imports remain blocked by Application Control without policy changes.
 Deep learning is excluded. Allowed NER choices are CRF, MEMM, and token Logistic
 Regression; historical neural experiments are guarded against execution.
@@ -123,7 +132,12 @@ The project aims to extract threat-related entities, actions, and indicators of 
 - [registry.py](/E:/STUDY/college-projects/NLP-for-Cyber-Threat-Intelligence-Extraction/src/cti/core/registry.py) registers components by name and creates them.
 - [pipeline.py](/E:/STUDY/college-projects/NLP-for-Cyber-Threat-Intelligence-Extraction/src/cti/core/pipeline.py) loads registered modules and runs the configured pipeline.
 
-**Current pipeline order**, from [config.yaml](/E:/STUDY/college-projects/NLP-for-Cyber-Threat-Intelligence-Extraction/configs/config.yaml), is: cleaner → defanger → language detector → sentence splitter → IOC finder. NER models have their own shared tagger interface, but NER is currently evaluated through experiment scripts rather than added to this configured document pipeline.
+The [basic pipeline](../configs/config.yaml) runs cleaning, defanging, language
+guessing, sentence splitting, English message rules, IOC extraction and merging.
+The [full workbench pipeline](../configs/config_ner.yaml) also runs the saved
+English SMS classifier and entity/action CRFs. IOC workbench mode includes the
+optional SMS classifier while skipping those CRFs. Relevance annotation remains
+opt-in; hard sentence gating is disabled by default.
 
 ## 2. Dataset and label decisions
 

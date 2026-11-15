@@ -69,6 +69,16 @@
   background:#fff8e8;
   border-left-color:var(--action)
 }
+.risk-alert[data-status="unsupported_language"],.risk-alert[data-status="partial_coverage"],
+.map-risk[data-status="unsupported_language"],.map-risk[data-status="partial_coverage"]
+{
+  background:#fff8e8;
+  border-left-color:var(--action)
+}
+.message-risk[data-status="unsupported_language"],.message-risk[data-status="partial_coverage"]
+{
+  border-left-color:var(--action)
+}
 @media(max-width:600px)
 {
   .risk-alert
