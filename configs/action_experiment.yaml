@@ -1,0 +1,38 @@
+# Fixed comparison: selection uses only official train reports.
+folds: 3
+seed: 42
+minimum_cv_gain: 0.005
+minimum_fold_wins: 2
+candidates:
+  - id: baseline
+    parameters:
+      algorithm: lbfgs
+      c1: 1.0
+      c2: 1.0
+      min_freq: 0
+      max_iterations: 200
+      all_possible_transitions: true
+  - id: action_context
+    parameters:
+      algorithm: lbfgs
+      c1: 1.0
+      c2: 1.0
+      min_freq: 0
+      max_iterations: 200
+      all_possible_transitions: true
+      feature_config:
+        window: 3
+        use_gazetteer: false
+        use_triggers: false
+  - id: action_sparse
+    parameters:
+      algorithm: lbfgs
+      c1: 1.8427
+      c2: 0.137
+      min_freq: 3
+      max_iterations: 200
+      all_possible_transitions: true
+      feature_config:
+        window: 3
+        use_gazetteer: false
+        use_triggers: false

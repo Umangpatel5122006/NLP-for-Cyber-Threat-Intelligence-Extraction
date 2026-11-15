@@ -1,0 +1,23 @@
+{
+  "resamples": 1000,
+  "seed": 42,
+  "unit": "whole training report",
+  "interpretation": "Conditional paired bootstrap of fixed OOF predictions; does not include refitting uncertainty or constitute final-test inference.",
+  "comparisons": {
+    "action_context": {
+      "pooled_exact_f1_difference": -0.0057,
+      "conditional_95_percentile_interval": [
+        -0.0129,
+        0.0016
+      ]
+    },
+    "action_sparse": {
+      "pooled_exact_f1_difference": -0.0056,
+      "conditional_95_percentile_interval": [
+        -0.0137,
+        0.0025
+      ]
+    }
+  },
+  "audit_script_sha256_lf": "5f301644655afee00a84e028228aa46d4820e2648dc048cd7e07edeab596e4c1"
+}

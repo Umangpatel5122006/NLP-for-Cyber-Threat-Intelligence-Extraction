@@ -33,10 +33,12 @@ evidence mapping covers cleaner/defanger changes. Consolidated findings now keep
 per-source evidence, actual host components and explicit overlap information.
 The local browser workbench now reuses this pipeline through an API, with report
 input/upload, original highlights, filters, evidence details and JSON export.
-All 138 tests pass in WSL, 17 API tests pass on Windows, and real Chrome UI checks
-pass. The preceding merge commit passed its GitHub Actions run. See
-[BROWSER_WORKBENCH.md](BROWSER_WORKBENCH.md). Next: return to classical model
-quality and remaining extraction tasks; the official test split stays reserved.
+All 146 tests pass in WSL; the previous Windows API and Chrome UI checks remain
+recorded in [BROWSER_WORKBENCH.md](BROWSER_WORKBENCH.md). The browser commit
+passed GitHub Actions. The first train-only action CRF comparison is complete:
+baseline retained, active models unchanged. See [ACTION_EXPERIMENT.md](ACTION_EXPERIMENT.md).
+Next: action-specific boundary features and remaining classical extraction tasks;
+the official test split stays reserved.
 
 ---
 

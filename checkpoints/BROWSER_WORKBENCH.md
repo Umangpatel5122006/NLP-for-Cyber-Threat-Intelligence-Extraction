@@ -2,6 +2,12 @@
 
 Date: 2026-11-15 (Asia/Calcutta)
 
+Follow-up: this step was committed as `4f943cf` and its
+[GitHub Actions run](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43686129829)
+succeeded. The next [action experiment](ACTION_EXPERIMENT.md) evaluates a small
+classical model comparison and retains the current working models. The original
+implementation record below is preserved.
+
 ## Run frontend and backend together
 
 From the project root in PowerShell, using the prepared environment with the

@@ -62,15 +62,18 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** all **138 tests pass** in an isolated Ubuntu-24.04 WSL
+**Current validation:** all **146 tests pass** in an isolated Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
-saved-NER, original-offset, merger and 17 API tests; see `results/web_validation.txt` and
+saved-NER, original-offset, merger, API and eight action-experiment tests;
+see `results/action_experiment_validation.txt` and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
 were changed. The 17 API tests also pass in Windows Python 3.11, and actual
 Chrome checks cover the responsive frontend and real saved-model inference.
-The latest [browser checkpoint](checkpoints/BROWSER_WORKBENCH.md) records the
-local UI/API and its validation. The [merge checkpoint](checkpoints/FINDING_MERGE.md) records consolidated
+The latest [action checkpoint](checkpoints/ACTION_EXPERIMENT.md) records a
+train-only CRF comparison that retained the baseline. The
+[browser checkpoint](checkpoints/BROWSER_WORKBENCH.md) records the local UI/API
+and its validation. The [merge checkpoint](checkpoints/FINDING_MERGE.md) records consolidated
 findings. The [offset checkpoint](checkpoints/OFFSET_MAPPING.md) records original
 evidence projection; the [NER checkpoint](checkpoints/NER_INTEGRATION.md) records
 real training, dev results and document inference.
@@ -86,10 +89,10 @@ The [Classical NLP tests workflow](.github/workflows/classical-nlp.yml)
 checks the complete classical suite on Ubuntu/Python 3.11 after a push or pull
 request and can also be run manually in Actions. It checks tokenizer startup,
 excludes neural packages, and records test/train-dev validation artifacts.
-The committed merge step passed its classical validation workflow in
-[GitHub Actions](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43680752877).
-This step adds JavaScript syntax and real-model API assertions to CI; the updated workflow has been
-checked locally and awaits a remote run after commit/push.
+The committed browser step passed its classical/frontend validation workflow in
+[GitHub Actions](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43686129829).
+The new experiment tests join normal full-suite discovery; this step awaits its
+remote run after commit/push.
 
 ---
 
@@ -217,6 +220,31 @@ findings and source-evidence review using this schema. Model accuracy
 improvements and the remaining extraction tasks continue separately.
 See [the merge checkpoint](checkpoints/FINDING_MERGE.md) for the
 schema, merge rules, limitations, test evidence and review commands.
+
+---
+
+## Train-Only Action CRF Comparison
+
+The fixed `configs/action_experiment.yaml` comparison used three report-grouped
+folds across the 70 official train reports. It fit on relevant training
+sentences and evaluated every sentence in each validation fold.
+
+| Configuration | Pooled training-CV exact F1 | Decision |
+|---|---:|---|
+| Current baseline | **0.1265** | Retained |
+| Wider context, without entity gazetteer/triggers | 0.1208 | Not selected |
+| Same context with stronger sparsity | 0.1209 | Not selected |
+
+Neither variant met the predefined minimum-gain and fold-consistency rule.
+Selection was frozen before dev evaluation; losing variants were not scored on
+dev. The baseline's full-train refit reproduced all 1,238 saved dev predictions
+exactly, including all-dev action exact F1 **0.1379**. Active model files and the
+working browser app are unchanged. No accuracy improvement is claimed.
+
+`python -m cti.experiment_action` reproduces/resumes the comparison in a working
+classical runtime. See [the action checkpoint](checkpoints/ACTION_EXPERIMENT.md)
+and `results/action_cv_v1/` for the protocol, metrics, diagnostics and review
+commands. The official test split remains unused.
 
 ---
 
