@@ -5,6 +5,7 @@ pipeline:
   - module: defanger
   - module: language_detector
   - module: sentence_splitter
+  - module: message_risk
   - module: ioc_finder
   - module: ner_entities
     params:

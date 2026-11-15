@@ -1,6 +1,7 @@
 # Project progress, in order
 
-Latest checkpoint: [action boundary features and model upgrade](ACTION_BOUNDARY_FEATURES.md).
+Latest checkpoint: [scam-message patterns and NER-mode recovery](MESSAGE_RISK_AND_MODE_RECOVERY.md).
+The [action boundary features and model upgrade](ACTION_BOUNDARY_FEATURES.md) step is committed.
 The earlier [train-only action comparison](ACTION_EXPERIMENT.md) step is committed.
 The [local browser workbench and API](BROWSER_WORKBENCH.md) step is committed.
 The [consolidated findings](FINDING_MERGE.md) step is committed.
@@ -18,12 +19,12 @@ Dev sentence F1 is 0.6793 at threshold 0.5. Entity and action CRFs now also have
 saved artifacts, full-dev reload checks and live document modules. New metrics
 version 2 all-dev exact F1 is 0.2596 (entities) and 0.1551 (actions), using the
 existing processed BIO labels. The official test split is still reserved.
-All 155 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
+All 174 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
 native imports remain blocked by Application Control without policy changes.
 Deep learning is excluded. Allowed NER choices are CRF, MEMM, and token Logistic
 Regression; historical neural experiments are guarded against execution.
 The committed action comparison passed its classical validation workflow
-in GitHub Actions. The new action-feature tests await their remote run after
+in GitHub Actions. The new message-risk/menu tests await their remote run after
 commit/push. See the latest checkpoint for evidence and
 [WSL_SETUP.md](../docs/WSL_SETUP.md) for working local commands.
 
@@ -37,9 +38,19 @@ alignment is fixed without changing URL path case.
 The local browser workbench now provides report input/file upload, original-text
 highlighting, finding filters, source/component details and JSON export. HTML,
 CSS and JavaScript are served with a Python API using the existing pipeline.
-One command, `python -m cti.web`, starts both. All 17 API tests also pass on
+One command, `python scripts/start_workbench.py`, selects a compatible runtime
+and starts both. All 21 API tests also pass on
 Windows; actual Chrome checks cover real NER/IOC inference, Unicode uploads,
 mobile layout and error states. See the latest checkpoint for the WSL command.
+
+The reported money/SMS lure now shows a prominent suspicious-pattern warning
+in both modes, independently of technical IOC/NER findings. English rules
+retain original cue evidence and distinguish selected warning/negation contexts.
+NER options remain selectable with setup guidance; refresh retries failed loads.
+The launcher checks models/runtime, with explicit train/dev training for fresh
+clones. Native Windows also passes 10 risk and 5 launcher tests. New Chrome
+checks verify the message, export, mobile display and missing-model UI recovery.
+This is a rule baseline, not measured SMS-classifier accuracy or fact checking.
 
 The first targeted action comparison is complete: three-fold CV over official
 train reports retained the baseline (pooled exact F1 0.1265 vs 0.1208/0.1209).

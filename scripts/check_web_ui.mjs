@@ -134,6 +134,7 @@ try {
   }
   assert.equal(downloaded.original_text, summary.original);
   assert.equal(downloaded.findings.length, summary.findings);
+  assert.ok(downloaded.metadata.message_risk);
   record("Browser JSON download preserves the full original document and finding evidence.");
   await setText("<img src=x onerror='window.ctiInjected=true'> 🛡 APT29 contacted 185.22.10[.]5.");
   assert.equal(await evaluate("state.result"), null);
@@ -157,6 +158,74 @@ try {
   await analyze();
   assert.equal(await evaluate("state.result.analysis.mode"), "ioc");
   record("Switching to IOC mode clears stale results and runs the real IOC pipeline.");
+  const scam = "PM Modi is giving 15 lakhs rupees to every citizen of our country . To credit it in you bank account .\\\nKindly SMS 6969 on following number :\\\n6969696969";
+  for (const mode of ["ioc", "ner"]) {
+    await evaluate("document.getElementById('analysis-mode').value=" + JSON.stringify(mode) + ";document.getElementById('analysis-mode').dispatchEvent(new Event('change',{bubbles:true}))");
+    await setText(scam);
+    await analyze();
+    assert.equal(await evaluate("state.result.document.metadata.message_risk.status"), "suspicious");
+    assert.equal(await evaluate("state.result.document.findings.length"), 0);
+    assert.equal(await evaluate("document.getElementById('message-risk').hidden"), false);
+    assert.equal(await evaluate("document.getElementById('risk-alert').hidden"), false);
+    assert.ok((await evaluate("document.getElementById('risk-headline').textContent")).includes("Suspicious"));
+    assert.ok((await evaluate("document.getElementById('risk-signals').textContent")).includes("6969696969"));
+    assert.equal(await evaluate("document.getElementById('report-view').textContent"), scam);
+  }
+  await screenshot("web_scam_desktop.png");
+  await command("Emulation.setDeviceMetricsOverride", {width: 390, height: 844, deviceScaleFactor: 1, mobile: true}, session);
+  assert.equal(await evaluate("document.documentElement.scrollWidth <= window.innerWidth"), true);
+  await screenshot("web_scam_mobile.png");
+  await command("Emulation.setDeviceMetricsOverride", {width: 1440, height: 1120, deviceScaleFactor: 1, mobile: false}, session);
+  const scamDownload = resolve(downloadPath, "scam");
+  await mkdir(scamDownload, {recursive: true});
+  await command("Browser.setDownloadBehavior", {behavior: "allow", downloadPath: scamDownload});
+  await click("download-button");
+  let exportedScam;
+  for (let i = 0; i < 50; i++) {
+    try { exportedScam = JSON.parse(await readFile(resolve(scamDownload, "cti-analysis.json"), "utf8")); break; }
+    catch { await new Promise((done) => setTimeout(done, 100)); }
+  }
+  assert.equal(exportedScam.metadata.message_risk.status, "suspicious");
+  assert.equal(exportedScam.original_text, scam);
+  record("Reported money/SMS message shows suspicious source evidence in BOTH modes, mobile layout and exported JSON.");
+  await setText("Your bank account was credited with INR 1000. No action is required.");
+  assert.equal(await evaluate("document.getElementById('message-risk').hidden"), true);
+  await analyze();
+  assert.equal(await evaluate("state.result.document.metadata.message_risk.status"), "no_pattern_detected");
+  assert.ok((await evaluate("document.getElementById('risk-summary').textContent")).includes("does not establish"));
+  await setText("Beware of this fake message: " + scam);
+  await analyze();
+  assert.equal(await evaluate("state.result.document.metadata.message_risk.status"), "review_context");
+  record("Benign notification and quoted scam warning have distinct risk states; input edits clear prior risk.");
+  // Simulate the teammate's missing-artifact status at the HTTP boundary.
+  // Inference and the subsequent retry still use the real server and models.
+  await evaluate(`(async () => {
+    window.qaFetch = window.fetch;
+    const unavailable = await (await window.qaFetch('/api/status')).json();
+    Object.assign(unavailable.modes.find(m => m.id === 'ner'), {ready:false,code:'models_missing',message:'Saved models are missing.',setup:['python scripts/start_workbench.py --train-models','Refresh to retry loading.']});
+    window.fetch = (url, ...args) => url === '/api/status' ? Promise.resolve(new Response(JSON.stringify(unavailable),{status:200,headers:{'Content-Type':'application/json'}})) : window.qaFetch(url,...args);
+    state.modes = [];
+    await refreshStatus();
+  })()`);
+  assert.equal(await evaluate("document.getElementById('analysis-mode').value"), "ioc");
+  assert.equal(await evaluate("document.querySelector('#analysis-mode option[value=ner]').disabled"), false);
+  assert.equal(await evaluate("document.getElementById('mode-setup').hidden"), false);
+  await evaluate("document.getElementById('analysis-mode').value='ner';document.getElementById('analysis-mode').dispatchEvent(new Event('change',{bubbles:true}))");
+  assert.equal(await evaluate("document.getElementById('analysis-mode').value"), "ner");
+  assert.equal(await evaluate("document.getElementById('analyze-button').disabled"), true);
+  assert.ok((await evaluate("document.getElementById('setup-steps').textContent")).includes("--train-models"));
+  await command("Emulation.setDeviceMetricsOverride", {width: 390, height: 844, deviceScaleFactor: 1, mobile: true}, session);
+  assert.equal(await evaluate("document.documentElement.scrollWidth <= window.innerWidth"), true);
+  await screenshot("web_setup_mobile.png");
+  await command("Emulation.setDeviceMetricsOverride", {width: 1440, height: 1120, deviceScaleFactor: 1, mobile: false}, session);
+  await evaluate("window.fetch = window.qaFetch; delete window.qaFetch;");
+  await click("retry-models");
+  await waitFor("!state.refreshing && state.modes.some(m=>m.id==='ner' && m.ready)");
+  assert.equal(await evaluate("document.getElementById('analysis-mode').value"), "ner");
+  assert.equal(await evaluate("document.getElementById('mode-setup').hidden"), true);
+  await analyze();
+  assert.equal(await evaluate("state.result.analysis.mode"), "ner");
+  record("Missing-model UI keeps NER selectable, explains setup, and recovers on retry without reloading the page.");
   await evaluate("document.getElementById('analysis-mode').value='ner';document.getElementById('analysis-mode').dispatchEvent(new Event('change',{bubbles:true}))");
   await setText("हा हल्ला आहे 185.22.10[.]5.");
   await analyze();
@@ -176,6 +245,9 @@ try {
   await click("analyze-button");
   await waitFor("!state.busy && !document.getElementById('notice').hidden");
   assert.equal(await evaluate("document.getElementById('notice').classList.contains('error')"), true);
+  assert.equal(await evaluate("state.result"), null);
+  assert.equal(await evaluate("document.getElementById('message-risk').hidden"), true);
+  assert.equal(await evaluate("document.getElementById('download-button').disabled"), true);
   await command("Network.emulateNetworkConditions", {offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1}, session);
   record("Network failure exits the busy state and displays an error.");
   assert.deepEqual(failures.filter((message) => !message.includes("ERR_INTERNET_DISCONNECTED")), []);

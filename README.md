@@ -11,16 +11,27 @@ token shapes, and rule-based dictionary matching remain in scope.
 
 ## Run the Browser Workbench
 
-Frontend and NLP backend start together with one command from the project root:
+Frontend and NLP backend start together with one command from the project root.
+The launcher checks native Python and the prepared WSL runtime, selecting one
+that can load the saved models:
 
 ```powershell
-wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.web'
+python scripts/start_workbench.py
 ```
 
 Open **http://127.0.0.1:8765**, load the example and select **Analyze report**.
 The responsive UI supports original-text highlights, finding filters, source
 evidence/components and JSON export. It uses browser HTML/CSS/JavaScript with
-the existing Python pipeline; no npm installation is needed.
+the existing Python pipeline; no npm installation is needed. Both modes include
+English scam-pattern checks with a visible risk result and source excerpts.
+Zero extracted IOCs/entities does not establish that a message is safe.
+
+On a fresh clone, model binaries are absent because `models/` is ignored.
+After installing pinned dependencies or preparing WSL, run
+`python scripts/start_workbench.py --train-models` to train missing/incompatible
+classical artifacts on train/dev and start the app. `--check` checks readiness
+without starting or training. NER setup failures now have visible instructions
+and a retry button; unavailable modes remain selectable for inspection.
 
 For IOC-only use on native Windows:
 
@@ -28,8 +39,9 @@ For IOC-only use on native Windows:
 .\.venv\Scripts\python.exe -m cti.web --ioc-only
 ```
 
-Press Ctrl+C to stop. See [the browser checkpoint](checkpoints/BROWSER_WORKBENCH.md)
-for screenshots, the API contract, setup and validation.
+Press Ctrl+C to stop. See [the current fix checkpoint](checkpoints/MESSAGE_RISK_AND_MODE_RECOVERY.md)
+for message-risk behavior, setup recovery and validation; the earlier
+[browser checkpoint](checkpoints/BROWSER_WORKBENCH.md) preserves the initial API/UI work.
 
 ---
 
@@ -62,15 +74,18 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** all **155 tests pass** in an isolated Ubuntu-24.04 WSL
+**Current validation:** all **174 tests pass** in an isolated Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
-saved-NER, original-offset, merger, API and action-experiment/profile tests;
-see `results/action_features_validation.txt` and
+saved-NER, original-offset, merger, API, action-feature, scam-pattern and launcher tests;
+see `results/message_risk_validation.txt` and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
-were changed. The 17 API tests also pass in Windows Python 3.11, and actual
-Chrome checks cover the responsive frontend and real saved-model inference.
-The latest [boundary-feature checkpoint](checkpoints/ACTION_BOUNDARY_FEATURES.md)
+were changed. Native Windows also passes the 21 API, 10 message-risk and
+5 launcher tests. Actual Chrome checks cover real NER/IOC inference, scam
+warnings, JSON export, mobile layout and missing-model recovery.
+The latest [fix checkpoint](checkpoints/MESSAGE_RISK_AND_MODE_RECOVERY.md)
+records the reported message/menu fixes.
+The [boundary-feature checkpoint](checkpoints/ACTION_BOUNDARY_FEATURES.md)
 records the selected action profile and active-model upgrade. The earlier
 [action checkpoint](checkpoints/ACTION_EXPERIMENT.md) records the negative
 context/regularization comparison. The
@@ -93,7 +108,7 @@ request and can also be run manually in Actions. It checks tokenizer startup,
 excludes neural packages, and records test/train-dev validation artifacts.
 The committed action experiment passed its classical validation workflow in
 [GitHub Actions](https://github.com/Umangpatel5122006/NLP-for-Cyber-Threat-Intelligence-Extraction/actions/runs/43689971420).
-The new feature tests join normal full-suite discovery; this step awaits its
+The new message-risk/menu tests join normal full-suite discovery; this step awaits its
 remote run after commit/push.
 
 ---
@@ -105,11 +120,12 @@ The pipeline follows a modular, plug-in architecture configured via `configs/con
 2. **Defanger (`defanger`)**: Normalizes obfuscated indicators (e.g., `hxxps://`, `evil[.]com`, `[:]`, `[at]`) back to canonical form while preserving the original raw text in `doc.metadata["text_before_defang"]`.
 3. **Language Detector (`language_detector`)**: Identifies document script and language (`en`, `hi`, `mr`, `gu`).
 4. **Sentence Splitter (`sentence_splitter`)**: Sentence boundary detection aware of IP addresses, domain names, CTI abbreviations (e.g., `e.g.`, `i.e.`), and the Devanagari danda.
-5. **IOC Extractor (`ioc_finder` / `ioc_regex`)**: Rule-based indicator extraction for IPs, domains, URLs, hashes, CVEs, and emails.
-6. **Classical NER Taggers**: Models implement the shared `BaseTagger` interface and can be selected by registry name: `crf_tagger`, `memm_tagger`, and `token_logreg`. Each is trained on token-aligned BIO tags across two specialized layers:
+5. **Message risk (`message_risk`)**: Separate English rule combinations for money/contact, credential and advance-fee lures, with original evidence. No match is not a safety verdict.
+6. **IOC Extractor (`ioc_finder` / `ioc_regex`)**: Rule-based indicator extraction for IPs, domains, URLs, hashes, CVEs, and emails.
+7. **Classical NER Taggers**: Models implement the shared `BaseTagger` interface and can be selected by registry name: `crf_tagger`, `memm_tagger`, and `token_logreg`. Each is trained on token-aligned BIO tags across two specialized layers:
    - `entities` layer: `THREAT_ACTOR`, `MALWARE_TOOL`, `INFRASTRUCTURE`
    - `action` layer: `ACTION`
-7. **Result Merger (`result_merger`)**: Builds consolidated `findings` and typed
+8. **Result Merger (`result_merger`)**: Builds consolidated `findings` and typed
    `overlaps`, retaining raw `entities`, original positions and per-source
    evidence. It runs after all detectors in the configured pipelines.
 

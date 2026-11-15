@@ -21,6 +21,7 @@ ASSETS = Path(__file__).with_name("static")
 MAX_CHARACTERS = 100_000
 MAX_BODY_BYTES = 1_048_576
 MODES = {"ner": "Entities + IOCs", "ioc": "IOCs only"}
+SETUP_COMMAND = "python scripts/start_workbench.py"
 STATIC = {
     "/": ("index.html", "text/html; charset=utf-8"),
     "/app.js": ("app.js", "text/javascript; charset=utf-8"),
@@ -67,6 +68,8 @@ class ReviewEngine:
                 self._failures[mode] = ReviewError(503, "models_missing", "Saved models are missing. Use IOC mode or train the entity models.")
             except (ImportError, OSError):
                 self._failures[mode] = ReviewError(503, "runtime_unavailable", "This runtime cannot load the entity models. Use IOC mode or the prepared WSL environment.")
+            except ValueError:
+                self._failures[mode] = ReviewError(503, "models_incompatible", "Saved models do not match this runtime or their feature resources. Start in the training environment or retrain in this environment.")
             except Exception:
                 self._failures[mode] = ReviewError(503, "models_unavailable", "This mode could not initialize. Check the server setup and restart it.")
             if mode in self._failures:
@@ -76,14 +79,25 @@ class ReviewEngine:
     def status(self):
         modes = []
         with self._lock:
+            # Refresh must recover after a missing model is trained or a
+            # transient import failure is fixed. Keep successful models cached.
+            self._failures.clear()
             for mode, label in MODES.items():
                 details = {"id": mode, "label": label, "ready": True, "message": ""}
                 try:
                     self._pipeline(mode)
                 except ReviewError as error:
                     details.update(ready=False, code=error.code, message=error.message)
+                    if mode == "ner":
+                        details["setup"] = {
+                            "models_missing": ["Stop the old server with Ctrl+C, then run from the project root:", SETUP_COMMAND + " --train-models", "Reopen the app when the launcher starts the server."],
+                            "runtime_unavailable": ["Stop the old server with Ctrl+C, then run from the project root:", SETUP_COMMAND, "The launcher checks native Python and the prepared WSL environment. See docs/WSL_SETUP.md to prepare WSL."],
+                            "models_incompatible": ["Stop the old server with Ctrl+C, then run from the project root:", SETUP_COMMAND, "If neither runtime matches, use " + SETUP_COMMAND + " --train-models to retrain on train/dev in the chosen runtime."],
+                            "mode_disabled": ["Restart the server without --ioc-only, or run " + SETUP_COMMAND + "."],
+                        }.get(error.code, ["Check the server terminal and docs/WSL_SETUP.md, then refresh the connection."])
                 modes.append(details)
-        return {"schema_version": 1, "modes": modes, "max_characters": MAX_CHARACTERS}
+        return {"schema_version": 1, "modes": modes, "max_characters": MAX_CHARACTERS,
+                "message_risk": {"method": "english_rules", "available_in": list(MODES)}}
 
     def analyze(self, payload):
         if not isinstance(payload, dict) or set(payload) != {"text", "mode"}:
@@ -217,8 +231,15 @@ def main(argv=None):
     parser.add_argument("--host", choices=("127.0.0.1", "localhost"), default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--ioc-only", action="store_true", help="Skip loading saved entity/action models.")
+    parser.add_argument("--check", action="store_true", help="Print readiness JSON and exit; require NER unless --ioc-only is set.")
     args = parser.parse_args(argv)
-    with create_server(args.host, args.port, ReviewEngine(ioc_only=args.ioc_only)) as server:
+    engine = ReviewEngine(ioc_only=args.ioc_only)
+    if args.check:
+        status = engine.status()
+        print(json.dumps(status), flush=True)
+        required = "ioc" if args.ioc_only else "ner"
+        raise SystemExit(0 if any(m["id"] == required and m["ready"] for m in status["modes"]) else 2)
+    with create_server(args.host, args.port, engine) as server:
         print(f"CTI Workbench: http://{args.host}:{server.server_port}", flush=True)
         print("Press Ctrl+C to stop.", flush=True)
         try:

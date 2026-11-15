@@ -6,7 +6,8 @@ import threading
 import unittest
 from unittest.mock import patch
 
-from cti.web.server import MAX_BODY_BYTES, MAX_CHARACTERS, ReviewEngine, ReviewError, _load_pipeline, create_server
+from cti.web.server import MAX_BODY_BYTES, MAX_CHARACTERS, ReviewEngine, ReviewError, _load_pipeline, create_server, main
+from test_message_risk import USER_MESSAGE
 
 
 def available_iocs(mode):
@@ -22,6 +23,45 @@ class ReviewEngineTests(unittest.TestCase):
         self.assertFalse(modes["ner"]["ready"])
         self.assertEqual(modes["ner"]["code"], "models_missing")
         self.assertTrue(modes["ioc"]["ready"])
+        self.assertIn("--train-models", " ".join(modes["ner"]["setup"]))
+
+    def test_readiness_retry_recovers_missing_models_without_restarting(self):
+        repaired, calls = False, []
+
+        def loader(mode):
+            calls.append(mode)
+            if mode == "ner" and not repaired:
+                raise FileNotFoundError("missing")
+            return _load_pipeline("ioc")
+
+        engine = ReviewEngine(loader=loader)
+        self.assertFalse(engine.status()["modes"][0]["ready"])
+        repaired = True
+        self.assertTrue(engine.status()["modes"][0]["ready"])
+        self.assertEqual(calls, ["ner", "ioc", "ner"])
+        self.assertEqual(engine.analyze({"mode": "ner", "text": USER_MESSAGE})["document"]["metadata"]["message_risk"]["status"], "suspicious")
+
+    def test_runtime_and_artifact_errors_have_distinct_setup_instructions(self):
+        for error, code in [(ImportError("blocked import"), "runtime_unavailable"), (ValueError("private manifest detail"), "models_incompatible")]:
+            with self.subTest(code=code):
+                def loader(mode):
+                    if mode == "ner":
+                        raise error
+                    return _load_pipeline(mode)
+                status = ReviewEngine(loader=loader).status()
+                self.assertEqual(status["modes"][0]["code"], code)
+                self.assertTrue(status["modes"][0]["setup"])
+                self.assertNotIn("private manifest detail", json.dumps(status))
+                self.assertTrue(status["modes"][1]["ready"])
+
+    def test_check_cli_exits_with_required_mode_readiness(self):
+        for argv, expected in [(["--check"], 2), (["--check", "--ioc-only"], 0)]:
+            with self.subTest(argv=argv), patch("cti.web.server.ReviewEngine", return_value=ReviewEngine(loader=available_iocs)):
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output), self.assertRaises(SystemExit) as raised:
+                    main(argv)
+                self.assertEqual(raised.exception.code, expected)
+                self.assertIn("modes", json.loads(output.getvalue()))
 
     def test_ioc_only_does_not_attempt_to_load_ner(self):
         loaded = []
@@ -135,6 +175,14 @@ class ReviewHTTPTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertTrue(headers["Content-Type"].startswith("application/json"))
         self.assertEqual(json.loads(body)["document"]["original_text"], text)
+
+    def test_scam_check_is_available_when_ner_models_are_missing(self):
+        status, _, body = self.request("/api/analyze", "POST", {"mode": "ioc", "text": USER_MESSAGE})
+        self.assertEqual(status, 200)
+        doc = json.loads(body)["document"]
+        self.assertEqual(doc["metadata"]["message_risk"]["status"], "suspicious")
+        self.assertEqual(doc["findings"], [])
+        self.assertEqual(doc["original_text"], USER_MESSAGE)
 
     def test_unknown_paths_and_traversal_do_not_serve_repository_files(self):
         for path in ("/AGENTS.md", "/../AGENTS.md", "/%2e%2e/AGENTS.md", "/api/example?file=data/raw"):

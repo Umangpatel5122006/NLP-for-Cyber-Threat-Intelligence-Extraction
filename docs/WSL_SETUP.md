@@ -19,8 +19,17 @@ wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m c
 For the browser frontend and backend together:
 
 ```powershell
-wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.web'
+python scripts/start_workbench.py
 ```
+
+The launcher checks the project virtualenv and current Python before the
+prepared WSL interpreter, and requires saved NER readiness by default.
+`--check` only reports setup. `--train-models` explicitly trains missing or
+incompatible artifacts in a working runtime before starting. A teammate's clone
+needs this training because model binaries are not tracked by Git.
+`--ioc-only` starts IOC plus English scam-pattern analysis without NER.
+Direct startup in this prepared environment is still supported:
+`wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.web'`.
 
 Open http://127.0.0.1:8765 in Windows; Ctrl+C stops the server. See
 [the browser checkpoint](../checkpoints/BROWSER_WORKBENCH.md) for UI review steps.

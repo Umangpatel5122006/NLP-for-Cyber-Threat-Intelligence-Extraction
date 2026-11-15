@@ -25,8 +25,9 @@
       <button id="connection-status" class="connection" type="button" title="Refresh server connection"><span class="dot"></span><span id="connection-text">Connecting to engine…</span><span aria-hidden="true">↻</span></button>
     </section>
     <div id="notice" class="notice" role="status" hidden></div>
+    <div id="risk-alert" class="risk-alert" role="status" hidden><div><strong id="risk-headline"></strong><p id="risk-alert-summary"></p></div><a href="#message-risk">View evidence</a></div>
     <section class="stats" aria-label="Analysis summary">
-      <article class="stat"><span class="stat-label">Primary findings</span><strong id="stat-findings">—</strong><span class="stat-note">Consolidated occurrences</span></article>
+      <article class="stat"><span class="stat-label">Extracted findings</span><strong id="stat-findings">—</strong><span class="stat-note">Consolidated occurrences</span></article>
       <article class="stat"><span class="stat-label"><span class="swatch ioc"></span> Indicators</span><strong id="stat-iocs">—</strong><span class="stat-note">IPs, domains, URLs &amp; more</span></article>
       <article class="stat"><span class="stat-label"><span class="swatch actor"></span> Threat entities</span><strong id="stat-entities">—</strong><span class="stat-note">Actors, tools &amp; infrastructure</span></article>
       <article class="stat"><span class="stat-label"><span class="swatch action"></span> Actions</span><strong id="stat-actions">—</strong><span class="stat-note">Predicted action spans</span></article>
@@ -39,7 +40,9 @@
           <textarea id="report-input" spellcheck="false" aria-describedby="input-help" placeholder="Paste a threat intelligence report here.&#10;&#10;APT29 used Mimikatz to steal credentials.&#10;It contacted hxxps://evil[.]example[.]com."></textarea>
           <div class="file-toolbar"><label class="file-button" for="report-file"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 13V3m-4 4 4-4 4 4M3 12v5h14v-5"/></svg>Upload text file</label><input id="report-file" class="file-input" type="file" accept=".txt,.md,text/plain,text/markdown"><span id="file-name">UTF-8 · .txt or .md</span><button id="clear-button" class="text-button subtle" type="button">Clear</button></div>
           <p id="input-help" class="field-help">Original spelling and defanged indicators are retained as evidence.</p>
-          <div class="run-controls"><div class="mode-field"><label for="analysis-mode">ANALYSIS MODE</label><select id="analysis-mode" disabled><option value="ner">Entities + IOCs</option><option value="ioc">IOCs only</option></select></div><button id="analyze-button" class="primary-button" type="button" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 8 6-8 6z"/></svg><span>Analyze report</span></button></div>
+          <div class="run-controls"><div class="mode-field"><label for="analysis-mode">ANALYSIS MODE</label><select id="analysis-mode" aria-describedby="mode-help"><option value="ner">Entities + IOCs</option><option value="ioc">IOCs only</option></select></div><button id="analyze-button" class="primary-button" type="button" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 8 6-8 6z"/></svg><span>Analyze report</span></button></div>
+          <p id="mode-help" class="field-help">Both modes include English scam-pattern checks.</p>
+          <div id="mode-setup" class="mode-setup" role="status" hidden><strong id="setup-heading">Entity mode needs setup</strong><p id="setup-message"></p><ul id="setup-steps"></ul><button id="retry-models" class="secondary-button" type="button">Retry model loading</button></div>
         </div>
       </section>
       <section class="panel evidence-panel">
@@ -49,6 +52,10 @@
         <pre id="report-view" class="report-view" tabindex="0" aria-label="Original report with finding highlights" hidden></pre>
         <div class="panel-foot"><span class="dot"></span><span id="map-note">Highlights will reference the original report.</span></div>
       </section>
+    </section>
+    <section id="message-risk" class="panel message-risk" aria-labelledby="risk-heading" aria-live="polite" hidden>
+      <div class="panel-heading"><h2 id="risk-heading">Message risk check</h2><span class="small-meta">English rules</span></div>
+      <div class="risk-body"><strong id="risk-status"></strong><p id="risk-summary"></p><ul id="risk-signals"></ul><p id="risk-limitations" class="field-help"></p></div>
     </section>
     <section class="panel findings-panel" aria-labelledby="findings-heading">
       <div class="panel-heading"><h2 id="findings-heading"><span class="step">03</span> Findings <span id="finding-count" class="count-badge">0</span></h2><button id="download-button" class="secondary-button" type="button" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10m-4-4 4 4 4-4M3 14v3h14v-3"/></svg>Export JSON</button></div>
@@ -61,11 +68,11 @@
         <aside id="finding-detail" class="finding-detail" aria-label="Selected finding details"><div class="detail-empty"><span class="detail-symbol" aria-hidden="true">⌁</span><h3>Follow the evidence</h3><p>Select a finding to see the original excerpt, detector sources, and related overlaps.</p></div></aside>
       </div>
     </section>
-    <footer class="footer"><span><span class="footer-brand">CTI Workbench</span> / Classical NLP research baseline</span><span id="scope-note">English entity &amp; action models · Rule-based IOCs</span></footer>
+    <footer class="footer"><span><span class="footer-brand">CTI Workbench</span> / Classical NLP research baseline</span><span id="scope-note">English NER &amp; scam patterns · Rule-based IOCs</span></footer>
   </main>
   <dialog id="method-dialog">
     <div class="dialog-heading"><span class="eyebrow">ABOUT THIS WORKSPACE</span><button id="close-method" class="icon-button" type="button" aria-label="Close method notes">×</button></div>
-    <h2>Traceable findings.<br>Classical methods.</h2><p>Entity and action tagging uses the saved CRF models. Indicators are extracted with rules. IOC-only mode runs without the entity models.</p><h3>Read the sources, not a combined score</h3><p>Each finding retains its original observations. Rule matches and model predictions are different kinds of evidence; the merger does not create an overall attack probability. NER confidence is unavailable.</p><h3>Highlights follow the original report</h3><p>Cleaning and defanging happen for analysis. Highlights use source-covering spans in the supplied report, including Unicode and defanged indicators. Host components and overlaps remain available for inspection.</p><p class="dialog-note">This workspace reviews the current research baseline. English NER covers threat actors, malware/tools, infrastructure and actions.</p>
+    <h2>Traceable findings.<br>Classical methods.</h2><p>Entity and action tagging uses the saved CRF models. Indicators are extracted with rules. IOC-only mode runs without the entity models. Both modes also check English scam patterns, independently of extraction.</p><h3>Message risk and extracted indicators</h3><p>A message can be suspicious without an IP, URL or malware name. The message risk check combines nearby money, account, contact and credential cues. It shows source excerpts and can recognize some warning contexts. It does not verify identities or claims, check number reputation, or prove that a message is safe. Other scams and languages can be missed.</p><h3>Read the sources, not a combined score</h3><p>Each finding retains its original observations. Rule matches and model predictions are different kinds of evidence; the merger does not create an overall attack probability. NER confidence is unavailable.</p><h3>Highlights follow the original report</h3><p>Cleaning and defanging happen for analysis. Highlights use source-covering spans in the supplied report, including Unicode and defanged indicators. Host components and overlaps remain available for inspection.</p><p class="dialog-note">This workspace reviews the current research baseline. English NER covers threat actors, malware/tools, infrastructure and actions.</p>
   </dialog>
 </body>
 </html>

@@ -3,5 +3,6 @@ pipeline:
   - module: defanger
   - module: language_detector
   - module: sentence_splitter
+  - module: message_risk
   - module: ioc_finder        # swap to ioc_regex to use our hand-written version
   - module: result_merger

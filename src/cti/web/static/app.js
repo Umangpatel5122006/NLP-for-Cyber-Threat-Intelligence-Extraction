@@ -8,7 +8,7 @@ const labels = {
 const iocLabels = new Set(["IP", "DOMAIN", "URL", "EMAIL", "HASH", "CVE"]);
 const sourceNames = {ner_entities: "Entity CRF", ner_action: "Action CRF", ioc_finder: "IOC finder", ioc_regex: "IOC regex"};
 const overlapNames = {action_overlap: "Action overlap", label_conflict: "Label conflict", contained_overlap: "Contained overlap", crossing_overlap: "Crossing overlap"};
-const state = {result: null, selected: null, modes: [], busy: false, maxCharacters: 100000, rawInput: null};
+const state = {result: null, selected: null, modes: [], busy: false, refreshing: false, maxCharacters: 100000, rawInput: null};
 
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -40,10 +40,12 @@ function reportText() {
 }
 function updateControls() {
   const ready = state.modes.some((mode) => mode.id === $("analysis-mode").value && mode.ready);
-  $("analyze-button").disabled = state.busy || !ready || !reportText().trim();
-  $("analysis-mode").disabled = state.busy || !state.modes.some((mode) => mode.ready);
+  $("analyze-button").disabled = state.busy || state.refreshing || !ready || !reportText().trim();
+  // Keep unavailable modes selectable so their setup instructions are visible.
+  $("analysis-mode").disabled = state.busy || state.refreshing;
   for (const id of ["report-input", "report-file", "example-button", "clear-button"]) $(id).disabled = state.busy;
-  $("connection-status").disabled = state.busy;
+  $("connection-status").disabled = state.busy || state.refreshing;
+  $("retry-models").disabled = state.busy || state.refreshing;
   $("analyze-button").classList.toggle("busy", state.busy);
   $("analyze-button").querySelector("span").textContent = state.busy ? "Analyzing…" : "Analyze report";
   $("character-count").textContent = Array.from(reportText()).length.toLocaleString() + " characters";
@@ -61,6 +63,9 @@ function emptyDetail() {
 function resetResults() {
   state.result = null;
   state.selected = null;
+  $("message-risk").hidden = true;
+  $("risk-alert").hidden = true;
+  $("risk-signals").replaceChildren();
   $("report-view").hidden = true;
   $("report-view").replaceChildren();
   $("report-empty").hidden = false;
@@ -87,7 +92,25 @@ function setInput(text, filename) {
   notice();
   updateControls();
 }
+function showModeSetup() {
+  const mode = state.modes.find((item) => item.id === $("analysis-mode").value);
+  const ner = state.modes.find((item) => item.id === "ner");
+  // Keep NER setup visible after the initial fallback to IOC mode.
+  const unavailable = mode && !mode.ready ? mode : ner && !ner.ready ? ner : null;
+  $("mode-setup").hidden = !unavailable;
+  $("mode-help").textContent = mode && !mode.ready
+    ? "This mode needs setup before analysis can run. IOC mode remains available when ready."
+    : "Both modes include English scam-pattern checks. Zero extracted findings is not a safety verdict.";
+  if (!unavailable) return;
+  $("setup-heading").textContent = unavailable.label + " needs setup";
+  $("setup-message").textContent = unavailable.message;
+  $("setup-steps").replaceChildren(...(unavailable.setup || ["Check the server terminal, then retry loading models."]).map((step) => element("li", "", step)));
+}
 async function refreshStatus() {
+  if (state.refreshing || state.busy) return;
+  state.refreshing = true;
+  const initial = !state.modes.length;
+  updateControls();
   $("connection-status").classList.add("is-loading");
   $("connection-status").classList.remove("is-error");
   $("connection-text").textContent = "Connecting to engine…";
@@ -97,9 +120,10 @@ async function refreshStatus() {
     state.maxCharacters = status.max_characters;
     for (const option of $("analysis-mode").options) {
       const mode = state.modes.find((item) => item.id === option.value);
-      option.disabled = !mode?.ready;
+      option.disabled = false;
+      option.textContent = (mode?.label || option.textContent.replace(" (setup required)", "")) + (mode && !mode.ready ? " (setup required)" : "");
     }
-    if (!state.modes.some((mode) => mode.id === $("analysis-mode").value && mode.ready)) {
+    if (initial && !state.modes.some((mode) => mode.id === $("analysis-mode").value && mode.ready)) {
       const available = state.modes.find((mode) => mode.ready);
       if (available) $("analysis-mode").value = available.id;
     }
@@ -115,7 +139,9 @@ async function refreshStatus() {
     $("connection-status").classList.add("is-error");
     notice("Could not reach the local server. Start it, then use the connection button to retry.", true);
   } finally {
+    state.refreshing = false;
     $("connection-status").classList.remove("is-loading");
+    showModeSetup();
     updateControls();
   }
 }
@@ -238,7 +264,7 @@ function renderResults() {
   }
   if (!findings.length) {
     const empty = element("div", "list-empty");
-    empty.append(element("p", "", state.result.document.findings.length ? "No findings match these filters." : "No findings were extracted."), element("small", "", "The original report remains available in the evidence map."));
+    empty.append(element("p", "", state.result.document.findings.length ? "No findings match these filters." : "No entities or technical indicators were extracted."), element("small", "", "Check the separate message risk result. Missing findings do not establish safety."));
     fragment.append(empty);
   }
   list.replaceChildren(fragment);
@@ -246,9 +272,26 @@ function renderResults() {
   renderReport(findings);
   renderDetails();
 }
+function renderMessageRisk(risk) {
+  $("message-risk").hidden = false;
+  $("message-risk").dataset.status = risk?.status || "unavailable";
+  $("risk-status").textContent = {suspicious: "Suspicious message patterns detected", review_context: "Review the message context", no_pattern_detected: "No supported scam pattern detected"}[risk?.status] || "Message risk check unavailable";
+  $("risk-summary").textContent = risk?.summary || "Restart the local server to load the message risk check. Extracted findings alone do not establish safety.";
+  $("risk-alert").hidden = false;
+  $("risk-alert").dataset.status = risk?.status || "unavailable";
+  $("risk-headline").textContent = $("risk-status").textContent;
+  $("risk-alert-summary").textContent = $("risk-summary").textContent;
+  $("risk-limitations").textContent = risk?.limitations || "English rule patterns only. No safety verdict is available.";
+  $("risk-signals").replaceChildren(...(risk?.signals || []).map((signal) => {
+    const item = element("li", "risk-signal");
+    item.append(element("strong", "", signal.label + ": "), element("q", "risk-excerpt", signal.original_text), element("small", "", signal.explanation + " Original characters " + signal.original_start + "\u2013" + signal.original_end + "."));
+    return item;
+  }));
+}
 function showAnalysis(result) {
   state.result = result;
   const doc = result.document, primary = doc.findings.filter((finding) => finding.role === "primary");
+  renderMessageRisk(doc.metadata.message_risk);
   $("stat-findings").textContent = primary.length;
   $("stat-iocs").textContent = primary.filter((finding) => iocLabels.has(finding.label)).length;
   $("stat-actions").textContent = primary.filter((finding) => finding.label === "ACTION").length;
@@ -266,11 +309,12 @@ function showAnalysis(result) {
   renderResults();
 }
 async function analyze() {
-  if (state.busy) return;
+  if (state.busy || state.refreshing) return;
+  if (!state.modes.some((mode) => mode.id === $("analysis-mode").value && mode.ready)) { showModeSetup(); notice("Set up the selected mode or choose an available mode.", true); return; }
   const text = reportText();
   if (!text.trim()) { notice("Add report text before analyzing.", true); return; }
   if (Array.from(text).length > state.maxCharacters) { notice("Reports can contain up to " + state.maxCharacters.toLocaleString() + " characters.", true); return; }
-  setBusy(true); notice();
+  resetResults(); setBusy(true); notice();
   try {
     const result = await fetchJSON("/api/analyze", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({text, mode: $("analysis-mode").value})});
     showAnalysis(result);
@@ -278,10 +322,11 @@ async function analyze() {
   finally { setBusy(false); }
 }
 
-$("report-input").addEventListener("input", () => { state.rawInput = null; resetResults(); notice(); updateControls(); });
-$("analysis-mode").addEventListener("change", () => { resetResults(); notice(); updateControls(); });
+$("report-input").addEventListener("input", () => { state.rawInput = null; $("file-name").textContent = $("report-input").value ? "Pasted / edited text" : "UTF-8 \u00b7 .txt or .md"; resetResults(); notice(); updateControls(); });
+$("analysis-mode").addEventListener("change", () => { resetResults(); notice(); showModeSetup(); updateControls(); });
 $("analyze-button").addEventListener("click", analyze);
 $("connection-status").addEventListener("click", refreshStatus);
+$("retry-models").addEventListener("click", refreshStatus);
 $("clear-button").addEventListener("click", () => { setInput(""); $("report-file").value = ""; $("report-input").focus(); });
 $("example-button").addEventListener("click", async () => {
   setBusy(true);
