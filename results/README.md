@@ -35,6 +35,10 @@ validation and development-diagnostic counts, with their non-independent scope.
 The [action relevance comparison](action_relevance_v1/README.md) keeps the rejected
 train-only cutoff results and independent recount. Local OOF rows remain ignored;
 no default model changed and no dev/test evaluation was needed.
+The [action background-training comparison](action_background_v1/README.md)
+records six candidate fold fits and their rejection on training-CV gain/recall
+criteria. Prediction rows and sampling caches remain local; compact inventories,
+decisions and the independent audit are versioned.
 
 Removing previously tracked generated files from Git's index keeps their local
 copies. The cleanup applies to future commits; it does not rewrite existing

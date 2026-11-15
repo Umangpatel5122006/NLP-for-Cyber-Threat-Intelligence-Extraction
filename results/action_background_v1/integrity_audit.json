@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "selected": "relevant_only",
+  "training_sentences": 8635,
+  "training_reports": 70,
+  "report_disjoint_folds": 3,
+  "candidate_policies_recounted": [
+    "relevant_only",
+    "capped_background",
+    "all_background"
+  ],
+  "sampling_inventories_verified": true,
+  "dev_evaluated": false,
+  "test_evaluated": false,
+  "active_artifacts_and_configs_unchanged": true,
+  "oof_sha256_lf": {
+    "models/action_background_v1/relevant_only_oof.json": "44532129dbae6b932cfa47e0ca8c37f40be59cf545fbc8a9665f80ccff574d0f",
+    "models/action_background_v1/capped_background_oof.json": "006916050725cd3aa154fb5c8b736134aec47f33143e260a2999f3cc86570e78",
+    "models/action_background_v1/all_background_oof.json": "8683600c0c110bbca69b2e5bb678c0566a43218af3d0dd7388d60e95812dbb8c"
+  },
+  "audit_script_sha256_lf": "834c4375859e7b1217d20f10dabba699568b3493d43ad0e6722711846dd7ce50",
+  "scope": "Independent cached-prediction recount and sampling audit; no independent CRF refits."
+}

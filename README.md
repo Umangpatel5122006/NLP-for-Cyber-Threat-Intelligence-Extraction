@@ -53,6 +53,10 @@ A [train-only relevance-filter comparison](checkpoints/ACTION_RELEVANCE_EXPERIME
 retains the current action pipeline: none of four classical cutoffs meets the
 fixed gain/recall/coverage policy. No dev or test examples were evaluated in
 that comparison; no default artifact changed.
+A subsequent [background-training comparison](checkpoints/ACTION_BACKGROUND_EXPERIMENT.md)
+also retains the current model: capped/all background reduce false action spans
+but lower training-CV exact F1 to 0.1142 / 0.0927 from 0.1323. Neither passes
+the recall/gain policy, so dev/test evaluation and activation were skipped.
 See [the current robustness checkpoint](checkpoints/MESSAGE_ROBUSTNESS.md),
 [the integrated checkpoint](checkpoints/INTEGRATED_FINDINGS_AND_SMS_MODEL.md)
 and [SMS data provenance](docs/SMS_DATASET.md).
@@ -127,10 +131,10 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** all **279 tests pass** in an isolated Ubuntu-24.04 WSL
+**Current validation:** all **288 tests pass** in an isolated Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
 saved-NER, original-offset, merger, API, action-feature, scam-pattern and launcher tests;
-see `results/action_relevance_tests.txt` (local generated log) and
+see `results/action_background_tests.txt` (local generated log) and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
 were changed. A focused native Windows run passes 82 API/language/Indic-rule/

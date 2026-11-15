@@ -1,12 +1,21 @@
 # Project progress, in order
 
-Latest local checkpoint: [action relevance comparison](ACTION_RELEVANCE_EXPERIMENT.md).
+Latest local checkpoint: [action background training](ACTION_BACKGROUND_EXPERIMENT.md).
+All six capped/all-background candidate fold fits completed. Both policies reduce
+background action predictions but lose too many correct actions: training-CV
+exact F1 falls from 0.1323 to 0.1142 / 0.0927. Neither wins any fold or passes
+the fixed gain/recall policy. The current model remains active; dev/test were
+not evaluated and no new candidate binary was created. All 288 WSL tests and
+the independent prediction/sampling audit pass. Active model/config hashes are
+unchanged. A train-only action error audit is the next step, not completed work.
+
+Previous local checkpoint: [action relevance comparison](ACTION_RELEVANCE_EXPERIMENT.md).
 Four predeclared TF-IDF/Logistic Regression cutoffs were compared on three
 report-disjoint training folds. None meets the fixed gain/recall/coverage policy;
 the baseline stays active. Dev/test were not evaluated in this experiment.
 All 279 WSL tests and the independent saved-prediction audit pass. Existing
-model hashes and app behavior are unchanged. Training the action CRF with
-background negatives is the next model experiment, not completed work.
+model hashes and app behavior are unchanged. The background-training comparison
+that followed is recorded above.
 
 Previous local checkpoint: [Hindi/Hinglish rules v2](INDIC_RULES_V2.md).
 Verification/form requests and bare destinations now support bounded identity/
