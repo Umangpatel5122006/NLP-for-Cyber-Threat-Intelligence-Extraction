@@ -369,6 +369,9 @@ function showAnalysis(result) {
   if (result.document.metadata?.message_assessment?.coverage?.version !== 2) {
     throw new Error("The running server has outdated language-coverage reporting. Stop it with Ctrl+C, run python scripts/start_workbench.py, then reload this page. No model retraining is needed.");
   }
+  if (["hi", "hi-en"].includes(result.document.metadata?.language) && result.document.metadata?.message_risk?.indic_rule_version !== 2) {
+    throw new Error("The running server has outdated Hindi/Hinglish rules. Stop it with Ctrl+C, run python scripts/start_workbench.py, then reload this page. No model retraining is needed.");
+  }
   state.result = result;
   const doc = result.document, rows = reviewFindings(), primary = rows.filter((finding) => finding.role === "primary");
   const extractions = doc.findings.filter((finding) => finding.role === "primary");

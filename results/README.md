@@ -30,6 +30,8 @@ screenshots or per-case response files to Git.
 The [Hindi/Hinglish integration](indic_integration_v1/README.md) retains compact
 source/validation audits; downloaded data, browser output and private annotations
 remain ignored.
+The [Hindi/Hinglish v2 rule report](indic_rules_v2/README.md) preserves only compact
+validation and development-diagnostic counts, with their non-independent scope.
 
 Removing previously tracked generated files from Git's index keeps their local
 copies. The cleanup applies to future commits; it does not rewrite existing

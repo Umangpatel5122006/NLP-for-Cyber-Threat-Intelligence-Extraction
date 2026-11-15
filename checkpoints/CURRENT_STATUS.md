@@ -1,6 +1,13 @@
 # Project progress, in order
 
-Latest local checkpoint: [Hindi/Hinglish message checks](HINDI_HINGLISH.md).
+Latest local checkpoint: [Hindi/Hinglish rules v2](INDIC_RULES_V2.md).
+Verification/form requests and bare destinations now support bounded identity/
+account-threat findings, preserving warning/negation context and source offsets.
+Downloaded authored examples are development diagnostics, not accuracy evidence.
+All 270 WSL tests and 82 native focused tests pass. English model weights and the
+held candidate are unchanged; no Hindi/Hinglish classifier was trained.
+
+Previous local checkpoint: [Hindi/Hinglish message checks](HINDI_HINGLISH.md).
 Both modes apply classical Hindi/Hinglish phrase/request/context checks, show
 original-source cues and support Auto/manual language selection. English SMS/CTI
 models remain English-only; no new-language learned accuracy is claimed. Intake
@@ -61,7 +68,7 @@ Dev sentence F1 is 0.6793 at threshold 0.5. Entity and action CRFs now also have
 saved artifacts, full-dev reload checks and live document modules. New metrics
 version 2 all-dev exact F1 is 0.2596 (entities) and 0.1551 (actions), using the
 existing processed BIO labels. The official test split is still reserved.
-All 266 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
+All 270 tests pass in the isolated Ubuntu WSL Python 3.12 environment; Windows
 native imports remain blocked by Application Control without policy changes.
 Deep learning is excluded. Allowed NER choices are CRF, MEMM, and token Logistic
 Regression; historical neural experiments are guarded against execution.

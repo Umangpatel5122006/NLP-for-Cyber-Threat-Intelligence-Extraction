@@ -78,6 +78,52 @@ class IndicMessageTests(unittest.TestCase):
         text = "सरकार खाते में ५ लाख रुपये दे रही है। " + "सामान्य जानकारी। " * 80 + "कृपया SMS करें।"
         self.assertEqual(self.pipeline.run(text).metadata["message_risk"]["status"], "no_pattern_detected")
 
+    def test_identity_threat_requests_require_a_destination_and_preserve_warning_context(self):
+        examples = [
+            ("Aapka bank account block ho jayega. PAN verify karein: secure-check.example.in/kyc", "suspicious"),
+            ("आपका बैंक खाता बंद हो जाएगा। पैन सत्यापन करें: customer-check.example.in/verify", "suspicious"),
+            ("Aapka Aadhaar suspend ho jayega. Update karein: https://identity-check.example.com/update", "suspicious"),
+            ("Savdhan, farzi SMS ka example: Aapka account block ho jayega. KYC verify karein: fake-check.example.in", "review_context"),
+            ("Apna PAN update karein: portal.example.in/profile", "no_pattern_detected"),
+            ("Aapka account blocked nahi hai. PAN update karein: portal.example.in", "no_pattern_detected"),
+            ("आपका खाता बंद नहीं है। पैन अपडेट करें: portal.example.in", "no_pattern_detected"),
+            ("Aapka bank account block ho jayega. KYC apne official app me verify karein.", "no_pattern_detected"),
+        ]
+        for text, status in examples:
+            with self.subTest(text=text):
+                doc = self.pipeline.run(text)
+                self.assertEqual(doc.metadata["message_risk"]["status"], status)
+
+    def test_bare_destinations_do_not_become_fabricated_urls_or_email_fragments(self):
+        text = "Aapka account block ho jayega. PAN verify karein: \U0001f6e1 secure-check[.]example[.]in/path"
+        doc = self.pipeline.run(text)
+        cues = [s for s in doc.metadata["message_risk"]["signals"] if s["kind"] == "link"]
+        self.assertEqual(len(cues), 1)
+        self.assertEqual(cues[0]["label"], "Domain-like destination")
+        self.assertEqual(text[cues[0]["original_start"]:cues[0]["original_end"]], cues[0]["original_text"])
+        for finding in doc.findings:
+            self.assertEqual(text[finding.original_start:finding.original_end], finding.original_text)
+            if finding.label == "URL":
+                # The existing IOC library can label a schemeless path as URL;
+                # the merger must keep its unvalidated canonical value empty.
+                self.assertIsNone(finding.canonical_value)
+        mail = self.pipeline.run("Aapka account blocked hai. PAN verify karein: support@help.example.in")
+        self.assertNotIn("link", {s["kind"] for s in mail.metadata["message_risk"]["signals"]})
+
+    def test_a_full_url_is_not_repeated_as_its_contained_bare_host(self):
+        doc = self.pipeline.run("Aapka account block ho jayega. KYC verify karein: https://help.example.in/verify")
+        links = [s for s in doc.metadata["message_risk"]["signals"] if s["kind"] == "link"]
+        self.assertEqual(len(links), 1)
+        self.assertEqual(links[0]["original_text"], "https://help.example.in/verify")
+
+    def test_additional_imperatives_are_language_cues_and_work_without_phone_numbers(self):
+        for action in ("form bhariye", "form bharein", "verify karein", "confirm kijiye"):
+            text = "Sarkar aapke khate me 20 lakh rupaye de rahi hai. Rashi paane ke liye " + action + "."
+            doc = self.pipeline.run(text)
+            self.assertEqual(doc.metadata["message_risk"]["status"], "suspicious", text)
+            self.assertNotIn("phone", {s["kind"] for s in doc.metadata["message_risk"]["signals"]})
+        self.assertEqual(describe_language("Form bhariye.")["language"], "hi-en")
+
     def test_roman_na_distinguishes_prohibition_from_a_polite_request(self):
         for text, status in (("Apna OTP na bhejo.", "no_pattern_detected"),
                              ("Apna OTP share na karo.", "no_pattern_detected"),

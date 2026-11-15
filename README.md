@@ -15,6 +15,9 @@ language control offers Auto/English/Hindi/Hinglish. Automatic script/lexical
 guesses are unverified, with manual selection available. IOC extraction works
 across surrounding languages. See [the integration checkpoint](checkpoints/HINDI_HINGLISH.md)
 and the earlier [coverage checkpoint](checkpoints/LANGUAGE_COVERAGE.md).
+The [version 2 phrase-rule update](checkpoints/INDIC_RULES_V2.md) adds verification/
+form instructions, bare destinations and bounded account/identity-threat checks,
+with warning/negation guards. Trained language support remains unchanged.
 
 ---
 
@@ -120,16 +123,18 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** all **266 tests pass** in an isolated Ubuntu-24.04 WSL
+**Current validation:** all **270 tests pass** in an isolated Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
 saved-NER, original-offset, merger, API, action-feature, scam-pattern and launcher tests;
-see `results/indic_integration_validation.txt` (local generated log) and
+see `results/indic_rules_v2_validation.txt` (local generated log) and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
-were changed. A focused native Windows run passes 78 API/language/Indic-rule/
+were changed. A focused native Windows run passes 82 API/language/Indic-rule/
 combined-review/intake tests. Actual Chrome checks cover real NER/IOC inference, scam
 warnings, JSON export, mobile layout, missing-model recovery and language scope
-in both modes. The latest [Hindi/Hinglish checkpoint](checkpoints/HINDI_HINGLISH.md)
+in both modes. The latest [rule-update checkpoint](checkpoints/INDIC_RULES_V2.md)
+records broader requests and the limits of the downloaded development examples.
+The earlier [Hindi/Hinglish checkpoint](checkpoints/HINDI_HINGLISH.md)
 records phrase-rule support, data auditing and the remaining supervised-model gap.
 The earlier [data intake checkpoint](checkpoints/SMS_DATA_INTAKE.md) records
 22 native intake tests and private batch leakage checks. The earlier

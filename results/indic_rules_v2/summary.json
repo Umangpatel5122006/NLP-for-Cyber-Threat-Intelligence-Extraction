@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-15",
+  "indic_rule_version": 2,
+  "full_wsl_tests": 270,
+  "native_focused_tests": 82,
+  "tests_passed": true,
+  "browser": {
+    "default": {
+      "passed": true,
+      "check_groups": 29,
+      "candidate_false_alarm_observations": []
+    },
+    "candidate": {
+      "passed": true,
+      "check_groups": 29,
+      "candidate_false_alarm_observations": [
+        {
+          "case": "benign_credit_notification",
+          "expected": "ham",
+          "predicted": "spam",
+          "false_alarm": true,
+          "artifact_sha256": "8e9006bbb6d57eb9a37e9b865329c6c57c5bedecb0b150980af8dfc0d87a9300"
+        }
+      ]
+    }
+  },
+  "real_http_cases": 104,
+  "downloaded_diagnostic": {
+    "rows": 86,
+    "before": {
+      "supplied_positive_matched": 10,
+      "supplied_positive_unmatched": 37,
+      "supplied_ham_matched": 0,
+      "supplied_ham": 39
+    },
+    "after": {
+      "supplied_positive_matched": 13,
+      "supplied_positive_unmatched": 34,
+      "supplied_ham_matched": 0,
+      "supplied_ham": 39
+    },
+    "input_sha256": "4c2ea6d6c9303f6b7e27740cb3bbebde57ec3cc10ec7b7f9e565e99b5d483f16",
+    "population_ids_sha256": "f090cf0a485660d16ee18061b3076337eedf814b32452629cc65a29beef8252d",
+    "baseline_ref": "14ea1f134a3ed9d5d1ac36b1bc8d2c9922a6a314",
+    "baseline_rule_source_sha256": "2e8dbfc2fc1ec1e45ac916fb10cff6d9ffc20c4e42a0fe1d75b064ded6381c98",
+    "baseline_cache_sha256": "7cc9de049a333944b0d194cfb5af3a315a90f8c225e15ec19d9bc06331a66f69",
+    "used_for_development": true,
+    "independent_accuracy_evaluation": false,
+    "labels_independently_verified": false
+  },
+  "existing_model_artifact_sha256": {
+    "message_spam": "29e05300ac835d169b1ef9d4650dc219e350e11a817b65efe7afb96c61d8a2e3",
+    "message_generalization_v1/candidate": "8e9006bbb6d57eb9a37e9b865329c6c57c5bedecb0b150980af8dfc0d87a9300",
+    "ner_entities": "d5195ebe781197a15ebea3e31b15228334c236e05bec2f1b2c91de3a6033cd79",
+    "ner_action": "1732d7e0a1d4c5be1433dff1daf31c2893e0702b43b70142840d871e4d45da15"
+  },
+  "model_weights_changed": false,
+  "trained_hindi_hinglish_model": false,
+  "test_evaluated": false,
+  "remote_ci_run": false,
+  "source_sha256": {
+    "src/cti/extractors/indic_message_risk.py": "8b71bef55fbe55843fdacbfd862c738bef3f2957ee088d16ae555711b3043401",
+    "src/cti/preprocessing/language_detector.py": "31f80178ad69ceefde3e908d83995ec518f825766d5ed6dea841044b535b8dc0",
+    "src/cti/web/server.py": "20abec7d174b39269ffe668d47045bf2eca5729ed9e7fe99272d1fd5e73834b8",
+    "src/cti/web/static/app.js": "cf06f3f7e6bcdb39b89af46b30506bce887636598428a96cd0eb8a880ba57b9e",
+    "scripts/check_web_ui.mjs": "295d7202ea93b3c5da409157020884c76a3ad5ac70c197f88b8f2365a656d411",
+    "tests/test_indic_message_risk.py": "c52fc1c8a9b2006d98ae503f6bd10fe9f554518f462e25570958a7d982f525f6",
+    "examples/hindi_hinglish_regressions.json": "73cb4e43ab73b50df40439e51014f0e2c96ff949c317867901d229ffe61312a9"
+  }
+}

@@ -91,6 +91,46 @@
       "id": "hi-link",
       "text": "अपना पासवर्ड इस लिंक पर दर्ज करें: hxxps://bank-check[.]example[.]com/login",
       "expected_rule_status": "suspicious"
+    },
+    {
+      "id": "v2-bank-threat",
+      "text": "Aapka bank account block ho jayega. PAN verify karein: secure-check.example.in/kyc",
+      "expected_rule_status": "suspicious"
+    },
+    {
+      "id": "v2-hindi-threat",
+      "text": "आपका बैंक खाता बंद हो जाएगा। पैन सत्यापन करें: customer-check.example.in/verify",
+      "expected_rule_status": "suspicious"
+    },
+    {
+      "id": "v2-kyc-warning",
+      "text": "Savdhan, farzi SMS ka example: Aapka account block ho jayega. KYC verify karein: fake-check.example.in",
+      "expected_rule_status": "review_context"
+    },
+    {
+      "id": "v2-pan-reminder",
+      "text": "Apna PAN update karein: portal.example.in/profile",
+      "expected_rule_status": "no_pattern_detected"
+    },
+    {
+      "id": "v2-negated-threat",
+      "text": "Aapka account blocked nahi hai. PAN update karein: portal.example.in",
+      "expected_rule_status": "no_pattern_detected"
+    },
+    {
+      "id": "v2-own-app",
+      "text": "Aapka bank account block ho jayega. KYC apne official app me verify karein.",
+      "expected_rule_status": "no_pattern_detected"
+    },
+    {
+      "id": "v2-form-request",
+      "text": "Sarkar aapke khate me 20 lakh rupaye de rahi hai. Rashi paane ke liye form bhariye.",
+      "expected_rule_status": "suspicious"
+    },
+    {
+      "id": "v2-email-not-url",
+      "text": "Aapka account blocked hai. PAN verify karein: support@help.example.in",
+      "expected_rule_status": "no_pattern_detected"
     }
   ]
 }

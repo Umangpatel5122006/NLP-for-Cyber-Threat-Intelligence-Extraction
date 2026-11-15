@@ -423,7 +423,20 @@ try {
     }
   }
   await screenshot("web_hindi_hinglish_evidence.png");
-  record("Eighteen authored Hindi/Hinglish threat, benign and warning cases pass in BOTH modes, with original cues and no English-model predictions.");
+  record(indicCases.length + " authored Hindi/Hinglish threat, benign and warning cases pass in BOTH modes, with original cues and no English-model predictions.");
+  await evaluate(`(() => {
+    window.qaIndicFetch = window.fetch;
+    const legacy = structuredClone(state.result);
+    legacy.document.metadata.message_risk.indic_rule_version = 1;
+    window.fetch = (url,...args) => url === '/api/analyze' ? Promise.resolve(new Response(JSON.stringify(legacy),{status:200,headers:{'Content-Type':'application/json'}})) : window.qaIndicFetch(url,...args);
+  })()`);
+  await click("analyze-button");
+  await waitFor("!state.busy && !document.getElementById('notice').hidden");
+  assert.equal(await evaluate("state.result"), null);
+  assert.ok((await evaluate("document.getElementById('notice').textContent")).includes("outdated Hindi/Hinglish rules"));
+  assert.equal(await evaluate("document.getElementById('download-button').disabled"), true);
+  await evaluate("window.fetch=window.qaIndicFetch;delete window.qaIndicFetch;");
+  record("A v1 Hindi/Hinglish backend is rejected with restart guidance and export disabled.");
   await evaluate("document.getElementById('report-language').value='hi-en';document.getElementById('report-language').dispatchEvent(new Event('change',{bubbles:true}))");
   assert.equal(await evaluate("state.result"), null);
   assert.equal(await evaluate("document.getElementById('download-button').disabled"), true);

@@ -10,7 +10,7 @@ from bisect import bisect_left
 from cti.extractors.message_risk import PATTERNS as ENGLISH, SIGNALS, _is_request
 
 
-INDIC_RULE_VERSION = 1
+INDIC_RULE_VERSION = 2
 LANGUAGES = ("en", "hi", "hi-en")
 
 
@@ -34,6 +34,18 @@ PATTERNS = {
     "prize": phrase(r"लॉटरी|लाटरी|इनाम|पुरस्कार|विजेता|जीत गए|जीता|जीती|jeet gaye|jeeta|jeeti|jeete|inaam|inam|vijeta"),
     "warning": phrase(r"सावधान|फर्जी (?:संदेश|मैसेज|एसएमएस)|फ़र्ज़ी (?:संदेश|मैसेज)|धोखाधड़ी का उदाहरण|ठगी का उदाहरण|स्कैम का उदाहरण|फिशिंग का उदाहरण|saavdhan|savdhan|farzi (?:message|sms|msg)|farji (?:message|sms|msg)|fraud ka example|scam ka example|dhokhadhadi ka udaharan"),
 }
+CONTACT_EXTRA = phrase(r"(?:verify|confirm)\s+(?:karo|kare|karen|karein|kariye|kijiye)|bharo|bharein|bharen|bhariye|jayein|jayen|jaaiye|jaiye|jao|सत्यापन\s*करें|पुष्टि\s*करें")
+PATTERNS["identity"] = phrase(r"bank\s+(?:account|details)|account|kyc|pan(?:\s+card)?|aadhaar|aadhar|बैंक\s*(?:खाता|खाते|जानकारी)|खाता|खाते|आधार|पैन|केवाईसी")
+PATTERNS["verification"] = phrase(r"verify|verification|confirm|update|reactivat(?:e|ion)|सत्यापन|पुष्टि|अपडेट|सक्रिय|जानकारी\s*भरें")
+PATTERNS["coercion"] = phrase(r"block(?:ed)?|suspend(?:ed)?|freez(?:e|en)|frozen|disabl(?:e|ed)|disconnect(?:ed)?|reject(?:ed)?|बंद|निलंबित|ब्लॉक|सस्पेंड|अस्वीकार|रद्द")
+CONCEPT_INFO = {**SIGNALS,
+    "identity": ("Identity or account context", "The request refers to an account, KYC or an identity document."),
+    "verification": ("Verification or update requested", "The text asks for verification, confirmation or an update."),
+    "coercion": ("Account or service threat", "Blocking, suspension or rejection is invoked near a verification request; the claim is unverified.")}
+# A bare host is evidence of a possible destination, not a verified URL or IOC.
+BARE_DESTINATION = re.compile(
+    r"(?<![A-Za-z0-9@._-])(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+"
+    r"[a-z]{2,24}(?:/[^\s<>]*)?(?![A-Za-z0-9_-])", re.I)
 RULES = (
     ("indic_money_response_lure", ("reward", "money", "bank", "contact")),
     ("indic_authority_money_request", ("authority", "reward", "money", "contact")),
@@ -41,6 +53,7 @@ RULES = (
     ("indic_credential_disclosure", ("credential", "disclose", "contact")),
     ("indic_credential_link_request", ("credential", "contact", "link")),
     ("indic_advance_fee_lure", ("reward", "money", "fee", "contact")),
+    ("indic_identity_threat_destination", ("identity", "coercion", "verification", "contact", "link")),
 )
 NEGATION = phrase(r"नहीं(?!\s*तो)|नही(?!\s*तो)|मत|ना|न|nahi(?!\s+toh?\b)|nahin(?!\s+toh?\b)|mat|na|not|never|don't|do not")
 CONTRAST = phrase(r"लेकिन|मगर|lekin|magar|but|however")
@@ -77,7 +90,7 @@ def _negated(text, match):
 
 
 def _requested(text, match):
-    if PATTERNS["contact"].fullmatch(match.group()):
+    if PATTERNS["contact"].fullmatch(match.group()) or CONTACT_EXTRA.fullmatch(match.group()):
         return True
     left, right = _clause(text, match.start(), match.end())
     # English action + Hindi inflection, e.g. "OTP share mat karo" is negated
@@ -88,14 +101,23 @@ def _requested(text, match):
 
 def assess_indic_message(text):
     matches = {}
-    for kind in SIGNALS:
+    for kind in CONCEPT_INFO:
         found = {}
-        for pattern in (ENGLISH.get(kind), PATTERNS.get(kind)):
+        extra = BARE_DESTINATION if kind == "link" else CONTACT_EXTRA if kind == "contact" else None
+        for pattern in (ENGLISH.get(kind), PATTERNS.get(kind), extra):
             if pattern:
                 for m in pattern.finditer(text):
                     found[(m.start(), m.end())] = m
-        matches[kind] = sorted(found.values(), key=lambda m: (m.start(), m.end()))
-    for kind in ("reward", "prize", "contact", "disclose"):
+        values = sorted(found.values(), key=lambda m: (m.start(), -m.end()))
+        if kind == "link":
+            # Do not display the same destination again as the host inside a URL.
+            outer = []
+            for m in values:
+                if not outer or m.start() >= outer[-1].end():
+                    outer.append(m)
+            values = outer
+        matches[kind] = values
+    for kind in ("reward", "prize", "contact", "disclose", "coercion"):
         matches[kind] = [m for m in matches[kind] if not _negated(text, m)]
     matches["contact"] = [m for m in matches["contact"] if _requested(text, m)]
     positions = {kind: [m.start() for m in values] for kind, values in matches.items()}
@@ -119,8 +141,11 @@ def assess_indic_message(text):
             rules.add(name)
             for kind in dict.fromkeys((*required, "phone", "link", "authority", "warning")):
                 for m in nearby[kind][:3]:
+                    info = CONCEPT_INFO[kind]
+                    if kind == "link" and not re.match(r"(?:https?://|hxxps?://|www\.)", m.group(), re.I):
+                        info = ("Domain-like destination", "A domain-like address appears near the request. Its syntax and reputation are unverified; it is not a confirmed URL.")
                     signals[(kind, m.start(), m.end())] = {
-                        "kind": kind, "label": SIGNALS[kind][0], "explanation": SIGNALS[kind][1],
+                        "kind": kind, "label": info[0], "explanation": info[1],
                         "original_start": m.start(), "original_end": m.end(), "original_text": m.group()}
     status = "no_pattern_detected" if not rules else "review_context" if all(contexts) else "suspicious"
     summary = {

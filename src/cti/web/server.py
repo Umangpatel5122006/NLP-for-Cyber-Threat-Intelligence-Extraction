@@ -15,6 +15,7 @@ import yaml
 from cti.core.pipeline import Pipeline
 from cti.core.registry import create
 from cti.extractors.message_risk import RULE_VERSION
+from cti.extractors.indic_message_risk import INDIC_RULE_VERSION
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -120,7 +121,7 @@ class ReviewEngine:
                                      "language_detection": "script_and_lexical_heuristic; manual override; not verified language identification"},
                 "message_classifier": message_model,
                 "message_risk": {"method": "classical_multilingual_rules", "rule_version": RULE_VERSION,
-                                 "indic_rule_version": 1, "supported_languages": ["en", "hi", "hi-en"], "available_in": list(MODES)}}
+                                 "indic_rule_version": INDIC_RULE_VERSION, "supported_languages": ["en", "hi", "hi-en"], "available_in": list(MODES)}}
 
     def analyze(self, payload):
         if not isinstance(payload, dict) or not {"text", "mode"} <= set(payload) or set(payload) - {"text", "mode", "language"}:

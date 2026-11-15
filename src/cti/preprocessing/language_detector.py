@@ -22,8 +22,9 @@ _HINGLISH_HINTS = frozenset({
     "hain", "hoga", "hogi", "milega", "milenge", "milegi", "kyunki", "liye", "chahiye",
     "tumhara", "tumhare", "tumhe", "hamara", "hamare", "humara", "humare", "sarkar", "sarkaar",
     "hua", "hui", "hue", "gaye", "gaya", "gayi", "raha", "rahi", "rahe", "ghar", "aana", "jana", "kal", "aaj",
+    "bhariye", "bharein", "bharen", "jayein", "jaaiye", "jaiye", "kijiye", "karne", "dene", "jayega", "jayegi", "warna",
 })
-_HINGLISH_STRONG = frozenset({"kripya", "kripaya", "bhejo", "bhejein", "bhejiye", "batao", "bataiye", "batayein"})
+_HINGLISH_STRONG = frozenset({"kripya", "kripaya", "bhejo", "bhejein", "bhejiye", "batao", "bataiye", "batayein", "bhariye", "bharein", "jayein", "jaaiye", "kijiye"})
 # Count prose rather than ASCII hosts/hashes embedded in another script. This
 # affects only the guess; original text and IOC extraction remain unchanged.
 _INDICATORS = re.compile(
