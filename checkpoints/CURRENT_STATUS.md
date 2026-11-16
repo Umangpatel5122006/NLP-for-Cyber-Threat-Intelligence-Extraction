@@ -1,6 +1,14 @@
 # Project progress, in order
 
-Latest local checkpoint: [action annotation review pack](ACTION_REVIEW_PACK.md).
+Latest local checkpoint: [fit-only consistency comparison](ACTION_CONSISTENCY_EXPERIMENT.md).
+Six fold fits test omission of conflicting fit-relevant inputs and optional
+deduplication, with all original validation rows retained. Exact F1 changes from
+0.1323 to 0.1332 / 0.1305; neither candidate meets the fixed minimum gain.
+The current model remains active; no dev/test evaluation or full-train candidate
+was needed. All 350 WSL tests and the independent fit/count audit pass. Models,
+original labels, splits and the 21 pending review decisions are unchanged.
+
+Previous local checkpoint: [action annotation review pack](ACTION_REVIEW_PACK.md).
 All 21 conflict groups / 43 records now have a source/context casebook and a
 decision workbook that preserves notes and rejects stale evidence. Nine groups
 still conflict with identical preceding context. The affected rows contain only

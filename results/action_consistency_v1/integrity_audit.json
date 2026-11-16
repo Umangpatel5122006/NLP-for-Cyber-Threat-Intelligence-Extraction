@@ -1,0 +1,44 @@
+{
+  "passed": true,
+  "scope": "Independent fit-inventory and cached-count audit; no independent CRF refits.",
+  "selected": "baseline",
+  "training_sentences": 8635,
+  "training_reports": 70,
+  "fit_only_selection_verified": true,
+  "original_validation_retained": true,
+  "gold_labels_modified": false,
+  "dev_evaluated": false,
+  "test_evaluated": false,
+  "active_files_unchanged": true,
+  "full_train_policy_inventories": {
+    "consistent_inputs": {
+      "input_relevant_sentences": 3006,
+      "selected_sentences": 2984,
+      "ambiguous_groups": 11,
+      "ambiguous_rows_removed": 22,
+      "duplicate_rows_removed": 0,
+      "selected_uids_sha256": "d74ac274d6860b7e317bd58b25d52b471409fa576c4b47ed468db8cffa3b8f87",
+      "ambiguous_uids_sha256": "5c8dd75c81c656e61662ebb224ecbfbf4bc31e26a0a5a6e4c12986cc3bc0d9a7",
+      "duplicate_uids_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "unique_consistent_inputs": {
+      "input_relevant_sentences": 3006,
+      "selected_sentences": 2962,
+      "ambiguous_groups": 11,
+      "ambiguous_rows_removed": 22,
+      "duplicate_rows_removed": 22,
+      "selected_uids_sha256": "ef4b3bdf88b4278ffaaecb029f2202385d32524d5f5e143f742f3418c1d543c4",
+      "ambiguous_uids_sha256": "5c8dd75c81c656e61662ebb224ecbfbf4bc31e26a0a5a6e4c12986cc3bc0d9a7",
+      "duplicate_uids_sha256": "c59f55f26249d3945f2a1b97fc2921272306ea2d95a3e3a512d5add58115eb63"
+    }
+  },
+  "oof_sha256_lf": {
+    "models/action_consistency_v1/baseline_oof.json": "44532129dbae6b932cfa47e0ca8c37f40be59cf545fbc8a9665f80ccff574d0f",
+    "models/action_consistency_v1/consistent_inputs_oof.json": "beab7b78812c76940159e0845fa889010eaec5f610e98df5e0577f61856d9396",
+    "models/action_consistency_v1/unique_consistent_inputs_oof.json": "88efbe4fc672b8d39b1b4ad4b74e147655f9620d252c83dc19dbdfa5b22a04c5"
+  },
+  "source_sha256_lf": {
+    "scripts/audit_action_consistency.py": "924f160f01586b3ce4d82e4c8c90e969be1c31091b0ce8dc93d6ccc0f5ffbd41",
+    "scripts/audit_action_background.py": "834c4375859e7b1217d20f10dabba699568b3493d43ad0e6722711846dd7ce50"
+  }
+}

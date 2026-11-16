@@ -1,0 +1,62 @@
+{
+  "selected": "baseline",
+  "provenance": {
+    "config_sha256_lf": "ada23f7a9a08f7c56cdaada762fa49b89aeb7b6583b600c71bf07ec5b2333371",
+    "source_sha256_lf": {
+      "src/cti/experiment_action_consistency.py": "8f299d35735fe9ae3b98374399231993fc10962cc4d062654de66435ed3535e3",
+      "src/cti/experiment_action.py": "e803851f39a17bf33f4694335dfd0f5fe5ad22aa73acd1eb878a66f6d663e005",
+      "src/cti/experiment_action_background.py": "b446e47b360b2f00f52629adccef9263f6cd3e0ce098b4ab8ff8eed04ea8b585",
+      "src/cti/experiment_action_ending.py": "5c73b97fa1858b4d9368e55f9fd7818fff9af172d85427163dbe857a525f0e56",
+      "src/cti/experiment_action_relevance.py": "18dff39b2869d2637f2149515c9406c36a9a83b45b2c2898c85d78a179198c83",
+      "src/cti/models/ner_data.py": "5c62df8c838089657ecc669a6df34776e61fbe2ba39b45dce2c4887d8fa7f502",
+      "src/cti/models/ner_artifact.py": "66e269a921a7931e1c44679e6db3ed934cc1584fbdaad3aa7953781cfc368aa7",
+      "src/cti/models/action_crf.py": "e5af0259851b3371dcc98f93cc8885ba8a5353fdf9bb438faaddb5218f1df7ce",
+      "src/cti/eval/metrics.py": "5eda5b5d7814a59fd1d61d75e47ffa20e363ef086109119ee3280c505f172989",
+      "src/cti/eval/cv.py": "f7200ee39e19e0a725a42339cc37703d814e4d2303b58877948416eede886d1b",
+      "src/cti/core/dataset.py": "5530272d7eaee7bf8ea22b2e167783dedff5ff651fb1b69353a77ec31d58af6b"
+    },
+    "environment": {
+      "python_major_minor": "3.12",
+      "packages": {
+        "spacy": "3.8.16",
+        "scikit-learn": "1.9.1",
+        "sklearn-crfsuite": "0.5.0",
+        "python-crfsuite": "0.9.12",
+        "joblib": "1.6.0"
+      },
+      "dependency_sha256": {
+        "src/cti/models/base.py": "78b31d5a0275748e06d61aa0b5e6d9dc6a36d397fad6b825076cb3ee105284e9",
+        "src/cti/models/crf.py": "cf24edf1cf2fe2421433c84e9165ed7a3c6b446bd512242031b32cb6066f66fc",
+        "src/cti/models/memm.py": "b9203a9767bfa2fa8f1d8c7e519b8ba7e3519e9dd7161809357753f7a13ab12d",
+        "src/cti/preprocessing/tokenizer.py": "9bf2b706af8270b3f94ffe9a01be9f00bb53e29a0794b9b41356cba72f2630ab",
+        "configs/labels.yaml": "c97c18862be8a70eadab268bb1ca6914007ebd864e2d573ebf3fae0e3af5b0ac",
+        "data/external/gazetteer.json": "299138401b1c6b494b64038941ae1d1c94a5d3267c2a83eb4a0b5c20d6643221"
+      }
+    },
+    "raw_sha256_lf": "c32bd166e893683800121ae9e13197770a345987912dc9dc31f0be19d9693b5a",
+    "processed_train_sha256_lf": "23ccbb27007f86a98b3a6a2874bdd63ed8a6d8f8e61c55c608cb39a4d0e10edf",
+    "split_sha256_lf": {
+      "train": "dfde0761a14b674d1a9061563c3cced59bd9ec9f56281eb4762484e1a307420c",
+      "dev": "acc82fd744ab1b9420144e42f9716e8bc9556df3ab00bb5155cdd186b4021745",
+      "test": "1283015bcc2d3b446c052494677780c9e2e5bb567a1e990d033493803e8526fc"
+    },
+    "unchanged_files_sha256": {
+      "models/ner_action.joblib": "1732d7e0a1d4c5be1433dff1daf31c2893e0702b43b70142840d871e4d45da15",
+      "models/ner_action.manifest.json": "b1921d93729b26b41d4ab3bf0c44f49b68b1f565787c6540ed8031bdd4151c4a",
+      "models/ner_entities.joblib": "d5195ebe781197a15ebea3e31b15228334c236e05bec2f1b2c91de3a6033cd79",
+      "models/message_spam.joblib": "29e05300ac835d169b1ef9d4650dc219e350e11a817b65efe7afb96c61d8a2e3",
+      "models/message_generalization_v1/candidate.joblib": "8e9006bbb6d57eb9a37e9b865329c6c57c5bedecb0b150980af8dfc0d87a9300",
+      "configs/ner_training.yaml": "1968d800ada6073aebe1a217b24f887ad4aa5bdb9a249d820ad69f0b520a258a",
+      "configs/config_ner.yaml": "c14a07eae380726af340cf9289926883cfd1497b4b76b834b7f96d90904165e5"
+    },
+    "baseline_oof_sha256_lf": "44532129dbae6b932cfa47e0ca8c37f40be59cf545fbc8a9665f80ccff574d0f",
+    "upstream_summary_sha256_lf": "e830848ce2433a71c0102b04eca84bf2456f726ee8d79bf478214a41cd27a234",
+    "upstream_audit_sha256_lf": "eb5d821a98da9a9a5b0dbd113731495ed8ce90a5e2b3b94f0b0f5be4061803ac"
+  },
+  "dev_evaluated": false,
+  "test_evaluated": false,
+  "active_files_modified": false,
+  "gold_labels_modified": false,
+  "validation_filtered": false,
+  "release_status": "retain_current_model"
+}
