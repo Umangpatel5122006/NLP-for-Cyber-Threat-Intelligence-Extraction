@@ -1,9 +1,60 @@
 # Working classical NLP environment in WSL
 
-Validated on 2026-11-15 using the existing Ubuntu-24.04 distribution, Python
+Revalidated on 2026-11-16 using the existing Ubuntu-24.04 distribution, Python
 3.12.3 and `requirements-lock.txt`. The environment is outside the repository at
 `~/.cache/cti-classical-py312`. The Windows Python 3.11 environment still encounters
 Application Control import failures; no Windows security setting was changed.
+
+**Latest runtime check:** after the user reported recovery, Ubuntu starts and
+the prepared Python 3.12.3 / spaCy 3.8.16 runtime imports successfully. All
+**327 tests pass in WSL**, including the three BILOU production-stack checks
+that were previously blocked. The native Windows import still encounters
+Application Control, now reported in `srsly.ujson`; use the working WSL runtime.
+The agent did not change Windows security settings. Earlier failure records
+below are historical, not the current startup state.
+
+### Earlier startup failure and follow-up on 2026-11-16
+
+The earlier `HCS/0xc0000139` failure was confirmed in the user's normal
+PowerShell terminal before recovery. Local
+checks find WSL 3.0.5.0, the current stable release checked against Microsoft's
+[release page](https://github.com/microsoft/WSL/releases/tag/3.0.5), and running
+WSL/compute/network services. `wsl --shutdown` succeeds; `wsl --update` reports
+that the most recent version is already installed. A subsequent bare Ubuntu
+launch still fails with the same HCS error. Neither standard reboot-pending
+registry marker is set; this does not rule out a problem resolved by restarting.
+
+Microsoft identifies `0xc0000139` as
+[`STATUS_ENTRYPOINT_NOT_FOUND`](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55).
+This establishes the error type, not which DLL or component is responsible.
+The failure is before the project's Python starts. Native Python's separate
+Application Control block was also confirmed in Code Integrity events.
+
+The suggested next troubleshooting step was Microsoft's
+[Windows component repair sequence](https://support.microsoft.com/en-us/windows/experience/backup-recovery/using-system-file-checker-in-windows).
+Open **PowerShell as administrator**, run DISM first, and wait for successful
+completion before running SFC:
+
+```powershell
+DISM.exe /Online /Cleanup-Image /RestoreHealth
+sfc /scannow
+```
+
+Save work, restart Windows manually, then test:
+
+```powershell
+wsl -d Ubuntu-24.04 --exec /bin/true
+```
+
+If troubleshooting a recurrence and a repair command fails, preserve its final
+output for diagnosis before continuing. WSL startup is now restored; the exact
+repair actions/output were not provided, so no specific cause or fix is asserted.
+These commands target Windows components; retain the existing Ubuntu
+installation and project environment. The agent session is not elevated, so
+DISM/SFC were not run. No restart, distribution reset or security-policy change
+was performed. Local restart/update attempt logs are ignored at
+`results/wsl_recovery_20261116/attempts.json`. See the current checkpoint for
+the resumed model comparison; the old attempt log records the earlier failure.
 
 ## Use the prepared environment
 

@@ -1,13 +1,34 @@
 # Project progress, in order
 
-Latest local checkpoint: [action-ending feature comparison](ACTION_ENDING_EXPERIMENT.md).
+Latest local checkpoint: [completed BILOU comparison](ACTION_BILOU_EXPERIMENT.md).
+WSL startup is restored and all 327 tests pass, including production feature
+checks. Both workbench modes and the English SMS model are ready through WSL.
+Three BILOU candidate fold fits completed; exact F1 rises from 0.1323 to 0.1350,
+but the gain is below the fixed minimum and background findings rise 7.06%, above
+budget. The current model remains active. Dev/test were not evaluated; no full-
+train candidate was created. Independent cache/count/normalization audit passes;
+model/configuration/annotation/split identities are unchanged. Review the
+unresolved annotation/target-definition issues before another feature experiment.
+
+Previous local checkpoint: [BILOU preparation](ACTION_BILOU_PREPARATION.md).
+Explicit end/unit labels, an isolated experimental artifact format and a frozen
+train-CV protocol are prepared. Encoding preserves all 4,453 train actions across
+8,635 sentences. Fourteen native conversion/toy-CRF tests and 82 existing native
+regressions pass. Production-stack tests/training are blocked: WSL fails to start
+with HCS/0xc0000139, and native spaCy remains blocked by Application Control.
+No new CV/dev score or full-suite pass is claimed. The prior full-suite result
+was 310 tests; models, labels and splits were unchanged. The subsequent recovery,
+production checks and comparison are recorded above.
+
+Previous local checkpoint: [action-ending feature comparison](ACTION_ENDING_EXPERIMENT.md).
 Six candidate fold fits and one selected full-train fit completed. Learned stem-
 pair edges pass training-CV selection (exact F1 0.1323 to 0.1377, three fold wins)
 but fail dev confirmation (0.1551 to 0.1380, lower recall and more background
 findings). The candidate is held; default models/app/training labels are unchanged.
 All 310 WSL tests and the independent cache/count/selection audit pass. Only the
 train-selected winner was scored on dev; the official test remains reserved.
-Explicit end/unit sequence labels are a possible next experiment, not completed work.
+Explicit end/unit sequence labels were the next proposed experiment; preparation
+and the runtime blocker are recorded above.
 
 Previous local checkpoint: [train-only action error audit](ACTION_ERROR_AUDIT.md).
 Frozen OOF predictions show 559 exact actions, 1,702 partial overlaps and 2,192

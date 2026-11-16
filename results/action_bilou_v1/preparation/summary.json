@@ -1,0 +1,56 @@
+{
+  "status": "prepared_runtime_blocked",
+  "date": "2026-11-15",
+  "production_training_performed": false,
+  "training_cv_performed": false,
+  "dev_evaluated": false,
+  "test_evaluated": false,
+  "new_native_tests": {
+    "passed": true,
+    "count": 14,
+    "scope": "8 conversion tests and 6 real-CRF plumbing tests using toy feature matrices"
+  },
+  "native_regressions": {
+    "passed": true,
+    "count": 82,
+    "scope": "API, language, Indic rules, combined findings and SMS intake"
+  },
+  "independent_decoder_paths_checked": 3125,
+  "production_stack_tests": {
+    "passed": false,
+    "status": "blocked_at_import",
+    "test_cases_pending": 3,
+    "reason": "Native spaCy import blocked by Application Control"
+  },
+  "wsl": {
+    "passed": false,
+    "exit_code": 4294967295,
+    "error": "HCS/0xc0000139"
+  },
+  "full_suite_rerun": false,
+  "last_full_suite_pass": {
+    "tests": 310,
+    "checkpoint": "ACTION_ENDING_EXPERIMENT.md",
+    "historical": true
+  },
+  "candidate_artifact_created": false,
+  "default_models_modified": false,
+  "gold_encoding_audit": "integrity_audit.json",
+  "post_run_model_audit_performed": false,
+  "source_sha256_lf": {
+    "configs/action_bilou_experiment.yaml": "562d039f37f9da7ee329b5451c33be8f0a84a42042cc6423708a34feafbb3265",
+    "src/cti/models/action_bilou.py": "60faf0fed7a233c9933d1a73dad1ab1ba08881f6f91bb064312e70a459dfc3ed",
+    "src/cti/models/action_bilou_crf.py": "bc1b78480f60148fb24d3e8d88765278556e917cd4704feb4df0094996f1a4c1",
+    "src/cti/experiment_action_bilou.py": "68ace31b6f0462d51bf838bc1c8f390e2fe8b1308dd0c4bb4bc01c1cf0512c8a",
+    "scripts/audit_action_bilou.py": "f8cffe133e80769e5daa74f8e6595397cb1c5515e68da8c37ce147100199abcb",
+    "scripts/audit_action_bilou_encoding.py": "288ab78283cfdce3dc4d416bd98eed449922d5cfe496ad3b3e9931325e735987",
+    "tests/test_action_bilou.py": "9244d532cb451c28408bd684688ee9f2a370d942843dbc5547cb11c57d861229",
+    "tests/test_action_bilou_experiment.py": "2b0c75d83a19a15e9f1d9040a506e28a4ede3af00310e9ee940a12293e982bd3"
+  },
+  "validation_logs_sha256_lf": {
+    "results/action_bilou_native_tests.txt": "5199f630b7bfaeb820b946948a689221809a27e62a7357a226c93104fce051d1",
+    "results/action_bilou_native_regressions.txt": "a1caa1d8112c5ea266154418d73011d665b98ad93c35419024d6813437ec0421",
+    "results/action_bilou_production_tests.txt": "11ff53cc92f9c85770e29f337c5d67f8837b807cfa76d9384caee20e2dba34c8",
+    "results/action_bilou_wsl_check.txt": "40d1b0f7c40eb612ce9b1c75d4a80a61a38af889450efb17316fd4fb49b9bd3a"
+  }
+}

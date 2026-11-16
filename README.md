@@ -64,6 +64,10 @@ labels. No automatic label correction or model change was made.
 A subsequent [classical ending-feature comparison](checkpoints/ACTION_ENDING_EXPERIMENT.md)
 passes training-CV selection but fails dev confirmation (exact F1 0.1551 to
 0.1380). That candidate is held; the current model remains active.
+The [BILOU comparison is complete](checkpoints/ACTION_BILOU_EXPERIMENT.md) after
+WSL recovery. Training-CV F1 improves from 0.1323 to 0.1350, but gain/background
+budgets fail, so the current model stays active. Dev/test were not evaluated.
+The workbench is ready through WSL; native spaCy remains blocked.
 See [the current robustness checkpoint](checkpoints/MESSAGE_ROBUSTNESS.md),
 [the integrated checkpoint](checkpoints/INTEGRATED_FINDINGS_AND_SMS_MODEL.md)
 and [SMS data provenance](docs/SMS_DATASET.md).
@@ -138,13 +142,17 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Current validation:** all **310 tests pass** in an isolated Ubuntu-24.04 WSL
+**Latest full-suite validation:** **327 tests pass** in the restored Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
 saved-NER, original-offset, merger, API, action-feature, scam-pattern and launcher tests;
-see `results/action_ending_tests.txt` (local generated log) and
+see `results/action_bilou_tests.txt` (local generated log) and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
-were changed. A focused native Windows run passes 82 API/language/Indic-rule/
+were changed. The BILOU production checks and comparison now run successfully
+in WSL, with an independent audit and successful launcher readiness check.
+The earlier HCS startup failure is resolved; no cause or specific system repair
+is asserted. The preparation recorded 14 native conversion/toy-CRF tests and
+the gold-label encoding audit. A focused native Windows run passes 82 API/language/Indic-rule/
 combined-review/intake tests. Actual Chrome checks cover real NER/IOC inference, scam
 warnings, JSON export, mobile layout, missing-model recovery and language scope
 in both modes. The latest [rule-update checkpoint](checkpoints/INDIC_RULES_V2.md)

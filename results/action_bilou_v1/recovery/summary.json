@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-16",
+  "status": "wsl_restored_experiment_completed",
+  "wsl_python": "3.12.3",
+  "wsl_spacy": "3.8.16",
+  "full_suite": {
+    "passed": true,
+    "tests": 327,
+    "runtime": "Ubuntu-24.04 WSL",
+    "log": "results/action_bilou_tests.txt"
+  },
+  "workbench_readiness": {
+    "exit_code": 0,
+    "selected_runtime": "prepared Ubuntu WSL",
+    "modes": [
+      {
+        "id": "ner",
+        "label": "Entities + IOCs",
+        "ready": true,
+        "message": ""
+      },
+      {
+        "id": "ioc",
+        "label": "IOCs only",
+        "ready": true,
+        "message": ""
+      }
+    ],
+    "message_classifier_ready": true,
+    "message_classifier_sha256": "29e05300ac835d169b1ef9d4650dc219e350e11a817b65efe7afb96c61d8a2e3"
+  },
+  "native_spacy_import": {
+    "passed": false,
+    "reason": "Application Control block in srsly.ujson"
+  },
+  "experiment_selected": "baseline",
+  "release_status": "retain_current_model",
+  "dev_evaluated": false,
+  "test_evaluated": false,
+  "active_files_modified": false,
+  "post_run_audit_passed": true,
+  "browser_rerun": false,
+  "remote_ci_run": false,
+  "agent_changed_windows_security": false,
+  "system_repair_cause_established": false
+}

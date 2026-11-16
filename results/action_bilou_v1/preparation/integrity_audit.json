@@ -1,0 +1,38 @@
+{
+  "passed": true,
+  "scope": "Gold train-label encoding only; no model training or accuracy evaluation.",
+  "training_reports": 70,
+  "training_sentences": 8635,
+  "training_tokens": 223042,
+  "gold_action_spans": 4453,
+  "internal_tag_counts": {
+    "B-ACTION": 3469,
+    "I-ACTION": 14193,
+    "L-ACTION": 3469,
+    "O": 200927,
+    "U-ACTION": 984
+  },
+  "gold_bio_roundtrip_identical": true,
+  "active_artifacts_and_configs_unchanged": true,
+  "unchanged_files_sha256": {
+    "models/ner_action.joblib": "1732d7e0a1d4c5be1433dff1daf31c2893e0702b43b70142840d871e4d45da15",
+    "models/ner_action.manifest.json": "b1921d93729b26b41d4ab3bf0c44f49b68b1f565787c6540ed8031bdd4151c4a",
+    "models/ner_entities.joblib": "d5195ebe781197a15ebea3e31b15228334c236e05bec2f1b2c91de3a6033cd79",
+    "models/message_spam.joblib": "29e05300ac835d169b1ef9d4650dc219e350e11a817b65efe7afb96c61d8a2e3",
+    "models/message_generalization_v1/candidate.joblib": "8e9006bbb6d57eb9a37e9b865329c6c57c5bedecb0b150980af8dfc0d87a9300",
+    "configs/ner_training.yaml": "1968d800ada6073aebe1a217b24f887ad4aa5bdb9a249d820ad69f0b520a258a",
+    "configs/config_ner.yaml": "c14a07eae380726af340cf9289926883cfd1497b4b76b834b7f96d90904165e5"
+  },
+  "dev_evaluated": false,
+  "test_evaluated": false,
+  "model_training_performed": false,
+  "data_sha256_lf": {
+    "raw": "c32bd166e893683800121ae9e13197770a345987912dc9dc31f0be19d9693b5a",
+    "processed_train": "23ccbb27007f86a98b3a6a2874bdd63ed8a6d8f8e61c55c608cb39a4d0e10edf"
+  },
+  "source_sha256_lf": {
+    "scripts/audit_action_bilou_encoding.py": "288ab78283cfdce3dc4d416bd98eed449922d5cfe496ad3b3e9931325e735987",
+    "src/cti/models/action_bilou.py": "60faf0fed7a233c9933d1a73dad1ab1ba08881f6f91bb064312e70a459dfc3ed",
+    "src/cti/models/ner_data.py": "5c62df8c838089657ecc669a6df34776e61fbe2ba39b45dce2c4887d8fa7f502"
+  }
+}

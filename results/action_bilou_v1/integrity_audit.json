@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "scope": "Post-run independent cache/normalization/count audit; no independent CRF refits.",
+  "selected": "baseline",
+  "training_sentences": 8635,
+  "training_reports": 70,
+  "fit_uid_hashes_verified": true,
+  "active_files_unchanged": true,
+  "dev_evaluated": false,
+  "test_evaluated": false,
+  "source_sha256_lf": {
+    "scripts/audit_action_bilou.py": "f8cffe133e80769e5daa74f8e6595397cb1c5515e68da8c37ce147100199abcb",
+    "scripts/audit_action_background.py": "834c4375859e7b1217d20f10dabba699568b3493d43ad0e6722711846dd7ce50"
+  }
+}

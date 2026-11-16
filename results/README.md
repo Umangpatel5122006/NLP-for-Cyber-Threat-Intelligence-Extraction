@@ -46,6 +46,11 @@ The [classical action-ending comparison](action_ending_v1/README.md) records a
 training-CV selection followed by a failed dev confirmation and release hold.
 The default artifacts remain unchanged; the experimental model and detailed
 predictions remain ignored.
+The [completed BILOU comparison](action_bilou_v1/README.md) retains the current
+model after failed training-CV gain/background checks. Its current root reports
+contain actual metrics and the post-run audit. Nested preparation reports retain
+the earlier encoding-only checks/blocker; recovery evidence records 327 WSL tests
+and a ready workbench. Prediction caches remain ignored.
 
 Removing previously tracked generated files from Git's index keeps their local
 copies. The cleanup applies to future commits; it does not rewrite existing
