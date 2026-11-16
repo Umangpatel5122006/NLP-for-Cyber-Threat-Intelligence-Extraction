@@ -68,6 +68,11 @@ The [BILOU comparison is complete](checkpoints/ACTION_BILOU_EXPERIMENT.md) after
 WSL recovery. Training-CV F1 improves from 0.1323 to 0.1350, but gain/background
 budgets fail, so the current model stays active. Dev/test were not evaluated.
 The workbench is ready through WSL; native spaCy remains blocked.
+A [train-only annotation review pack](checkpoints/ACTION_REVIEW_PACK.md) now
+provides readable source/context cases and a decision workbook for all 21
+conflicting-label groups. Nine still disagree with identical preceding context.
+All decisions remain pending; models and original labels are unchanged. See
+[the guide](docs/ACTION_ANNOTATION_REVIEW.md) to review the target conventions.
 See [the current robustness checkpoint](checkpoints/MESSAGE_ROBUSTNESS.md),
 [the integrated checkpoint](checkpoints/INTEGRATED_FINDINGS_AND_SMS_MODEL.md)
 and [SMS data provenance](docs/SMS_DATASET.md).
@@ -142,10 +147,10 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Latest full-suite validation:** **327 tests pass** in the restored Ubuntu-24.04 WSL
+**Latest full-suite validation:** **341 tests pass** in the restored Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
 saved-NER, original-offset, merger, API, action-feature, scam-pattern and launcher tests;
-see `results/action_bilou_tests.txt` (local generated log) and
+see `results/action_review_tests.txt` (local generated log) and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
 were changed. The BILOU production checks and comparison now run successfully

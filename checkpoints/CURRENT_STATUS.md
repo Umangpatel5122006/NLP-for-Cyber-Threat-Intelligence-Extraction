@@ -1,6 +1,16 @@
 # Project progress, in order
 
-Latest local checkpoint: [completed BILOU comparison](ACTION_BILOU_EXPERIMENT.md).
+Latest local checkpoint: [action annotation review pack](ACTION_REVIEW_PACK.md).
+All 21 conflict groups / 43 records now have a source/context casebook and a
+decision workbook that preserves notes and rejects stale evidence. Nine groups
+still conflict with identical preceding context. The affected rows contain only
+57 of 4,453 gold actions; most coverage errors remain elsewhere. All 21 human
+decisions are pending. Native generation works without model binaries; optional
+frozen OOF coverage is hash-checked. All 341 WSL tests pass. Labels, models and
+splits are unchanged; no fitting or dev/test evaluation occurred. Review the
+first nine casebook groups and record the unresolved target conventions next.
+
+Previous local checkpoint: [completed BILOU comparison](ACTION_BILOU_EXPERIMENT.md).
 WSL startup is restored and all 327 tests pass, including production feature
 checks. Both workbench modes and the English SMS model are ready through WSL.
 Three BILOU candidate fold fits completed; exact F1 rises from 0.1323 to 0.1350,

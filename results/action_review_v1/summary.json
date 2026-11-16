@@ -1,0 +1,69 @@
+{
+  "scope": "Train-only descriptive review; no relabeling, filtering, fitting or accuracy upgrade.",
+  "training_sentences": 8635,
+  "training_reports": 70,
+  "conflict_groups": 21,
+  "conflict_rows": 43,
+  "difference_counts": {
+    "boundary_extent": 6,
+    "different_actions": 1,
+    "presence_absence": 11,
+    "span_count_or_segmentation": 3
+  },
+  "identical_context_conflict_groups": 9,
+  "single_fixed_token_input_minimum_sentence_disagreements": 21,
+  "single_fixed_token_and_context_input_minimum_sentence_disagreements": 9,
+  "bound_scope": "Exact whole-sentence consistency only for one fixed deterministic predictor; not a span-F1 ceiling or a CV estimate.",
+  "baseline_coverage_counts": {
+    "conflict_rows": {
+      "sentences": 43,
+      "gold_actions": 57,
+      "predicted_actions": 18,
+      "exact_actions": 2
+    },
+    "remaining_rows": {
+      "sentences": 8592,
+      "gold_actions": 4396,
+      "predicted_actions": 3982,
+      "exact_actions": 557
+    }
+  },
+  "baseline_coverage_available": true,
+  "conflict_rows_by_report": {
+    "95_mitre_report": 28,
+    "93_mitre_report": 4,
+    "26_mandiant_report": 2,
+    "90_mitre_report": 2,
+    "83_mitre_report": 2,
+    "47_crowdstrike_report": 3,
+    "45_crowdstrike_report": 1,
+    "48_crowdstrike_report": 1
+  },
+  "conflict_relevance_counts": {
+    "relevant": 32,
+    "background": 11
+  },
+  "review_decisions": {
+    "pending": 21
+  },
+  "labels_modified": false,
+  "models_modified": false,
+  "dev_evaluated": false,
+  "test_evaluated": false,
+  "data_sha256_lf": {
+    "raw": "c32bd166e893683800121ae9e13197770a345987912dc9dc31f0be19d9693b5a",
+    "processed_train": "23ccbb27007f86a98b3a6a2874bdd63ed8a6d8f8e61c55c608cb39a4d0e10edf"
+  },
+  "baseline_oof_sha256_lf": "44532129dbae6b932cfa47e0ca8c37f40be59cf545fbc8a9665f80ccff574d0f",
+  "unchanged_local_files_sha256": {
+    "models/ner_action.joblib": "1732d7e0a1d4c5be1433dff1daf31c2893e0702b43b70142840d871e4d45da15",
+    "models/ner_action.manifest.json": "b1921d93729b26b41d4ab3bf0c44f49b68b1f565787c6540ed8031bdd4151c4a",
+    "models/ner_entities.joblib": "d5195ebe781197a15ebea3e31b15228334c236e05bec2f1b2c91de3a6033cd79",
+    "models/message_spam.joblib": "29e05300ac835d169b1ef9d4650dc219e350e11a817b65efe7afb96c61d8a2e3",
+    "models/message_generalization_v1/candidate.joblib": "8e9006bbb6d57eb9a37e9b865329c6c57c5bedecb0b150980af8dfc0d87a9300",
+    "configs/ner_training.yaml": "1968d800ada6073aebe1a217b24f887ad4aa5bdb9a249d820ad69f0b520a258a",
+    "configs/config_ner.yaml": "c14a07eae380726af340cf9289926883cfd1497b4b76b834b7f96d90904165e5"
+  },
+  "source_sha256_lf": "0a5b83ad931ff760046489d0a8871e68c4d6615b9955a5878c98207866f48d87",
+  "decisions_sha256_lf": "ce3ee71ec4dcb651d3345441e2a3dbbfec62da3fb5a47d89c6943043def8dc43"
+}

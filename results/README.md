@@ -51,6 +51,9 @@ model after failed training-CV gain/background checks. Its current root reports
 contain actual metrics and the post-run audit. Nested preparation reports retain
 the earlier encoding-only checks/blocker; recovery evidence records 327 WSL tests
 and a ready workbench. Prediction caches remain ignored.
+The [action annotation review pack](action_review_v1/README.md) keeps compact
+train-only structural/coverage counts. Raw context casebooks and editable reviewer
+decisions stay ignored; no labels or model weights are changed by the tool.
 
 Removing previously tracked generated files from Git's index keeps their local
 copies. The cleanup applies to future commits; it does not rewrite existing
