@@ -18,6 +18,7 @@ from cti.models.ner_artifact import load_ner_tagger, save_ner_tagger
 from cti.models.ner_data import load_aligned_ner
 from cti.output.merger import ResultMerger
 from cti.preprocessing.tokenizer import tokenize
+from cti.train_ner import _release_prediction_handles
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -40,6 +41,17 @@ def fitted(layer="entities", model="crf_tagger"):
 
 
 class NERArtifactTests(unittest.TestCase):
+    def test_temporary_prediction_handles_close_idempotently_and_reopen_without_changing_predictions(self):
+        tagger = fitted()
+        predictions = tagger.predict(TOKENS)
+        self.assertIsNotNone(tagger.model._tagger)
+        _release_prediction_handles(tagger)
+        _release_prediction_handles(tagger)
+        self.assertIsNone(tagger.model._tagger)
+        self.assertEqual(tagger.predict(TOKENS), predictions)
+        _release_prediction_handles(tagger)
+        _release_prediction_handles(fitted(model="token_logreg"))
+
     def test_all_classical_taggers_preserve_predictions_after_reload(self):
         with tempfile.TemporaryDirectory() as directory:
             for name in ("crf_tagger", "memm_tagger", "token_logreg"):

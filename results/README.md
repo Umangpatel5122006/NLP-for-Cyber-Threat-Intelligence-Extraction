@@ -67,5 +67,11 @@ The [two-task workbench validation](dual_task_v1/README.md) retains compact
 test/browser counts and unchanged-model hashes. Screenshots, full browser output
 and test logs stay ignored; no model training or held-out evaluation occurred.
 
+The [finalization report](finalization_v1/README.md) records clean dependency
+installation, first-start train/dev model preparation, reproduced development
+metrics, tests/browser checks and unchanged default artifacts. Its detailed
+logs/source copy remain local. Private presentation notes live in ignored root
+`learning/` and are separate from versioned research notes in `docs/learning/`.
+
 To retain a new publication result, add a narrow, explicit ignore exception.
 Avoid adding entire generated-output directories.

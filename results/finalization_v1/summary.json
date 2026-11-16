@@ -1,0 +1,153 @@
+{
+  "date": "2026-11-16",
+  "scope": "current research prototype finalization; no final held-out accuracy evaluation",
+  "fresh_dependency_install": {
+    "passed": true,
+    "python": "3.12.3",
+    "runtime": "Ubuntu-24.04 WSL",
+    "pinned_lock": "requirements-lock.txt",
+    "pip_check": true
+  },
+  "full_suite": {
+    "passed": true,
+    "tests": 368,
+    "environment": "fresh dependency environment and source copy without production models"
+  },
+  "native_launcher_tests": {
+    "passed": true,
+    "tests": 16
+  },
+  "clean_first_start": {
+    "passed": true,
+    "fresh_dependency_environment": true,
+    "initial_models_present": false,
+    "initial_ner_ready": false,
+    "initial_sms_ready": false,
+    "unit_tests": 368,
+    "no_model_cli_passed": true,
+    "first_run_launcher_trained_all_models": true,
+    "both_modes_ready": true,
+    "sms_ready": true,
+    "cti_dev_metrics_reproduced": {
+      "entities": {
+        "precision": 0.247,
+        "recall": 0.2735,
+        "f1": 0.2596
+      },
+      "action": {
+        "precision": 0.1419,
+        "recall": 0.1711,
+        "f1": 0.1551
+      }
+    },
+    "sms_dev_metrics_reproduced": {
+      "precision": 1.0,
+      "recall": 0.9626168224299065,
+      "f1": 0.9809523809523809,
+      "tn": 689,
+      "fp": 0,
+      "fn": 4,
+      "tp": 103
+    },
+    "http_cases": [
+      {
+        "language": "en",
+        "mode": "ner",
+        "status": "suspicious"
+      },
+      {
+        "language": "hi",
+        "mode": "ner",
+        "status": "suspicious"
+      },
+      {
+        "language": "hi-en",
+        "mode": "ner",
+        "status": "suspicious"
+      },
+      {
+        "language": "en",
+        "mode": "ioc",
+        "status": "suspicious"
+      },
+      {
+        "language": "hi",
+        "mode": "ioc",
+        "status": "suspicious"
+      },
+      {
+        "language": "hi-en",
+        "mode": "ioc",
+        "status": "suspicious"
+      }
+    ],
+    "official_test_evaluated": false
+  },
+  "subsequent_ner_training": {
+    "passed": true,
+    "returncode": 0,
+    "test_evaluated": false,
+    "dev_metrics_reproduced": true
+  },
+  "browser": {
+    "passed": true,
+    "check_groups": 33,
+    "mobile_width_px": 390,
+    "indic_authored_cases_per_mode": 26,
+    "analysis_reference": {
+      "mode": "ner",
+      "action_artifact_sha256": "2b83612db9f34c5481b42d7e43394d7048927780fb8cf8bac79a71d67ea5d198",
+      "finding_count": 9
+    }
+  },
+  "original_artifact_checks": {
+    "passed": true,
+    "unchanged_files": 7
+  },
+  "launcher_ready": {
+    "passed": true,
+    "ner": true,
+    "ioc": true,
+    "english_sms": true,
+    "custom_wsl_candidate_checked": true
+  },
+  "documentation": {
+    "markdown_files_checked": 20,
+    "missing_local_link_targets": [],
+    "unbalanced_code_fences": false
+  },
+  "private_learning": {
+    "files": 10,
+    "all_ignored": true,
+    "tracked_files": 0
+  },
+  "initial_native_training_crashes_observed": true,
+  "initial_native_fault_root_cause_isolated": false,
+  "post_cleanup_ner_training_processes_passed": 2,
+  "trained_nlp_languages": [
+    "en"
+  ],
+  "message_rule_languages": [
+    "en",
+    "hi",
+    "hi-en"
+  ],
+  "default_weights_changed": false,
+  "default_parameters_changed": false,
+  "annotation_changes": false,
+  "split_changes": false,
+  "official_test_evaluated": false,
+  "remote_ci_run": false,
+  "source_sha256_lf": {
+    "scripts/start_workbench.py": "bf2998e490fc6cd760400a748ab141944de7b60ee3db8c807add2c9f453ba28b",
+    "src/cti/train_ner.py": "dca12a60f4fd0547ffb429a37cb85ee3281643644379eeeae63e73492adb3379",
+    "tests/test_ner.py": "8893a19b1673c223ebfb568b66825fa53ebfde34decaf09ed986e68227adc7c1",
+    "tests/test_workbench_launcher.py": "a7dba3bf98b1ab5cff79ee48b6571dc94c85be7feb7d1e215fc32046ebcdfefc",
+    "README.md": "d7f15abfa8112e1d8036700d3c4cfac2650b69eef17e9c1c3f6f01afc168ac6c",
+    "docs/SETUP.md": "efc2802b53dacc87403dc7e33fbc1fea8e826925cd453651fc963b27b20be48f",
+    "docs/WSL_SETUP.md": "de118bc3b67220e317310ac3c76fd1ac316fb5cc2accd76ee121536ed9dc4448",
+    "docs/MODELS_AND_RESULTS.md": "046dba1cbf42237e6f41fb0153659c03b78d6238a094da48afb11f77c62938e4",
+    "docs/paper_protocol.md": "460b6c50bca4d447e9bf59ba25e4c17e7331a740043617335be0e555b91749ef",
+    ".gitignore": "f988f082069c6dce9fd07533de7f51995b25db8e51a6f880eb8620040d4cf93f"
+  }
+}

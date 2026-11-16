@@ -1,6 +1,6 @@
 """Start the local workbench in a compatible runtime, without changing policy.
 
-Run from any directory: python scripts/start_workbench.py
+Run from the project root: python scripts/start_workbench.py
 Use --train-models to train missing/incompatible artifacts on train/dev only.
 """
 
@@ -15,7 +15,20 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def candidates():
+def wsl_candidates(distro=None, python_path=None):
+    """Pass paths as arguments, never as shell source; use WSL's default distro."""
+    base = ["wsl", *(["-d", distro] if distro else []), "--exec", "bash", "-c"]
+    label = distro or "default distribution"
+    yield f"WSL ({label})", [*base, 'exec "$@"', "cti-launch", python_path or ".venv-wsl/bin/python"]
+    if python_path is None:
+        # Keep existing checkouts working without requiring their environment
+        # to move. New installations use the documented project environment.
+        legacy_base = ["wsl", "-d", distro or "Ubuntu-24.04", "--exec", "bash", "-c"]
+        yield "prepared Ubuntu WSL", [*legacy_base,
+            'exec "$HOME/.cache/cti-classical-py312/bin/python" "$@"', "cti-launch"]
+
+
+def candidates(wsl_distro=None, wsl_python=None):
     local = ROOT / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
     seen = set()
     for name, executable in (("project .venv", local), ("current Python", Path(sys.executable))):
@@ -24,12 +37,8 @@ def candidates():
             seen.add(key)
             yield name, [str(executable)]
     if os.name == "nt":
-        # Only a fixed shell fragment is used. User arguments are positional,
-        # never interpolated into shell source. WSL inherits the checkout cwd.
-        yield "prepared Ubuntu WSL", [
-            "wsl", "-d", "Ubuntu-24.04", "--exec", "bash", "-c",
-            'exec "$HOME/.cache/cti-classical-py312/bin/python" "$@"', "cti-launch",
-        ]
+        # WSL inherits the checkout cwd. No Windows security policy changes.
+        yield from wsl_candidates(wsl_distro, wsl_python)
 
 
 def readiness(command, ioc_only=False, message_model=None):
@@ -38,6 +47,10 @@ def readiness(command, ioc_only=False, message_model=None):
             [*command, "-m", "cti.web", "--check", *(["--ioc-only"] if ioc_only else []), *(["--message-model", str(message_model)] if message_model else [])],
             cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=90,
         )
+        # Exit 2 is the documented "requested mode unavailable" check result.
+        # A crashed interpreter can print JSON before failing during teardown.
+        if result.returncode not in (0, 2):
+            return None
         return json.loads(result.stdout)
     except (OSError, subprocess.TimeoutExpired, ValueError):
         return None
@@ -55,6 +68,8 @@ def main(argv=None):
     parser.add_argument("--train-message-model", action="store_true", help="Download the pinned SMS corpus and train the classical SMS model when unavailable.")
     parser.add_argument("--check", action="store_true", help="Check setup without starting a server or training.")
     parser.add_argument("--message-model", type=Path, help="Preview a trusted candidate artifact; does not modify default model files.")
+    parser.add_argument("--wsl-distro", help="WSL distribution to try on Windows; otherwise use the default distribution.")
+    parser.add_argument("--wsl-python", help="Linux Python path for the WSL candidate; default: .venv-wsl/bin/python (absolute paths also accepted).")
     args = parser.parse_args(argv)
     preview_path = None
     if args.message_model:
@@ -68,7 +83,7 @@ def main(argv=None):
         parser.error("--port must be between 1 and 65535")
     required = "ioc" if args.ioc_only else "ner"
     checked, chosen, fallback = [], None, None
-    for name, command in candidates():
+    for name, command in candidates(args.wsl_distro, args.wsl_python):
         print(f"Checking {name}...", flush=True)
         status = readiness(command, args.ioc_only, preview_path) if preview_path else readiness(command, args.ioc_only)
         checked.append((name, command, status))
@@ -76,7 +91,7 @@ def main(argv=None):
             if args.message_model and not status.get("message_classifier", {}).get("ready"):
                 print(status.get("message_classifier", {}).get("message", "The requested preview model is unavailable."), flush=True)
                 continue
-            if args.ioc_only and status.get("message_classifier") and not status["message_classifier"].get("ready"):
+            if status.get("message_classifier") and not status["message_classifier"].get("ready"):
                 fallback = fallback or (name, command, status)
                 if (args.train_models or args.train_message_model) and not args.check:
                     try:
@@ -110,8 +125,9 @@ def main(argv=None):
             if probe.returncode:
                 continue
             print(f"Training configured classical models in {name} (train/dev only)...", flush=True)
-            if subprocess.call([*command, "-m", "cti.train_ner"], cwd=ROOT):
-                raise SystemExit("Training failed. Check the terminal output; the server was not started.")
+            training_code = subprocess.call([*command, "-m", "cti.train_ner"], cwd=ROOT)
+            if training_code:
+                raise SystemExit(f"Training failed (process exit code {training_code}). Check the terminal output; the server was not started.")
             status = readiness(command)
             if ready(status, "ner"):
                 chosen = (name, command, status)
@@ -119,7 +135,7 @@ def main(argv=None):
     chosen = chosen or fallback
     if chosen is None:
         print("Full entity mode is unavailable." if required == "ner" else "IOC mode is unavailable.")
-        print("Install the pinned dependencies or prepare WSL using docs/WSL_SETUP.md.")
+        print("Install the pinned dependencies using docs/SETUP.md; optional WSL setup is in docs/WSL_SETUP.md.")
         if required == "ner":
             print("For missing/incompatible models: python scripts/start_workbench.py --train-models")
             print("To use IOCs and scam-pattern checks: python scripts/start_workbench.py --ioc-only")
@@ -128,8 +144,9 @@ def main(argv=None):
     print(f"Selected {name}: {required} mode ready.", flush=True)
     if not args.check and (args.train_models or args.train_message_model) and not status.get("message_classifier", {}).get("ready", True):
         print("Training the classical SMS model (grouped train CV, dev only; no test evaluation)...", flush=True)
-        if subprocess.call([*command, "-m", "cti.train_message", "--download"], cwd=ROOT):
-            raise SystemExit("SMS training failed. Check the terminal output.")
+        training_code = subprocess.call([*command, "-m", "cti.train_message", "--download"], cwd=ROOT)
+        if training_code:
+            raise SystemExit(f"SMS training failed (process exit code {training_code}). Check the terminal output; the server was not started.")
         status = readiness(command, args.ioc_only)
         if not status or not status.get("message_classifier", {}).get("ready"):
             raise SystemExit("SMS model could not reload after training.")
