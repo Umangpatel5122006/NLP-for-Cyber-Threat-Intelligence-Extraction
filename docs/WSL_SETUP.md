@@ -1,128 +1,107 @@
-# Working classical NLP environment in WSL
+# Optional Windows Subsystem for Linux setup
 
-Revalidated on 2026-11-16 using the existing Ubuntu-24.04 distribution, Python
-3.12.3 and `requirements-lock.txt`. The environment is outside the repository at
-`~/.cache/cti-classical-py312`. The Windows Python 3.11 environment still encounters
-Application Control import failures; no Windows security setting was changed.
+WSL is an alternative when native Windows Python cannot import the classical
+NLP stack or when you prefer Linux. It is not required on a working native
+installation. These commands use your distribution and checkout path.
 
-**Latest runtime check:** after the user reported recovery, Ubuntu starts and
-the prepared Python 3.12.3 / spaCy 3.8.16 runtime imports successfully. All
-**327 tests pass in WSL**, including the three BILOU production-stack checks
-that were previously blocked. The native Windows import still encounters
-Application Control, now reported in `srsly.ujson`; use the working WSL runtime.
-The agent did not change Windows security settings. Earlier failure records
-below are historical, not the current startup state.
+## Choose a distribution
 
-### Earlier startup failure and follow-up on 2026-11-16
-
-The earlier `HCS/0xc0000139` failure was confirmed in the user's normal
-PowerShell terminal before recovery. Local
-checks find WSL 3.0.5.0, the current stable release checked against Microsoft's
-[release page](https://github.com/microsoft/WSL/releases/tag/3.0.5), and running
-WSL/compute/network services. `wsl --shutdown` succeeds; `wsl --update` reports
-that the most recent version is already installed. A subsequent bare Ubuntu
-launch still fails with the same HCS error. Neither standard reboot-pending
-registry marker is set; this does not rule out a problem resolved by restarting.
-
-Microsoft identifies `0xc0000139` as
-[`STATUS_ENTRYPOINT_NOT_FOUND`](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55).
-This establishes the error type, not which DLL or component is responsible.
-The failure is before the project's Python starts. Native Python's separate
-Application Control block was also confirmed in Code Integrity events.
-
-The suggested next troubleshooting step was Microsoft's
-[Windows component repair sequence](https://support.microsoft.com/en-us/windows/experience/backup-recovery/using-system-file-checker-in-windows).
-Open **PowerShell as administrator**, run DISM first, and wait for successful
-completion before running SFC:
+In PowerShell, inspect installed distributions:
 
 ```powershell
-DISM.exe /Online /Cleanup-Image /RestoreHealth
-sfc /scannow
+wsl --list --verbose
 ```
 
-Save work, restart Windows manually, then test:
+Open your installed Ubuntu distribution from the Start menu or `wsl`. If WSL
+is absent, use your organization's approved installation process. Distribution
+startup errors happen before project Python runs.
 
-```powershell
-wsl -d Ubuntu-24.04 --exec /bin/true
+Use Python 3.11 or 3.12 inside Linux. Ubuntu 24.04/Python 3.12 is validated;
+the distribution's installed name can differ.
+
+## Install inside Linux
+
+In the **Linux terminal**, enter your checkout. Replace the example path:
+
+```bash
+cd "/mnt/c/path/to/Cyber_Threat_Detection"
+python3 --version
+python3 -m venv .venv-wsl
+.venv-wsl/bin/python -m pip install -r requirements-lock.txt
+.venv-wsl/bin/python -m pip install --no-build-isolation --no-deps -e .
+.venv-wsl/bin/python -m pip check
+.venv-wsl/bin/python scripts/start_workbench.py --train-models
 ```
 
-If troubleshooting a recurrence and a repair command fails, preserve its final
-output for diagnosis before continuing. WSL startup is now restored; the exact
-repair actions/output were not provided, so no specific cause or fix is asserted.
-These commands target Windows components; retain the existing Ubuntu
-installation and project environment. The agent session is not elevated, so
-DISM/SFC were not run. No restart, distribution reset or security-policy change
-was performed. Local restart/update attempt logs are ignored at
-`results/wsl_recovery_20261116/attempts.json`. See the current checkpoint for
-the resumed model comparison; the old attempt log records the earlier failure.
+On Ubuntu, missing `venv`/`ensurepip` requires the matching OS
+`python3-venv` package through normal package management. You can also clone
+inside the Linux filesystem and run the same commands there.
 
-## Use the prepared environment
+Use `.venv-wsl` for Linux and `.venv` for Windows if sharing a checkout.
+Virtualenvs cannot be shared across operating systems. Both folders are ignored.
+No activation or Windows execution-policy changes are needed.
 
-Run these from the project root in PowerShell. WSL inherits the repository's
-working directory; the non-login shell expands the Linux home path.
+Open **http://127.0.0.1:8765** in the Windows browser. Ctrl+C stops the app.
+Subsequent Linux-terminal startup:
 
-```powershell
-wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m pip check'
-wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m unittest discover -s tests -v'
-wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.analyze --input examples/sample_report.txt --output results/ner_demo.json'
+```bash
+.venv-wsl/bin/python scripts/start_workbench.py
 ```
 
-For the browser frontend and backend together:
+A checkout inside Linux can always be launched from its Linux terminal. Windows
+launcher integration assumes WSL can reach the same checkout directory.
+
+## Optional PowerShell launcher
+
+From the Windows checkout root:
 
 ```powershell
 python scripts/start_workbench.py
 ```
 
-The launcher checks the project virtualenv and current Python before the
-prepared WSL interpreter, and requires saved NER readiness by default.
-`--check` only reports setup. `--train-models` explicitly trains missing or
-incompatible artifacts in a working runtime before starting. A teammate's clone
-needs this training because model binaries are not tracked by Git. It also
-prepares the missing SMS classifier from the pinned official UCI corpus.
-`--train-message-model` prepares only the SMS model before startup.
-`--ioc-only` starts IOC plus message rules and the available classical SMS model,
-preferring a compatible message-model runtime without loading NER.
-Direct startup in this prepared environment is still supported:
-`wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.web'`.
-
-Open http://127.0.0.1:8765 in Windows; Ctrl+C stops the server. See
-[the browser checkpoint](../checkpoints/BROWSER_WORKBENCH.md) for UI review steps.
-
-The saved NER artifacts were trained in this environment. Loading deliberately
-checks Python minor version, relevant package versions, and feature resources.
-Retrain after changing those dependencies; do not bypass the manifest checks.
-If models are absent after a fresh clone, run training first:
+It tries native Python, then project `.venv-wsl/bin/python` in WSL's default
+distribution. For another distribution, substitute its installed name:
 
 ```powershell
-wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.train_ner'
+python scripts/start_workbench.py --wsl-distro "YourDistributionName"
 ```
 
-NER training does not require the separate relevance artifact because hard
-sentence gating is disabled in `configs/config_ner.yaml`.
-
-To train the classical SMS model directly in this environment:
+For an environment elsewhere in Linux, pass an absolute Linux Python path
+rather than a Windows path or a tilde:
 
 ```powershell
-wsl -d Ubuntu-24.04 --exec bash -c '~/.cache/cti-classical-py312/bin/python -m cti.train_message --download'
+python scripts/start_workbench.py --wsl-distro "YourDistributionName" --wsl-python "/home/your-linux-user/envs/cti/bin/python" --check
 ```
 
-Only training CV and dev are evaluated. See [data provenance](SMS_DATASET.md)
-and [the integrated checkpoint](../checkpoints/INTEGRATED_FINDINGS_AND_SMS_MODEL.md).
+These options configure WSL candidates; they do not override an already ready
+native runtime. Inside Linux, `python -m cti.web` bypasses runtime search.
 
-## Recreate the environment
+The launcher retains the previous fixed cache environment as a compatibility
+fallback. New installations do not require it or a particular Linux username.
 
-Inside Ubuntu, change to the repository directory under `/mnt/c/`, then run:
+## Verify or prepare without starting a server
+
+Inside the checkout's Linux terminal:
 
 ```bash
-python3 --version
-python3 -m venv --without-pip "$HOME/.cache/cti-classical-py312"
-python3 -m pip --python "$HOME/.cache/cti-classical-py312/bin/python" install -r requirements-lock.txt
-"$HOME/.cache/cti-classical-py312/bin/python" -m pip install --no-build-isolation --no-deps -e .
-"$HOME/.cache/cti-classical-py312/bin/python" -m pip check
+.venv-wsl/bin/python -m pip check
+.venv-wsl/bin/python -m unittest discover -s tests -v
+.venv-wsl/bin/python scripts/start_workbench.py --check
 ```
 
-The recreation commands assume the same installed Ubuntu Python 3.12 and system
-pip used during validation. They install project packages into the isolated
-environment, without changing Windows policy or globally installing project
-dependencies. Do not use a login shell when relying on WSL to inherit the
-project directory.
+Direct model preparation:
+
+```bash
+.venv-wsl/bin/python -m cti.train_ner
+.venv-wsl/bin/python -m cti.train_message --download
+```
+
+Train and run in the same environment. Manifests reject incompatible runtime
+versions/resources; refit rather than bypassing those checks. NER preparation
+does not require the optional relevance model: default hard gating is disabled.
+
+Earlier machine-specific startup failures are historical records in
+[preparation](../checkpoints/ACTION_BILOU_PREPARATION.md) and
+[recovery](../checkpoints/ACTION_BILOU_EXPERIMENT.md), not required setup steps.
+No Windows security settings are changed by this workflow. Use
+[SETUP.md](SETUP.md) for package/runtime troubleshooting.

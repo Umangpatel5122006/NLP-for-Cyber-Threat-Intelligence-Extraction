@@ -2,6 +2,9 @@
 venv/
 env/
 .venv/
+.venv-wsl/
+# Private presentation/viva preparation; never part of the public repository.
+/learning/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

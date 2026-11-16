@@ -1,0 +1,66 @@
+{
+  "passed": true,
+  "fresh_dependency_environment": true,
+  "initial_models_present": false,
+  "initial_ner_ready": false,
+  "initial_sms_ready": false,
+  "unit_tests": 368,
+  "no_model_cli_passed": true,
+  "first_run_launcher_trained_all_models": true,
+  "both_modes_ready": true,
+  "sms_ready": true,
+  "cti_dev_metrics_reproduced": {
+    "entities": {
+      "precision": 0.247,
+      "recall": 0.2735,
+      "f1": 0.2596
+    },
+    "action": {
+      "precision": 0.1419,
+      "recall": 0.1711,
+      "f1": 0.1551
+    }
+  },
+  "sms_dev_metrics_reproduced": {
+    "precision": 1.0,
+    "recall": 0.9626168224299065,
+    "f1": 0.9809523809523809,
+    "tn": 689,
+    "fp": 0,
+    "fn": 4,
+    "tp": 103
+  },
+  "http_cases": [
+    {
+      "language": "en",
+      "mode": "ner",
+      "status": "suspicious"
+    },
+    {
+      "language": "hi",
+      "mode": "ner",
+      "status": "suspicious"
+    },
+    {
+      "language": "hi-en",
+      "mode": "ner",
+      "status": "suspicious"
+    },
+    {
+      "language": "en",
+      "mode": "ioc",
+      "status": "suspicious"
+    },
+    {
+      "language": "hi",
+      "mode": "ioc",
+      "status": "suspicious"
+    },
+    {
+      "language": "hi-en",
+      "mode": "ioc",
+      "status": "suspicious"
+    }
+  ],
+  "official_test_evaluated": false
+}

@@ -1,18 +1,23 @@
 # Evaluation Protocol and Benchmark Comparison
 
-Updated 2026-11-14. New evaluation summaries and exports use **metrics version 2**.
+Updated 2026-11-16. New evaluation summaries and exports use **metrics version 2**.
 Historical token and relaxed-span figures must be recomputed before comparison
 with version 2. The original result files are preserved as experiment history.
 
 ## 1. Project Evaluation Protocol
 
-To ensure rigorous, reproducible, and leakage-free evaluation of Cyber Threat Intelligence (CTI) entity extraction, this project establishes a standardized multi-perspective evaluation protocol implemented in `src/cti/eval/`.
+This project uses a multi-perspective evaluation protocol implemented in
+`src/cti/eval/`, with explicit split and metric scopes to reduce leakage and
+misleading comparisons.
 
 ### A. Headline vs. Diagnostic Scopes
-1. **Headline Scope (All Sentences End-to-End)**:
+1. **Headline Scope (All Supplied Evaluation Sentences)**:
    - Evaluates predictions across **all sentences** in the evaluation corpus, including irrelevant sentences (`relevant: "no"`).
    - In production CTI feeds, reports arrive without human relevance labels. A deployable system must either classify relevance accurately or suppress false positives on background text.
-   - All headline metrics represent true end-to-end extraction effectiveness.
+   - This covers false positives on background sentences, but the inputs are
+     dataset sentences with processed token-aligned BIO gold. It does not
+     evaluate the full raw-report sentence splitter, original character-span
+     annotation convention, or the combined message/IOC/review workbench.
 2. **Diagnostic Scope (Relevant Sentences Only)**:
    - Evaluates predictions strictly on ground-truth relevant sentences (`relevant: "yes"`).
    - Serves as an isolated diagnostic tool to evaluate sequence tagger capabilities (CRF, MEMM, etc.) independent of upstream sentence filtering errors.
@@ -61,7 +66,10 @@ within a sentence. Equal flattened token totals do not establish alignment.
    - The official 20-report test split (`data/splits/test_report_ids.json`) is strictly locked behind `CTI_ALLOW_TEST=1`.
    - All iterative development, tuning, and validation occur exclusively on the 80 train + dev reports.
 2. **Report-Grouped K-Fold Cross-Validation**:
-   - K-fold cross-validation is grouped strictly on `doc_id` across the 80 train + dev reports.
+   - Current action experiments group strictly on `doc_id` across the 70 train
+     reports, then confirm only a selected candidate on the 10 dev reports.
+     Earlier M3 tuning across 80 train + dev reports is historical development
+     evidence, not an untouched validation estimate.
    - Sentences from the same report never appear in both train and validation folds.
    - The current helper uses seeded report shuffling and greedy sentence-count
      balancing across folds; it does not call scikit-learn's `GroupKFold`.

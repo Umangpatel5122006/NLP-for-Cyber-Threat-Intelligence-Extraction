@@ -23,6 +23,20 @@ from cti.models.ner_data import load_aligned_ner
 ROOT = Path(__file__).resolve().parents[2]
 
 
+def _release_prediction_handles(tagger):
+    """Close temporary native CRFsuite readers before replacing fitted models.
+
+    sklearn-crfsuite lazily caches this handle. Clearing it after close lets a
+    subsequent prediction reopen the saved model; fitted parameters are intact.
+    Other supported taggers have no such reader.
+    """
+    model = getattr(tagger, "model", None)
+    handle = getattr(model, "_tagger", None)
+    if handle is not None:
+        handle.close()
+        model._tagger = None
+
+
 def train_from_config(config_path, raw_dir, splits_dir, processed_dir, model_dir,
                       results_dir, layers=("entities", "action"), run_name="ner_current"):
     if not re.fullmatch(r"[A-Za-z0-9_-]+", run_name):
@@ -127,6 +141,11 @@ def train_from_config(config_path, raw_dir, splits_dir, processed_dir, model_dir
         reports[layer] = summary
         exact = summary["headline_all_sentences"]["exact_default"]["f1"]
         print(f"{layer}: all-dev exact F1={exact:.4f}; reload identical; saved {model_path}", flush=True)
+        # These are temporary fitted/reloaded objects, not serving models.
+        # Release native readers deterministically between layers and at exit.
+        _release_prediction_handles(loaded.tagger)
+        _release_prediction_handles(tagger)
+        del loaded, tagger
     return reports
 
 
