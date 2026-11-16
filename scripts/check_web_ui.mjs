@@ -90,6 +90,15 @@ try {
   await waitFor("typeof state !== 'undefined' && state.modes.some(m=>m.ready)");
   assert.equal(await evaluate("document.getElementById('analyze-button').disabled"), true);
   record("Initial workspace, server readiness and empty-input controls passed.");
+  assert.equal(await evaluate("getComputedStyle(document.querySelector('.skip-link')).clipPath"), "inset(50%)");
+  await evaluate("document.querySelector('.skip-link').focus()");
+  assert.equal(await evaluate("getComputedStyle(document.querySelector('.skip-link')).clipPath"), "none");
+  assert.equal(await evaluate("document.querySelector('.skip-link').getBoundingClientRect().top"), 12);
+  await command("Input.dispatchKeyEvent", {type: "keyDown", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13}, session);
+  await command("Input.dispatchKeyEvent", {type: "keyUp", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13}, session);
+  assert.equal(await evaluate("document.activeElement.id"), "report-input");
+  assert.equal(await evaluate("getComputedStyle(document.querySelector('.skip-link')).clipPath"), "inset(50%)");
+  record("Skip link stays hidden until focused, appears at the viewport top and reaches the input by keyboard.");
   await click("example-button");
   await waitFor("!state.busy && document.getElementById('report-input').value.includes('APT29')");
   await analyze();
@@ -99,6 +108,19 @@ try {
   assert.equal(summary.mode, "ner");
   assert.ok(summary.findings > summary.rows);
   record("Real CRF example, primary/component counts and exact original-text map passed.");
+  const tasks = await evaluate("state.result.document.metadata.task_summary");
+  assert.equal(tasks.version, 1);
+  assert.equal(tasks.extraction.status, "complete");
+  assert.equal(tasks.extraction.presence_is_threat_verdict, false);
+  assert.equal(await evaluate("document.getElementById('extraction-task-status').textContent"), "Extraction completed");
+  await click("message-task-button");
+  assert.equal(await evaluate("document.getElementById('finding-task').value"), "message");
+  assert.equal(await evaluate("visibleFindings().every(f=>['message_rule','message_model'].includes(f.kind))"), true);
+  await click("extraction-task-button");
+  assert.equal(await evaluate("visibleFindings().every(f=>f.kind==='extraction')"), true);
+  assert.equal(await evaluate("document.getElementById('report-view').textContent"), summary.original);
+  await evaluate("document.getElementById('finding-task').value='all';document.getElementById('finding-task').dispatchEvent(new Event('change',{bubbles:true}))");
+  record("Separate message/extraction cards, coverage and task-filter navigation preserve the full original source.");
   await evaluate("Array.from(document.querySelectorAll('#report-view mark')).find(m=>m.getAttribute('aria-label').startsWith('IP address:')).click()");
   assert.equal(await evaluate("document.querySelector('#finding-detail .detail-title').textContent"), "185.22.10.5");
   await evaluate("document.querySelector('#report-view mark').focus()");
@@ -138,7 +160,22 @@ try {
   assert.equal(downloaded.findings.length, summary.extractions);
   assert.equal(downloaded.review_findings.length, summary.findings);
   assert.ok(downloaded.metadata.message_risk);
+  assert.equal(downloaded.metadata.task_summary.version, 1);
+  assert.deepEqual(downloaded.metadata.task_summary, tasks);
   record("Browser JSON download preserves the full original document and finding evidence.");
+  await click("message-example-button");
+  await waitFor("!state.busy && document.getElementById('report-input').value.includes('OTP')");
+  assert.equal(await evaluate("document.getElementById('file-name').textContent"), "message_risk_demo.txt");
+  await analyze();
+  assert.equal(await evaluate("state.result.document.metadata.task_summary.message.status"), "suspicious");
+  await click("message-task-button");
+  assert.equal(await evaluate("visibleFindings().every(f=>['message_rule','message_model'].includes(f.kind))"), true);
+  assert.equal(await evaluate("document.querySelectorAll('.finding-row').length === state.result.document.metadata.task_summary.message.finding_count"), true);
+  await click("extraction-task-button");
+  assert.equal(await evaluate("visibleFindings().every(f=>f.kind==='extraction')"), true);
+  assert.equal(await evaluate("document.getElementById('message-task-card').dataset.status"), "suspicious");
+  assert.equal(await evaluate("document.getElementById('report-view').textContent===state.result.document.original_text"), true);
+  record("Message example, isolated message findings and independent extraction result keep the suspicious message verdict visible.");
   await setText("<img src=x onerror='window.ctiInjected=true'> 🛡 APT29 contacted 185.22.10[.]5.");
   assert.equal(await evaluate("state.result"), null);
   await analyze();
@@ -280,6 +317,20 @@ try {
   await analyze();
   record("Stale pre-upgrade backend responses show an explicit restart error instead of a misleading empty Findings list.");
   await evaluate(`(() => {
+    window.qaTaskFetch = window.fetch;
+    const legacy = structuredClone(state.result);
+    delete legacy.document.metadata.task_summary;
+    window.fetch = (url,...args) => url === '/api/analyze' ? Promise.resolve(new Response(JSON.stringify(legacy),{status:200,headers:{'Content-Type':'application/json'}})) : window.qaTaskFetch(url,...args);
+  })()`);
+  await click("analyze-button");
+  await waitFor("!state.busy && !document.getElementById('notice').hidden");
+  assert.equal(await evaluate("state.result"), null);
+  assert.ok((await evaluate("document.getElementById('notice').textContent")).includes("separate task summaries"));
+  assert.equal(await evaluate("document.getElementById('download-button').disabled"), true);
+  await evaluate("window.fetch=window.qaTaskFetch;delete window.qaTaskFetch;");
+  await analyze();
+  record("Stale backends without task summaries request a restart and cannot export a partial result.");
+  await evaluate(`(() => {
     window.qaOldRulesFetch = window.fetch;
     const oldRules = structuredClone(state.result);
     oldRules.document.metadata.message_risk.rule_version = 1;
@@ -411,10 +462,15 @@ try {
       const doc = await evaluate("state.result.document");
       assert.equal(doc.metadata.message_risk.status, entry.expected_rule_status, entry.id);
       assert.equal(doc.metadata.message_classifier.status, "not_applicable");
+      assert.equal(doc.metadata.task_summary.message.status, doc.metadata.message_assessment.status);
+      assert.equal(doc.metadata.task_summary.extraction.status, mode === "ner" ? "language_limited" : "ioc_only");
+      assert.equal(await evaluate("document.getElementById('extraction-task-card').dataset.status"), mode === "ner" ? "language_limited" : "ioc_only");
       assert.equal(await evaluate("document.getElementById('report-view').textContent"), entry.text);
       assert.ok((await evaluate("document.getElementById('risk-method').textContent")).includes("Hindi/Hinglish phrase rules"));
       if (entry.expected_rule_status !== "no_pattern_detected") {
         assert.ok(doc.review_findings.some(r => r.kind === "message_rule"));
+        assert.ok(await evaluate("Array.from(document.querySelectorAll('.finding-row .finding-meta')).some(row=>row.textContent.includes('Hindi/Hinglish phrase rules'))"));
+        assert.equal(await evaluate("Array.from(document.querySelectorAll('.finding-row .finding-meta')).some(row=>row.textContent.includes('English message rules'))"), false);
         assert.ok(await evaluate("document.querySelectorAll('#report-view mark[data-risk-index]').length") > 0);
       }
       for (const cue of doc.metadata.message_risk.signals) {
@@ -423,7 +479,7 @@ try {
     }
   }
   await screenshot("web_hindi_hinglish_evidence.png");
-  record(indicCases.length + " authored Hindi/Hinglish threat, benign and warning cases pass in BOTH modes, with original cues and no English-model predictions.");
+  record(indicCases.length + " authored Hindi/Hinglish threat, benign and warning cases pass in BOTH modes, with original cues, correct rule-source labels, task coverage and no English-model predictions.");
   await evaluate(`(() => {
     window.qaIndicFetch = window.fetch;
     const legacy = structuredClone(state.result);
@@ -435,6 +491,9 @@ try {
   assert.equal(await evaluate("state.result"), null);
   assert.ok((await evaluate("document.getElementById('notice').textContent")).includes("outdated Hindi/Hinglish rules"));
   assert.equal(await evaluate("document.getElementById('download-button').disabled"), true);
+  assert.equal(await evaluate("document.getElementById('message-task-status').textContent"), "Awaiting analysis");
+  assert.equal(await evaluate("document.getElementById('extraction-task-status').textContent"), "Awaiting analysis");
+  assert.equal(await evaluate("document.getElementById('finding-task').disabled"), true);
   await evaluate("window.fetch=window.qaIndicFetch;delete window.qaIndicFetch;");
   record("A v1 Hindi/Hinglish backend is rejected with restart guidance and export disabled.");
   await evaluate("document.getElementById('report-language').value='hi-en';document.getElementById('report-language').dispatchEvent(new Event('change',{bubbles:true}))");
@@ -455,6 +514,9 @@ try {
   await setText("Routine administrative documentation for the scheduled meeting. ".repeat(20));
   await analyze();
   assert.equal(await evaluate("state.result.document.metadata.message_assessment.status"), "partial_coverage");
+  assert.equal(await evaluate("state.result.document.metadata.task_summary.message.status"), "partial_coverage");
+  assert.equal(await evaluate("state.result.document.metadata.task_summary.extraction.status"), "complete");
+  assert.ok((await evaluate("document.getElementById('message-task-count').textContent")).includes("outside scope"));
   assert.equal(await evaluate("document.getElementById('map-risk-title').textContent"), "Message analysis coverage is incomplete");
   record("A report beyond the SMS length limit shows incomplete coverage rather than a full negative verdict.");
   await evaluate(`(() => {

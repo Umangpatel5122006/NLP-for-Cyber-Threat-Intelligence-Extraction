@@ -37,6 +37,11 @@ evidence/components and JSON export. It uses browser HTML/CSS/JavaScript with
 the existing Python pipeline; no npm installation is needed. Both modes include
 English scam-pattern checks with a visible risk result and source excerpts.
 Zero extracted IOCs/entities does not establish that a message is safe.
+The [two-task workbench](checkpoints/DUAL_TASK_WORKBENCH.md) gives message risk
+and report extraction equal space, with separate counts, coverage and inspection
+buttons. Choose **Message example** or **Report example**, then filter Findings
+by task. JSON exports retain both task summaries. Extraction completion describes
+which checks ran; it does not classify a report as malicious or safe.
 The evidence map now repeats the risk verdict and highlights its source cues.
 The Findings list now combines extraction, message-rule detections and positive
 SMS-model predictions through `review_findings`, retaining source evidence.
@@ -151,10 +156,10 @@ They are excluded from active comparisons and tests; there is no neural package
 extra. Their old dependency list is preserved under `docs/history/`.
 Split-lock tests use synthetic data instead of loading held-out test annotations.
 
-**Latest full-suite validation:** **350 tests pass** in the restored Ubuntu-24.04 WSL
+**Latest full-suite validation:** **361 tests pass** in the restored Ubuntu-24.04 WSL
 environment with Python 3.12.3 and the pinned core dependencies. This includes
 saved-NER, original-offset, merger, API, action-feature, scam-pattern and launcher tests;
-see `results/action_consistency_tests.txt` (local generated log) and
+see `results/dual_task_tests.txt` (local generated log) and
 [the working WSL commands](docs/WSL_SETUP.md). Windows Application Control still
 blocks native spaCy imports in the Windows environment. No security settings
 were changed. The BILOU production checks and comparison now run successfully

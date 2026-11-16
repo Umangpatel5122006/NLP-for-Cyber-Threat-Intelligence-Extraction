@@ -157,10 +157,33 @@ class ReviewHTTPTests(unittest.TestCase):
         status, _, body = self.request("/api/status")
         self.assertEqual(status, 200)
         self.assertEqual(json.loads(body)["schema_version"], 1)
+        self.assertEqual(json.loads(body)["task_summary_version"], 1)
         status, _, body = self.request("/api/example")
         self.assertEqual(status, 200)
         self.assertIn("hxxps://", json.loads(body)["text"])
         self.assertEqual(json.loads(body)["filename"], "merge_report.txt")
+
+    def test_message_example_and_distinct_exported_task_results(self):
+        status, _, body = self.request("/api/example?task=message")
+        self.assertEqual(status, 200)
+        example = json.loads(body)
+        self.assertEqual(example["task"], "message")
+        self.assertEqual(example["filename"], "message_risk_demo.txt")
+        status, _, body = self.request("/api/analyze", "POST", {"mode": "ioc", "text": example["text"]})
+        self.assertEqual(status, 200)
+        doc = json.loads(body)["document"]
+        tasks = doc["metadata"]["task_summary"]
+        self.assertEqual(tasks["version"], 1)
+        self.assertEqual(tasks["message"]["status"], "suspicious")
+        self.assertEqual(tasks["extraction"]["status"], "ioc_only")
+        self.assertEqual(doc["original_text"], example["text"])
+
+    def test_invalid_example_query_is_rejected(self):
+        for query in ("task=unknown", "task=", "task=report&task=message", "task=../../data"):
+            with self.subTest(query=query):
+                status, _, body = self.request("/api/example?" + query)
+                self.assertEqual(status, 400)
+                self.assertEqual(json.loads(body)["error"]["code"], "invalid_example")
 
     def test_real_ioc_api_preserves_unicode_crlf_bom_and_evidence(self):
         original = "\ufeff\U0001f6e1 Contact 185.22.10[.]5.\r\nNext line.\r\n"

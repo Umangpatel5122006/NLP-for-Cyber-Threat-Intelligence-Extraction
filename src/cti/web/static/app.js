@@ -11,6 +11,12 @@ const sourceNames = {ner_entities: "Entity CRF", ner_action: "Action CRF", ioc_f
 const overlapNames = {action_overlap: "Action overlap", label_conflict: "Label conflict", contained_overlap: "Contained overlap", crossing_overlap: "Crossing overlap"};
 const state = {result: null, selected: null, modes: [], busy: false, refreshing: false, maxCharacters: 100000, rawInput: null};
 
+function sourceName(source) {
+  if (source === "message_risk") return state.result?.document?.metadata?.message_risk?.indic_rule_version
+    ? "Hindi/Hinglish phrase rules" : "English message rules";
+  return sourceNames[source] || source || "Unnamed source";
+}
+
 function element(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -45,7 +51,8 @@ function updateControls() {
   $("analyze-button").disabled = state.busy || state.refreshing || !ready || !reportText().trim();
   // Keep unavailable modes selectable so their setup instructions are visible.
   $("analysis-mode").disabled = state.busy || state.refreshing;
-  for (const id of ["report-input", "report-file", "example-button", "clear-button", "report-language"]) $(id).disabled = state.busy;
+  for (const id of ["report-input", "report-file", "example-button", "message-example-button", "clear-button", "report-language"]) $(id).disabled = state.busy;
+  for (const id of ["message-task-button", "extraction-task-button"]) $(id).disabled = state.busy || !state.result;
   $("connection-status").disabled = state.busy || state.refreshing;
   $("retry-models").disabled = state.busy || state.refreshing;
   $("analyze-button").classList.toggle("busy", state.busy);
@@ -69,11 +76,21 @@ function resetResults() {
   $("risk-alert").hidden = true;
   $("map-risk").hidden = true;
   $("risk-signals").replaceChildren();
+  for (const task of ["message", "extraction"]) {
+    $(task + "-task-status").textContent = "Awaiting analysis";
+    $(task + "-task-card").removeAttribute("data-status");
+    $(task + "-task-button").disabled = true;
+  }
+  $("message-task-note").textContent = "English SMS model plus English, Hindi and Hinglish phrase checks.";
+  $("message-task-count").textContent = "Message findings are separate from extracted entities and IOCs.";
+  $("extraction-task-note").textContent = "English entity/action models and IOC patterns across surrounding languages.";
+  $("extraction-task-count").textContent = "Extracted mentions do not establish that a report is malicious or safe.";
   $("report-view").hidden = true;
   $("report-view").replaceChildren();
   $("report-empty").hidden = false;
   for (const name of ["findings", "iocs", "entities", "actions"]) $("stat-" + name).textContent = "—";
-  for (const id of ["download-button", "finding-search", "label-filter", "show-components"]) $(id).disabled = true;
+  for (const id of ["download-button", "finding-search", "label-filter", "finding-task", "show-components"]) $(id).disabled = true;
+  $("finding-task").value = "all";
   $("finding-search").value = "";
   $("show-components").checked = false;
   $("label-filter").replaceChildren(new Option("All labels", ""));
@@ -155,13 +172,16 @@ function visibleFindings() {
   if (!state.result) return [];
   const search = $("finding-search").value.trim().toLowerCase();
   const label = $("label-filter").value;
+  const task = $("finding-task").value;
   return reviewFindings().filter((finding) =>
+    (task === "all" || (task === "message" ? ["message_rule", "message_model"].includes(finding.kind) : !finding.kind || finding.kind === "extraction")) &&
     ($("show-components").checked || finding.role === "primary") && (!label || finding.label === label) &&
-    (!search || [finding.title || "", finding.description || "", finding.text, finding.original_text, finding.canonical_value || "", ...finding.sources, ...finding.sources.map((source) => sourceNames[source] || source)].join(" ").toLowerCase().includes(search)));
+    (!search || [finding.title || "", finding.description || "", finding.text, finding.original_text, finding.canonical_value || "", ...finding.sources, ...finding.sources.map(sourceName)].join(" ").toLowerCase().includes(search)));
 }
 function selectFinding(id, reveal = false) {
   if (!state.result) return;
   if (reveal) {
+    $("finding-task").value = "all";
     $("finding-search").value = "";
     $("label-filter").value = "";
     const finding = reviewFindings().find((item) => item.id === id);
@@ -257,7 +277,7 @@ function renderDetails() {
     const card = element("div", "source-card"), line = element("div", "source-line");
     let score = "Unavailable";
     if (evidence.confidence !== null) score = evidence.source.startsWith("ioc_") && evidence.confidence === 1 ? "Rule match" : "Source score " + evidence.confidence;
-    line.append(element("span", "", sourceNames[evidence.source] || evidence.source || "Unnamed source"), element("span", "source-score", score));
+    line.append(element("span", "", sourceName(evidence.source)), element("span", "source-score", score));
     card.append(line, element("div", "source-label", labels[evidence.label] || evidence.label));
     sources.append(card);
   }
@@ -288,7 +308,7 @@ function renderMessageDetail(finding) {
   const evidence = element("div");
   for (const item of finding.evidence) {
     const card = element("div", "source-card");
-    card.append(element("strong", "", item.label === "SOCIAL_ENGINEERING" ? item.explanation : sourceNames[item.source]), element("pre", "detail-excerpt", item.original_text));
+    card.append(element("strong", "", item.label === "SOCIAL_ENGINEERING" ? item.explanation : sourceName(item.source)), element("pre", "detail-excerpt", item.original_text));
     evidence.append(card);
   }
   detail.append(detailSection("SOURCE EVIDENCE", evidence));
@@ -310,7 +330,7 @@ function renderResults() {
     row.dataset.finding = finding.id;
     row.setAttribute("aria-pressed", String(finding.id === state.selected));
     const main = element("span", "finding-main");
-    main.append(element("span", "finding-text", finding.kind && finding.kind !== "extraction" ? finding.title : finding.text), element("span", "finding-meta", finding.evidence.length + (finding.evidence.length === 1 ? " source observation" : " source observations") + (finding.role === "component" ? " · Host component" : "") + (finding.kind === "message_rule" ? " · English rules" : finding.kind === "message_model" ? " · Classical prediction" : "")));
+    main.append(element("span", "finding-text", finding.kind && finding.kind !== "extraction" ? finding.title : finding.text), element("span", "finding-meta", finding.evidence.length + (finding.evidence.length === 1 ? " source observation" : " source observations") + (finding.role === "component" ? " · Host component" : "") + (finding.kind === "message_rule" ? " · " + sourceName("message_risk") : finding.kind === "message_model" ? " · Classical prediction" : "")));
     row.append(badge(finding.label), main, element("span", "row-arrow", "›"));
     row.addEventListener("click", () => selectFinding(finding.id));
     fragment.append(row);
@@ -318,7 +338,12 @@ function renderResults() {
   if (!findings.length) {
     const empty = element("div", "list-empty");
     const limited = ["unsupported_language", "partial_coverage"].includes(state.result?.document?.metadata?.message_assessment?.status);
-    empty.append(element("p", "", reviewFindings().length ? "No findings match these filters." : limited ? "No extracted findings; analysis coverage is limited." : "No detections requiring review."), element("small", "", "Missing detections do not establish safety. Check model coverage and message assessment."));
+    const task = $("finding-task").value;
+    const filtered = $("finding-search").value.trim() || $("label-filter").value;
+    const title = filtered ? "No findings match these filters." : task === "extraction" ? "No entities or technical IOCs were extracted."
+      : task === "message" ? "No message findings requiring review." : reviewFindings().length ? "No findings match these filters."
+      : limited ? "No extracted findings; analysis coverage is limited." : "No detections requiring review.";
+    empty.append(element("p", "", title), element("small", "", "Missing detections do not establish safety. Check both task summaries and their coverage."));
     fragment.append(empty);
   }
   list.replaceChildren(fragment);
@@ -359,6 +384,29 @@ function renderMessageRisk(risk) {
     return item;
   }));
 }
+function renderTaskSummary(tasks) {
+  const message = tasks.message, extraction = tasks.extraction;
+  $("message-task-card").dataset.status = message.status;
+  $("message-task-status").textContent = $("risk-status").textContent;
+  $("message-task-note").textContent = message.summary;
+  const model = message.model_status === "ok" ? message.model_label + " predicted" : message.model_status === "not_applicable" ? "outside scope" : "unavailable";
+  $("message-task-count").textContent = message.finding_count + " message findings · SMS model: " + model;
+  $("extraction-task-card").dataset.status = extraction.status;
+  $("extraction-task-status").textContent = {complete: "Extraction completed", ioc_only: "IOC extraction only", language_limited: "Entity/action language coverage limited", partial_coverage: "Extraction coverage incomplete"}[extraction.status] || "Extraction coverage unavailable";
+  $("extraction-task-note").textContent = extraction.summary;
+  $("extraction-task-count").textContent = extraction.indicators + " indicators · " + extraction.entities + " entities · " + extraction.actions + " actions (primary findings)";
+}
+function focusTask(task) {
+  if (!state.result) return;
+  $("finding-task").value = task;
+  $("finding-search").value = "";
+  $("label-filter").value = "";
+  renderResults();
+  const target = task === "message" ? $("risk-heading") : $("findings-heading");
+  target.tabIndex = -1;
+  target.scrollIntoView({block: "start"});
+  target.focus({preventScroll: true});
+}
 function showAnalysis(result) {
   if (!Array.isArray(result?.document?.review_findings)) {
     throw new Error("The running server uses the old Findings format. Stop it with Ctrl+C, run python scripts/start_workbench.py, then reload this page.");
@@ -372,17 +420,22 @@ function showAnalysis(result) {
   if (["hi", "hi-en"].includes(result.document.metadata?.language) && result.document.metadata?.message_risk?.indic_rule_version !== 2) {
     throw new Error("The running server has outdated Hindi/Hinglish rules. Stop it with Ctrl+C, run python scripts/start_workbench.py, then reload this page. No model retraining is needed.");
   }
+  if (result.document.metadata?.task_summary?.version !== 1) {
+    throw new Error("The running server does not provide separate task summaries. Restart it with python scripts/start_workbench.py, then reload this page. No model retraining is needed.");
+  }
   state.result = result;
   const doc = result.document, rows = reviewFindings(), primary = rows.filter((finding) => finding.role === "primary");
   const extractions = doc.findings.filter((finding) => finding.role === "primary");
   renderMessageRisk(doc.metadata.message_risk);
+  renderTaskSummary(doc.metadata.task_summary);
   $("stat-findings").textContent = primary.length;
   $("stat-iocs").textContent = extractions.filter((finding) => iocLabels.has(finding.label)).length;
   $("stat-actions").textContent = extractions.filter((finding) => finding.label === "ACTION").length;
   $("stat-entities").textContent = extractions.filter((finding) => !iocLabels.has(finding.label) && finding.label !== "ACTION").length;
   $("finding-count").textContent = rows.length;
   $("label-filter").replaceChildren(new Option("All labels", ""), ...Array.from(new Set(rows.map((finding) => finding.label))).sort().map((label) => new Option(labels[label] || label, label)));
-  for (const id of ["download-button", "finding-search", "label-filter", "show-components"]) $(id).disabled = false;
+  for (const id of ["download-button", "finding-search", "label-filter", "finding-task", "show-components"]) $(id).disabled = false;
+  $("finding-task").value = "all";
   $("finding-search").value = "";
   $("show-components").checked = false;
   const languageName = {en: "English", hi: "Hindi", "hi-en": "Hinglish"}[doc.metadata.language];
@@ -418,12 +471,16 @@ $("analyze-button").addEventListener("click", analyze);
 $("connection-status").addEventListener("click", refreshStatus);
 $("retry-models").addEventListener("click", refreshStatus);
 $("clear-button").addEventListener("click", () => { setInput(""); $("report-file").value = ""; $("report-input").focus(); });
-$("example-button").addEventListener("click", async () => {
+async function loadExample(task) {
   setBusy(true);
-  try { const example = await fetchJSON("/api/example"); setInput(example.text, example.filename); }
+  try { const example = await fetchJSON(task === "message" ? "/api/example?task=message" : "/api/example"); setInput(example.text, example.filename); }
   catch (error) { notice(error.message || "The example could not be loaded.", true); }
   finally { setBusy(false); }
-});
+}
+$("example-button").addEventListener("click", () => loadExample("report"));
+$("message-example-button").addEventListener("click", () => loadExample("message"));
+$("message-task-button").addEventListener("click", () => focusTask("message"));
+$("extraction-task-button").addEventListener("click", () => focusTask("extraction"));
 $("report-file").addEventListener("change", async (event) => {
   const file = event.target.files[0];
   if (!file) return;
@@ -435,7 +492,7 @@ $("report-file").addEventListener("change", async (event) => {
   } catch (error) { notice(error instanceof TypeError ? "This file is not valid UTF-8 text." : error.message, true); }
   finally { event.target.value = ""; }
 });
-for (const id of ["finding-search", "label-filter", "show-components"]) $(id).addEventListener(id === "finding-search" ? "input" : "change", () => { if (state.result) renderResults(); });
+for (const id of ["finding-search", "label-filter", "finding-task", "show-components"]) $(id).addEventListener(id === "finding-search" ? "input" : "change", () => { if (state.result) renderResults(); });
 $("download-button").addEventListener("click", () => {
   if (!state.result) return;
   const url = URL.createObjectURL(new Blob([JSON.stringify(state.result.document, null, 2) + "\n"], {type: "application/json;charset=utf-8"}));

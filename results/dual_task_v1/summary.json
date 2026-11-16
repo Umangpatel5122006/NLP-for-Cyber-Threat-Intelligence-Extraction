@@ -1,0 +1,63 @@
+{
+  "date": "2026-11-16",
+  "change": "separate message-risk and report-extraction summaries, task filtering and examples",
+  "task_summary_version": 1,
+  "full_suite": {
+    "runtime": "Ubuntu-24.04 WSL / Python 3.12.3",
+    "tests": 361,
+    "passed": true
+  },
+  "native_windows_task_tests": {
+    "tests": 9,
+    "passed": true
+  },
+  "browser": {
+    "passed": true,
+    "check_groups": 33,
+    "authored_hindi_hinglish_cases": 26,
+    "indic_modes_checked": [
+      "ioc",
+      "ner"
+    ],
+    "mobile_width_px": 390,
+    "unexpected_console_errors": [],
+    "simulated_offline_error_expected": true,
+    "analysis_reference": {
+      "mode": "ner",
+      "action_artifact_sha256": "1732d7e0a1d4c5be1433dff1daf31c2893e0702b43b70142840d871e4d45da15",
+      "finding_count": 9
+    }
+  },
+  "launcher_check": {
+    "passed": true,
+    "selected_runtime": "prepared Ubuntu WSL",
+    "ner_ready": true,
+    "ioc_ready": true,
+    "english_sms_ready": true
+  },
+  "trained_nlp_languages": [
+    "en"
+  ],
+  "message_rule_languages": [
+    "en",
+    "hi",
+    "hi-en"
+  ],
+  "weights_changed": false,
+  "model_training_performed": false,
+  "new_dev_evaluation": false,
+  "official_test_evaluated": false,
+  "remote_ci_run": false,
+  "unchanged_files_checked": 7,
+  "source_sha256_lf": {
+    "src/cti/web/tasks.py": "95cad090fe70427d2a7b14f1d02d94db4415cfd35db1b8f62a2e7b41cc917ad4",
+    "src/cti/web/server.py": "6a66259eeee5d4f31af64bfa3f6de087ec194a4fc4cf1e170c0ac0f1b93bf63f",
+    "src/cti/web/static/app.js": "fe95ef56efa116fb7a1cc2bd4beaa84c5318d2f275944ddca9d36708f08b2dfc",
+    "src/cti/web/static/index.html": "06230223763889f0f93f090553733842b0cdd443b50f1450f42dcb856d8deb2b",
+    "src/cti/web/static/styles.css": "14520c9815b7a37cd03dec949d34f5b45e3626addf1ff29cfb81fb01bac32970",
+    "scripts/check_web_ui.mjs": "3fb7c01b02d3a99ec1114ac556e4aa97558c29c87c5efcca7fbdcd16d11b1916",
+    "tests/test_task_summaries.py": "0910e72e631879ab9dd6641ddea70fdb5805c3a2358133097ad2835f8c509ff6",
+    "tests/test_web.py": "c69c7daea8f2b25279137fea22424d385efb3b5ae9482306b32aa6b6cd1cdb4e",
+    "examples/message_risk_demo.txt": "97148133810188c34aa6422437f0a2ecbbacb77548a0e29d81d6db424b0bc45a"
+  }
+}

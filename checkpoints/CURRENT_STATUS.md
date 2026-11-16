@@ -1,6 +1,16 @@
 # Project progress, in order
 
-Latest local checkpoint: [fit-only consistency comparison](ACTION_CONSISTENCY_EXPERIMENT.md).
+Latest local checkpoint: [two-task workbench](DUAL_TASK_WORKBENCH.md).
+Message risk and report extraction now have equal task cards with separate
+coverage, counts and navigation. Findings can show either task or both; separate
+message/report examples and exported task summaries make the distinction clear.
+Hindi/Hinglish Findings correctly name their phrase-rule source. All 361 WSL
+tests, nine focused native task tests and 33 real Chrome check groups pass;
+the launcher selects the prepared WSL runtime with both modes ready. Model
+weights/configurations are unchanged; this step does not improve model accuracy.
+Hindi/Hinglish learned models and annotation adjudication remain outstanding.
+
+Previous local checkpoint: [fit-only consistency comparison](ACTION_CONSISTENCY_EXPERIMENT.md).
 Six fold fits test omission of conflicting fit-relevant inputs and optional
 deduplication, with all original validation rows retained. Exact F1 changes from
 0.1323 to 0.1332 / 0.1305; neither candidate meets the fixed minimum gain.

@@ -8,7 +8,7 @@ import time
 from dataclasses import asdict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 import yaml
 
@@ -16,6 +16,7 @@ from cti.core.pipeline import Pipeline
 from cti.core.registry import create
 from cti.extractors.message_risk import RULE_VERSION
 from cti.extractors.indic_message_risk import INDIC_RULE_VERSION
+from cti.web.tasks import TASK_SUMMARY_VERSION, summarize_tasks
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -114,7 +115,7 @@ class ReviewEngine:
                         break
                 if message_model.get("ready"):
                     break
-        return {"schema_version": 1, "modes": modes, "max_characters": MAX_CHARACTERS,
+        return {"schema_version": 1, "task_summary_version": TASK_SUMMARY_VERSION, "modes": modes, "max_characters": MAX_CHARACTERS,
                 "review_schema_version": 1,
                 "language_support": {"ner": ["en"], "sms_classifier": ["en"], "message_rules": ["en", "hi", "hi-en"],
                                      "ioc_extraction": "language_independent_patterns",
@@ -147,6 +148,8 @@ class ReviewEngine:
             pipeline = self._pipeline(mode)
             started = time.perf_counter()
             document = pipeline.run(text, language_hint=language) if language != "auto" else pipeline.run(text)
+            document.metadata["task_summary"] = summarize_tasks(document, mode,
+                ioc_checked=any(getattr(module, "name", None) in ("ioc_finder", "ioc_regex") for module in getattr(pipeline, "modules", [])))
             return {
                 "document": asdict(document),
                 "analysis": {"mode": mode, "elapsed_ms": round((time.perf_counter() - started) * 1000)},
@@ -203,8 +206,14 @@ class ReviewHandler(BaseHTTPRequestHandler):
             elif path == "/api/status":
                 self._reply(200, self.server.engine.status(), head=head)
             elif path == "/api/example":
-                text = (ROOT / "examples/merge_report.txt").read_bytes().decode("utf-8")
-                self._reply(200, {"text": text, "filename": "merge_report.txt"}, head=head)
+                query = parse_qs(urlsplit(self.path).query, keep_blank_values=True)
+                task = query.get("task", ["report"])
+                # Legacy parameters never selected files; keep ignoring them.
+                if len(task) != 1 or task[0] not in ("report", "message"):
+                    raise ReviewError(400, "invalid_example", "Choose the report or message example.")
+                filename = "message_risk_demo.txt" if task[0] == "message" else "merge_report.txt"
+                text = (ROOT / "examples" / filename).read_bytes().decode("utf-8")
+                self._reply(200, {"text": text, "filename": filename, "task": task[0]}, head=head)
             else:
                 raise ReviewError(404, "not_found", "This page or endpoint was not found.")
         except ReviewError as error:

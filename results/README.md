@@ -63,5 +63,9 @@ Removing previously tracked generated files from Git's index keeps their local
 copies. The cleanup applies to future commits; it does not rewrite existing
 Git history or immediately remove old objects from previous commits.
 
+The [two-task workbench validation](dual_task_v1/README.md) retains compact
+test/browser counts and unchanged-model hashes. Screenshots, full browser output
+and test logs stay ignored; no model training or held-out evaluation occurred.
+
 To retain a new publication result, add a narrow, explicit ignore exception.
 Avoid adding entire generated-output directories.

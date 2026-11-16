@@ -1,0 +1,36 @@
+{
+  "passed": true,
+  "reference": "results/action_consistency_v1/summary.json",
+  "unchanged_files": {
+    "models/ner_action.joblib": {
+      "sha256": "1732d7e0a1d4c5be1433dff1daf31c2893e0702b43b70142840d871e4d45da15",
+      "unchanged": true
+    },
+    "models/ner_action.manifest.json": {
+      "sha256": "b1921d93729b26b41d4ab3bf0c44f49b68b1f565787c6540ed8031bdd4151c4a",
+      "unchanged": true
+    },
+    "models/ner_entities.joblib": {
+      "sha256": "d5195ebe781197a15ebea3e31b15228334c236e05bec2f1b2c91de3a6033cd79",
+      "unchanged": true
+    },
+    "models/message_spam.joblib": {
+      "sha256": "29e05300ac835d169b1ef9d4650dc219e350e11a817b65efe7afb96c61d8a2e3",
+      "unchanged": true
+    },
+    "models/message_generalization_v1/candidate.joblib": {
+      "sha256": "8e9006bbb6d57eb9a37e9b865329c6c57c5bedecb0b150980af8dfc0d87a9300",
+      "unchanged": true
+    },
+    "configs/ner_training.yaml": {
+      "sha256": "1968d800ada6073aebe1a217b24f887ad4aa5bdb9a249d820ad69f0b520a258a",
+      "unchanged": true
+    },
+    "configs/config_ner.yaml": {
+      "sha256": "c14a07eae380726af340cf9289926883cfd1497b4b76b834b7f96d90904165e5",
+      "unchanged": true
+    }
+  },
+  "model_training_performed": false,
+  "official_test_evaluated": false
+}
